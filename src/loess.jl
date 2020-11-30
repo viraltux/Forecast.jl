@@ -50,32 +50,30 @@ function weights(u::Float64;type::String="tricube")::Float64
 end
 
 # distance of qth farthest xi from x
-function lambda(x::Float64,q::Int64;xv::Array{Float64},xvt)
-    # @assert (sort(xv) == xv)
-    # n = length(xv)
-    # q = min(q,n)
-    # xvx = abs.(xv .- x)
-    # qidx = sortperm(xvx)[1:q]
-    # qdist = abs(xv[last(qidx)]-x)*max(1,q/n)
-    # (qdist = qdist, qidx = qidx)
-    qidx, qdist = knn(xvt,[x],q,true)
+function lambda(x::Float64,q::Int64;xv::Array{Float64})
+    @assert (sort(xv) == xv)
+    n = length(xv)
+    q = min(q,n)
+    xvx = abs.(xv .- x)
+    qidx = sortperm(xvx)[1:q]
+    qdist = abs(xv[last(qidx)]-x)*max(1,q/n)
+    (qdist = qdist, qidx = qidx)
 end
 
 # Neighborhood weight for any xi 
-function upsilon(x::Float64,i::Int64;q::Int64,xv::Array{Float64},xvt)
-    qidx, lambda_qx = lambda(x,q;xv=xv,xvt=xvt)
-    i in qidx ? weights(abs(xv[i]-x)/last(lambda_qx)) : 0.0
+function upsilon(x::Float64,i::Int64;q::Int64,xv::Array{Float64})
+    lambda_qx, qidx = lambda(x,q;xv=xv)
+    i in qidx ? weights(abs(xv[i]-x)/lambda_qx) : 0.0
 end
 
 function ghat(x::Float64;xv,yv,
               k=repeat([1],inner=length(xv)),
-              q,d=2,xvt)
+              q,d=2)
 
     n = length(xv)
-    w = upsilon.(x,1:n,q=q,xv=xv,xvt=xvt)
+    w = upsilon.(x,1:n,q=q,xv=xv)
     #(@isdefined k) ? nothing :
     lsq_x = lsq(xv,yv;d=d,w=w,k=k)
-
     d == 1 ? [x,1]'*lsq_x : [x^2,x,1]'*lsq_x
 
 end
@@ -96,7 +94,5 @@ function loess(xv,yv;
     xv = xv[myi]
     yv = yv[myi]
 
-    xvt = KDTree(reshape(xv,(1,length(xv))))
-    
-    ghat.(xv;xv=xv,yv=yv,q=q,d=d,xvt=xvt)
+    ghat.(xv;xv=xv,yv=yv,q=q,d=d)
 end
