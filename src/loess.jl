@@ -1,99 +1,102 @@
 ## Loess
-using Statistics
-using Plots
 using LinearAlgebra
-using DataFrames
+using Statistics
+## TODO: consider returning an Array instead a DataFrame since Arrays
+## are default types
 
-# Tricube weight function as described by Cleveland et al.
-function Weights(u)::Float64
-    @assert u >= 0
-    w = (1-u^3)^3
-    max(0,w)
-end
-
-# qth farthest xi from x
-function lambda(x,q,xv)
-    isanx = isa(x,Number) 
-    isanx ? x = [x] : 0
-    x = convert(Array{Float64,1},x)
-    q = convert(Int64,q)
-    xv = convert(Array{Float64},xv)
-    @assert (sort(xv) == xv)
-    res = Float64[]
-    push!(res,1)
-    for xi in x
-        xvxi = abs.(xv .- xi)
-        n = length(xv)
-        k = max(1,q/n)
-        q = min(q,n)
-        p = sortperm(xvxi)[q] 
-        push!(res,abs(xv[p]-xi)*k)
-    end
-    isanx ? res[1] : res
-end
-
-# Neighborhood weight for any xv[i]
-# i the index for the focal point
-upsilon(x,i,xv,q) = Weights.(abs.(xv[i].-x) / lambda(x,q,xv))
-
-# Least Square Fitting adjusted by Weights and Variance
+# Least Square Fitting adjusted by Weights and Variance Factors
 function lsq(x,y;
              d=2,
              w = repeat([1.0],inner=length(x)),
-             v = repeat([1.0],inner=length(x)))
+             k = repeat([1.0],inner=length(x)))
 
     @assert (d==1) | (d==2)
+    @assert all(w.>=0) & all(k.>0) "weights must be positive or zero and variance factors positive"
 
+    ## Removing zero weighted values from to speed up calculations
+    x = x[w.!=0]
+    y = y[w.!=0]
+    k = k[w.!=0]
+    w = w[w.!=0]
+    
+    # Ax = b
     A = hcat(x,repeat([1],inner=length(x)))
     b = y
     d == 2 ? A = hcat(x .^ 2, A) : nothing
-    # W = Diagonal(w .* v)
-    ## (A'*W*A)^-1*A'*W*b #numerical issues
-    ## (A'*W*A)\A'*W*b # uses QR but still numerical issues
+    
     ## Considering errors are uncorrelated to simplify the calculations with weigths 
-    A = A.*w
-    b = b.*w
+    A = A .* (w .* (1 ./ k))
+    b = b .* (w .* (1 ./ k))
 
-    ## TODO: Simplification not needed since A will be dense, consider removal.
-    A = A[w.!=0,:]
-    b = b[w.!=0]
-    #(A'*A)\A'*b
-    #(A'*A)^-1*A'*b
-    #IterativeSolvers.lsmr(A,b)
-    pinv(A'*A,rtol=sqrt(eps(real(float(one(eltype(A)))))))*A'*b
+    # Removing pinv since it fails for long series > 10,000 and introduces
+    # artifacts (jumps) in the smoothing.
+    # Using pinv to avoid near singular errors with recommended tolerance
+    # rtol=sqrt(eps(real(float(one(eltype(A))))))
+    # pinv(A'*A,rtol=rtol)*A'*b
+    (A'*A)\(A'*b)
 end
+
+# using DataFrames
+# lm(@formula(y~x),DataFrame(x=x,y=y))
+
+function weights(u::Float64;type::String="tricube")::Float64
+    @assert type in ["tricube"]
+    @assert u >= 0 "values must be positive or zero"
+    if type == "tricube"
+        # Tricube weight function as described by Cleveland et al.
+        w = (1-u^3)^3
+        return max(0,w)
+    end
+end
+
+# distance of qth farthest xi from x
+function lambda(x::Float64,q::Int64;xv::Array{Float64},xvt)
+    # @assert (sort(xv) == xv)
+    # n = length(xv)
+    # q = min(q,n)
+    # xvx = abs.(xv .- x)
+    # qidx = sortperm(xvx)[1:q]
+    # qdist = abs(xv[last(qidx)]-x)*max(1,q/n)
+    # (qdist = qdist, qidx = qidx)
+    qidx, qdist = knn(xvt,[x],q,true)
+end
+
+# Neighborhood weight for any xi 
+function upsilon(x::Float64,i::Int64;q::Int64,xv::Array{Float64},xvt)
+    qidx, lambda_qx = lambda(x,q;xv=xv,xvt=xvt)
+    i in qidx ? weights(abs(xv[i]-x)/last(lambda_qx)) : 0.0
+end
+
+function ghat(x::Float64;xv,yv,
+              k=repeat([1],inner=length(xv)),
+              q,d=2,xvt)
+
+    n = length(xv)
+    w = upsilon.(x,1:n,q=q,xv=xv,xvt=xvt)
+    #(@isdefined k) ? nothing :
+    lsq_x = lsq(xv,yv;d=d,w=w,k=k)
+
+    d == 1 ? [x,1]'*lsq_x : [x^2,x,1]'*lsq_x
+
+end
+
+using NearestNeighbors
 
 function loess(xv,yv;
                d=2,
-               x = xv,
-               v=repeat([1.0],inner=length(xv)),  
-               q=round(3/4*length(xv)),
-               iter = 3)
-
-    data = dropmissing(DataFrame(hcat(xv,yv)))
-    xv = (data.x1.-minimum(data.x1))/(maximum(data.x1)-minimum(data.x1))
-    yv = data.x2
-    n = length(xv)
+               k=repeat([1.0],inner=length(xv)),  
+               q=Int64(round(3/4*length(xv))),
+               iter = 3,
+               model = false)
     
-    res = Float64[]
-    qw = min(length(xv),q)
-    for loit in 1:iter
-        res = Float64[]
-        for fp in 1:n
-            #j focal point
-            # (i,k) is the lsq window and j the focal point within the window
-            j = fp
-            i = convert(Int64,min(n-(qw-1),max(1,j-floor((qw-1)/2))))
-            k = convert(Int64,min(n,i+qw-1))
-            wik = upsilon(xv[j],i:k,xv,q)
-            reg_param = lsq(xv[i:k],yv[i:k];d=d,w=wik,v=v[i:k])
-            A = hcat(xv[i:k],repeat([1],inner=length(i:k)))
-            d == 2 ? A = hcat(xv[i:k].^2,A) : nothing
-            reg_x = A*reg_param
-            push!(res, reg_x[j-i+1])
-        end
-        yv = res
-    end
+    @assert (d==1) | (d==2) "Linear Regression must be of degree 1 or 2"
+    @assert length(findall(x -> ismissing(x), xv)) == 0  "xv should not contain missing values"
 
-    DataFrame(x = data.x1, y = res)
+    myi = findall(x -> !ismissing(x),yv)
+    xv = xv[myi]
+    yv = yv[myi]
+
+    xvt = KDTree(reshape(xv,(1,length(xv))))
+    
+    ghat.(xv;xv=xv,yv=yv,q=q,d=d,xvt=xvt)
 end
