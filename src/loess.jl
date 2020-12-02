@@ -2,43 +2,33 @@
 using LinearAlgebra
 using Statistics
 
-## TODO: Though much faster than before still much slower than Loess.loess
-##       Things to look:
-##       1- faster lsq?
-##       2- KDTree? - simplify lambda for unidimensional series
-##       3- pass A instead xv,xy
 
-## TODO: for d=1 it fails and greatly deviates from Loess.loess
+# TODO Check faster implementations in Computational methods for local regression
+# William S. Cleveland & E. Grosse https://link.springer.com/article/10.1007/BF01890836
 
-function ghat(x::Float64;xv,yv,
-              ik=repeat([1.0],inner=length(xv)),
-              q,d=2)
-
-    #lambda q
+function ghat(x::Float64;A,b,d=2,q,ik)
+              
+    xv = A[:,d]
+    yv = b
+    ## lambda q
     n = length(xv)
     q = min(q,n)
     xvx = @. abs(xv-x)
     qidx = sortperm(xvx)[1:q]
     qdist = abs(xv[last(qidx)]-x)*max(1,q/n)
 
+    ## upsilon
     w = zeros(n)
-    #upsilon
-    for wi in 1:n
+    for wi in qidx
         aq = abs(xv[wi]-x)/qdist
         w[wi] = max((1-aq^3)^3,0)
     end
-
-    # Ax = b
-    A = hcat(xv,repeat([1.0],inner=length(xv)))
-    b = yv
-    d == 2 ? A = hcat(xv .^ 2.0, A) : nothing
     
-    ## Considering errors are uncorrelated to simplify the calculations with weigths 
     A = @. A*(w*ik)
     b = @. b*(w*ik)
-
-    lsq_x = (A'*A)\(A'*b)
     
+    lsq_x = (A'*A)\(A'*b)
+
     d == 1 ? [x,1.0]'*lsq_x : [x^2.0,x,1.0]'*lsq_x
 
 end
@@ -60,8 +50,20 @@ function loess(xv,yv;
     #ghat.(xv;xv=xv,yv=yv,q=q,d=d)
     res = zeros(length(xv))
     ik = 1.0 ./ k
+    xvt = KDTree(reshape(xv,(1,length(xv))))
+
+    ## Ax = b
+    A = hcat(xv,repeat([1.0],inner=length(xv)))
+    b = yv
+    d == 2 ? A = hcat(xv .^ 2.0, A) : nothing
+
     for (i,xi) in enumerate(xv)
-        res[i] = ghat(xi;xv=xv,yv=yv,ik=ik,q=q,d=d)
+        # TODO find out why expanding this ghat function in this loops causes a
+        # drop in performance. For 10,000 values it goes from
+        #   6.595928 seconds (210.07 k allocations: 6.534 GiB, 4.96% gc time)
+        # to
+        #   26.257998 seconds (890.11 M allocations: 20.167 GiB, 7.03% gc time)
+        res[i] = ghat(xi;A=A,b=b,d=d,q=q,ik=ik)
     end
     res
 end
