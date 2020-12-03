@@ -3,7 +3,7 @@ using LinearAlgebra
 using Statistics
 
 
-# TODO Check faster implementations in Computational methods for local regression
+# TODO Check faster implementations in computational methods for local regression
 # William S. Cleveland & E. Grosse https://link.springer.com/article/10.1007/BF01890836
 
 function ghat(x::Float64;A,b,d=2,q,ik)
@@ -50,7 +50,6 @@ function loess(xv,yv;
     #ghat.(xv;xv=xv,yv=yv,q=q,d=d)
     res = zeros(length(xv))
     ik = 1.0 ./ k
-    xvt = KDTree(reshape(xv,(1,length(xv))))
 
     ## Ax = b
     A = hcat(xv,repeat([1.0],inner=length(xv)))
