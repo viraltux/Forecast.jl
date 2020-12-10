@@ -1,4 +1,4 @@
-function sma(x, n, extended = false)
+function sma(x, n; extended = false)
     #TODO implement extended flag for doing ma as long as x
 
     if n == 1
@@ -26,7 +26,15 @@ function sma(x, n, extended = false)
         ma = res[a+i+ivp]
     end
 
+    if extended
+        b = n-a-1
+        aux = hcat(res,x)
+        aux = mapslices(x->coalesce(x...),aux,dims=2)[:,1]
+        sma2 = collect(skipmissing(sma(aux,n)))
+        res[1:a+ivp]=sma2[1:a+ivp]
+        N2 = length(sma2)
+        res[(N-b+1):N]=sma2[(N2-b+1):N2]
+    end
+
     res
 end
-
-
