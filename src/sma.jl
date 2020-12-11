@@ -1,4 +1,4 @@
-function sma(x, n; extend = false, normx = false, normy = false)
+function sma(x, n; normx = false, normy = false)
 
     if n == 1
         return x
@@ -12,7 +12,7 @@ function sma(x, n; extend = false, normx = false, normy = false)
     ivp = findfirst(!ismissing, x)
     fvp = findlast(!ismissing, x)
     
-    # using missing values in 1:a to center ma 
+    # using missing values to center ma 
     a = normx ? 0 : div(n,2)
 
     # initial moving average value
@@ -25,17 +25,6 @@ function sma(x, n; extend = false, normx = false, normy = false)
         ma = res[a+ivp+i]
     end
     
-    if extend
-        b = n-a
-        #TODO optimize by using just the initial and final values
-        aux = hcat(res,x)
-        aux = mapslices(x->coalesce(x...),aux,dims=2)[:,1]
-        sma2 = collect(skipmissing(sma(aux,n)))
-        res[1:a+ivp-1]=sma2[1:a+ivp-1]
-        N2 = length(sma2)
-        res[(N-b+1):N]=sma2[(N2-b+1):N2]
-    end
-
     if normy
         Nm = N-count(x->ismissing(x),x)
         Nmr = N-count(x->ismissing(x),res)
@@ -45,3 +34,5 @@ function sma(x, n; extend = false, normx = false, normy = false)
 
     res
 end
+
+
