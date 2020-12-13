@@ -48,7 +48,7 @@ function loess(xv,yv;
     yv = yv[myi]
 
     #ghat.(xv;xv=xv,yv=yv,q=q,d=d)
-    res = zeros(length(xv))
+    res = zeros(length(predict))
     ik = 1.0 ./ k
 
     ## Ax = b
