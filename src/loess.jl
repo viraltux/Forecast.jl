@@ -38,7 +38,7 @@ function loess(xv,yv;
                k=repeat([1.0],inner=length(xv)),  
                q=Int64(round(3/4*length(xv))),
                iter = 3,
-               model = false)
+               predict = xv)
     
     @assert (d==1) | (d==2) "Linear Regression must be of degree 1 or 2"
     @assert length(findall(x -> ismissing(x), xv)) == 0  "xv should not contain missing values"
@@ -56,7 +56,7 @@ function loess(xv,yv;
     b = yv
     d == 2 ? A = hcat(xv .^ 2.0, A) : nothing
 
-    for (i,xi) in enumerate(xv)
+    for (i,xi) in enumerate(predict)
         # TODO find out why expanding this ghat function in this loops causes a
         # drop in performance. For 10,000 values it goes from
         #   6.595928 seconds (210.07 k allocations: 6.534 GiB, 4.96% gc time)
