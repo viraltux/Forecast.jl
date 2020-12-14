@@ -19,7 +19,7 @@ function sma(x, n; center = true)
     ma = sum(x[ivp:n+ivp-1])/n
     res[a+ivp] = ma
     for i in 1:(N-n-ivp-(N-fvp)+1)
-        resai = ma + (x[n+ivp+i-1] - x[ivp+i])/n
+        resai = ma + (x[n+ivp+i-1] - x[ivp+i-1])/n
         # missing values are imputed
         res[a+ivp+i] = ismissing(resai) ? ma : resai
         ma = res[a+ivp+i]
