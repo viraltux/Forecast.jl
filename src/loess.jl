@@ -35,8 +35,8 @@ end
 
 function loess(xv,yv;
                d=2,
-               k=repeat([1.0],inner=length(xv)),  
                q=Int64(round(3/4*length(xv))),
+               k=repeat([1.0],inner=length(xv)),  
                iter = 3,
                predict = xv)
     
