@@ -1,4 +1,4 @@
-function sma(x, n; center = false)
+function sma(x, n; center = true)
 
     if n == 1
         return x
