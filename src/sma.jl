@@ -16,10 +16,10 @@ function sma(x, n; center = true)
     a = center ? div(n,2) : 0
 
     # initial moving average value
-    ma = sum(x[ivp:n+ivp])/n
+    ma = sum(x[ivp:n+ivp-1])/n
     res[a+ivp] = ma
-    for i in 1:(N-n-ivp-(N-fvp))
-        resai = ma + (x[n+ivp+i] - x[ivp+i])/n
+    for i in 1:(N-n-ivp-(N-fvp)+1)
+        resai = ma + (x[n+ivp+i-1] - x[ivp+i])/n
         # missing values are imputed
         res[a+ivp+i] = ismissing(resai) ? ma : resai
         ma = res[a+ivp+i]
