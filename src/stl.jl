@@ -6,9 +6,9 @@ include("sma.jl")
 include("loess.jl")
 
 """
-        sodd(x)
+    sodd(x)
 
-    Return the smallest odd integer greater than or equal to `x`.        
+Return the smallest odd integer greater than or equal to `x`.        
 """
 function sodd(x::Number)::Integer
     cx = Integer(ceil(x))
@@ -16,15 +16,15 @@ function sodd(x::Number)::Integer
 end
 
 """
-        stl(Yv, np; robust=false, nl=sodd(np), ns=10*length(Yv)+1,
-                    nt=sodd(1.5*np/(1-1.5/ns)), 
-                    ni=robust ? 1 : 2,
-                    no=robust ? 15 : 0,
-                    spm=false)
-        
+    stl(Yv, np; robust=false, nl=sodd(np), ns=10*length(Yv)+1,
+                nt=sodd(1.5*np/(1-1.5/ns)), 
+                ni=robust ? 1 : 2,
+                no=robust ? 15 : 0,
+                spm=false)
+    
 Decompose a time series into trend, seasonal, and remainder components.
 
-    "STL has s simple desing that consists of a sequence of applications of the loess smoother; the simplicity allows analysis of the properties of the procedure and allows fast computation, even for very long time series and large amounts of trend and seasonal smoothing. Other features of STL  are specification of amounts of seasonal and trend smoothing that range, in a nearly continous way, from very small amount of smoothing to a very large amount; roubst estimatews of the trend and seasonal components that are not distorted by aberrant behavior in the data; specification of the period of the seasonal component to any intenger multiple of the time sampling interval greater than one; and the ability to decompose time series with missing values."
+    "STL has s simple design that consists of a sequence of applications of the loess smoother; the simplicity allows analysis of the properties of the procedure and allows fast computation, even for very long time series and large amounts of trend and seasonal smoothing. Other features of STL  are specification of amounts of seasonal and trend smoothing that range, in a nearly continous way, from very small amount of smoothing to a very large amount; robust estimates of the trend and seasonal components that are not distorted by aberrant behavior in the data; specification of the period of the seasonal component to any intenger multiple of the time sampling interval greater than one; and the ability to decompose time series with missing values."
 
 Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
               Robert B. Cleveland, William S. Cleveland, Jean E. McRae, and Irma Terpenning.
@@ -45,8 +45,12 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
 
 # Examples
 ```julia-repl
-julia> stl(log(AirPassengers),12)
-
+julia> stl(log.(AirPassengers),12)
+144×3 Array{Float64,2}:
+ -0.0898973   4.80079   0.00760601
+ -0.0186113   4.80725  -0.017953
+  0.0844463   4.81352  -0.0151602
+  ...
 ```
 """
 
@@ -61,7 +65,8 @@ function stl(Yv,np;
     
     @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
-    #TODO implement the handling of TimeSeries 
+    #TODO implement the handling of TimeSeries
+    #TODO check on discrepancies with R stl
     #TODO implement seasonal post-smoothing option?
     #TODO implement multiplicative decomposition Fv?
     #TODO implement convergence criteria? at least return its value
