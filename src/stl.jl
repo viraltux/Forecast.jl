@@ -99,7 +99,8 @@ function stl(Yv,np;
                                           predict=(1.0*csi-np):np:(N+np))
             end
             ## 3. Low-Pass Filtering of Smoothed Cycle-Subseries
-            Lv = loess(1.:N,collect(skipmissing(sma(sma(sma(Cv,np),np),3))),d=1,q=nl)
+            ### using -div(N,2)+1.:div(N,2) instead 1.:N to balance out machine error (center-right)
+            Lv = loess(-div(N,2)+1.:div(N,2),collect(skipmissing(sma(sma(sma(Cv,np),np),3))),d=1,q=nl)
             ## 4. Detreending of Smoothed Cycle-Subseries
 
             ### Lv is substracted to prevent low-frenquency power
@@ -111,7 +112,8 @@ function stl(Yv,np;
 
             # Trend Smoothing
             ## 6. Trend Smoothing
-            Tv = loess(1.0:N,Dv,q=nt,d=1,k=rhov) #Tvk1
+            ### using -div(N,2):div(N,2)-1. instead 1.:N to balance out machine error (center-left)
+            Tv = loess(-div(N,2):div(N,2)-1.,Dv,q=nt,d=1,k=rhov)
         end
         # Computation of robustness weights
         ## These new weights will reduce the influence of transient behaviour
