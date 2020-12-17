@@ -73,16 +73,21 @@ function stl(Yv,np;
     # initial robustness weights
     rhov = ones(N)
     # intial trend
-    Tv = zeros(N)
-    Sv = Array{Float64,1}(undef,N)
+    Tv = Tv0 = zeros(N)
+    Sv = Sv0 = Array{Float64,1}(undef,N)
     Rv = Array{Float64,1}(undef,N)
-    Cv = Array{Float64,1}(undef, N+2*np)
-    cnv = false # Seasonality convergence flag
+    Cv = Array{Float64,1}(undef,N+2*np)
+    cnv = false # convergence flag
     for o in 0:no
         for k in 1:ni
             # Updating sesonal and trend components
             ## 1. Detrending (Yv = Tv + Sv)
             Sv = Yv - Tv
+
+            ### Seasonal convergence criterion
+            cnv = (maximum(abs.(Sv-Sv0))/(maximum(Sv0)-minimum(Sv0)) < 0.01)
+            Sv0 = Sv
+
             # Sesonal Smoothing 2,3,4
             ## 2. Cycle-subseries Smoothing
             for csi in 1:np
@@ -100,12 +105,8 @@ function stl(Yv,np;
 
             ### Lv is substracted to prevent low-frenquency power
             ### from entering the seasonal component.
-            Sv1 = Cv[np+1:end-np] - Lv
+            Sv = Cv[np+1:end-np] - Lv
 
-            ### Seasonal convergence criterion
-            cnv = (maximum(abs.(Sv1-Sv))/(maximum(Sv)-minimum(Sv)) < 0.01)
-            Sv = Sv1
-            
             ## 5. Deseasonalizing
             Dv = Yv - Sv
 
@@ -113,6 +114,11 @@ function stl(Yv,np;
             ## 6. Trend Smoothing
             ### using -div(N,2):div(N,2)-1. instead 1.:N to balance out machine error (center-left)
             Tv = loess(-div(N,2):div(N,2)-1.,Dv,q=nt,d=1,rho=rhov)
+
+            ### Trend convergence criterion
+            cnv = cnv & (maximum(abs.(Tv-Tv0))/(maximum(Tv0)-minimum(Tv0)) < 0.01)
+            Tv0 = Tv
+
         end
         # Computation of robustness weights
         ## These new weights will reduce the influence of transient behaviour
@@ -129,9 +135,9 @@ function stl(Yv,np;
     end
 
     if cnv
-        @info "Seasonal corvengence achieved"
+        @info "Seasonal and Trend  corvengence achieved"
     else
-        @warn "Seasonal convergence not achieved, consider increasing the number of inner or/and outer cycles"
+        @warn "Seasonal and/or Trend convergence not achieved, consider increasing the number of inner and/or outer cycles"
     end
 
     hcat(Sv,Tv,Rv)
