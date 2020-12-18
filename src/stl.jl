@@ -16,11 +16,14 @@ function sodd(x::Number)::Integer
 end
 
 """
-    stl(Yv, np; robust=false, nl=sodd(np), ns=10*length(Yv)+1,
+    stl(Yv, np; robust=false, 
+                nl=sodd(np), 
+                ns=10*length(Yv)+1,
                 nt=sodd(1.5*np/(1-1.5/ns)), 
                 ni=robust ? 1 : 2,
                 no=robust ? 15 : 0,
-                spm=false)
+                spm=false,
+                qsmp=max(div(np,7),2))
     
 Decompose a time series into trend, seasonal, and remainder components.
 
@@ -39,7 +42,7 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
         `ni`: Number of inner loop cycles.
         `no`: Number of outer loop cycles. The paper advises 5 ("safe value") or 10 ("near certainty of convergence") cycles when robustness is required, however the default is set at 15 following R implementation.
         `spm`: Seasonal post-smoothing.
-
+        `qsmp`: Loess q window for Seasonal post-smoothing.
     Returns:
         An `stl` object with the seasonal, trend and remainder components.
 
@@ -61,12 +64,13 @@ function stl(Yv,np;
              nt=sodd(1.5*np/(1-1.5/ns)),
              ni=robust ? 1 : 2,
              no=robust ? 15 : 0,
-             spm=false)
+             spm=false,
+             qsmp=max(div(np,7),2))
     
     @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
     function B(u)
-        u < 1 ? (1-u^2)^2 : 0.0
+        u < 1 ? (1.0-u^2)^2 : 0.0
     end
 
     N = length(Yv)
@@ -85,7 +89,10 @@ function stl(Yv,np;
             Sv = Yv - Tv
 
             ### Seasonal convergence criterion
-            cnv = (maximum(abs.(Sv-Sv0))/(maximum(Sv0)-minimum(Sv0)) < 0.01)
+            Md = maximum(abs.(skipmissing(Sv-Sv0)))
+            M0 = maximum(skipmissing(Sv0))
+            m0 = minimum(skipmissing(Sv0))
+            cnv = (Md/(M0-m0) < 0.01)
             Sv0 = Sv
 
             # Sesonal Smoothing 2,3,4
@@ -97,8 +104,8 @@ function stl(Yv,np;
                                           predict=(1.0*csi-np):np:(N+np))
             end
             ## 3. Low-Pass Filtering of Smoothed Cycle-Subseries
-            ### using -div(N,2)+1.:div(N,2) instead 1.:N to balance out machine error (center-right)
-            Lv = loess(-div(N,2)+1.:div(N,2),
+            ### centered support instead 1:N to balance out machine error
+            Lv = loess(1-ceil(N/2):N-ceil(N/2),
                        collect(skipmissing(sma(sma(sma(Cv,np),np),3))),
                        d=1,q=nl,rho=rhov)
             ## 4. Detreending of Smoothed Cycle-Subseries
@@ -112,11 +119,15 @@ function stl(Yv,np;
 
             # Trend Smoothing
             ## 6. Trend Smoothing
-            ### using -div(N,2):div(N,2)-1. instead 1.:N to balance out machine error (center-left)
-            Tv = loess(-div(N,2):div(N,2)-1.,Dv,q=nt,d=1,rho=rhov)
+            ### centered support instead 1:N to balance out machine error
+            ### (floor isntead ceil like in Lv to balance out even lengths)
+            Tv = loess(1-floor(N/2):N-floor(N/2),Dv,q=nt,d=1,rho=rhov)
 
             ### Trend convergence criterion
-            cnv = cnv & (maximum(abs.(Tv-Tv0))/(maximum(Tv0)-minimum(Tv0)) < 0.01)
+            Md = maximum(abs.(skipmissing(Tv-Tv0)))
+            M0 = maximum(skipmissing(Tv0))
+            m0 = minimum(skipmissing(Tv0))
+            cnv = cnv & (Md/(M0-m0) < 0.01)
             Tv0 = Tv
 
         end
@@ -134,8 +145,15 @@ function stl(Yv,np;
         end
     end
 
+    if spm
+        # Using div(np,7) as default to approximate
+        # the q=51 for a np=365 chosen in the original paper
+        Sv = loess(1-ceil(N/2):N-ceil(N/2),Sv,q=qsmp)
+        Rv = Yv - Tv - Sv
+    end
+    
     if cnv
-        @info "Seasonal and Trend  corvengence achieved"
+        @info "Seasonal and Trend corvengence achieved"
     else
         @warn "Seasonal and/or Trend convergence not achieved, consider increasing the number of inner and/or outer cycles"
     end
