@@ -46,7 +46,8 @@ function loess(xv,yv;
     myi = findall(x -> !ismissing(x),yv)
     xv = xv[myi]
     yv = yv[myi]
-
+    rho = rho[myi]
+    
     #ghat.(xv;xv=xv,yv=yv,q=q,d=d)
     res = zeros(length(predict))
 
