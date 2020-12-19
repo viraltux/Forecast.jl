@@ -36,7 +36,7 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
               Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Sweden.
 
     Args:
-        `np`: Sesonality.
+        `np`: Seasonality.
         `robust`: Robust stl.
         `nl`: Smoothing parameter of the low-pass filter.
         `ns`: Smoothing parameter for the seasonal component. It is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7. The default value is not advised on the original paper but it is  the same chosen by the stl implementation in R.
@@ -73,11 +73,12 @@ function stl(Yv::TimeArray,np::Integer;
              ni=robust ? 1 : 2,
              no=robust ? 15 : 0,
              spm=false,
-             qsmp=max(div(np,7),2))
+             qsmp=max(div(np,7),2),
+             verbose=false)
 
     str = stl(TimeSeries.values(Yv),np;
               robust=robust, nl=nl, ns=ns, nt=nt,
-              ni=ni, no=no, spm=spm, qsmp=qsmp)
+              ni=ni, no=no, spm=spm, qsmp=qsmp, verbose=verbose)
     stl_ts = (Timestamp = TimeSeries.timestamp(Yv),
               Seasonal = str.seasonal,
               Trend = str.trend,
@@ -94,7 +95,8 @@ function stl(Yv, #::AbstractVector{T},
              ni=robust ? 1 : 2,
              no=robust ? 15 : 0,
              spm=false,
-             qsmp=max(div(np,7),2)) #where T<:Union{Missing, Number}
+             qsmp=max(div(np,7),2),
+             verbose = false) #where T<:Union{Missing, Number}
 
     @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
@@ -107,10 +109,11 @@ function stl(Yv, #::AbstractVector{T},
     rhov = ones(N)
     # intial trend
     Tv = Tv0 = zeros(N)
-    Sv = Sv0 = Array{Float64,1}(undef,N)
+    Sv = Sv0 = zeros(N)#Array{Float64,1}(undef,N)
     Rv = Array{Float64,1}(undef,N)
     Cv = Array{Float64,1}(undef,N+2*np)
-    cnv = false # convergence flag
+    scnv = false # seasonal convergence flag
+    tcnv = false # trend convergence flag
     for o in 0:no
         for k in 1:ni
             # Updating sesonal and trend components
@@ -121,11 +124,14 @@ function stl(Yv, #::AbstractVector{T},
             Md = maximum(abs.(skipmissing(Sv-Sv0)))
             M0 = maximum(skipmissing(Sv0))
             m0 = minimum(skipmissing(Sv0))
-            cnv = (Md/(M0-m0) < 0.01)
-            println(Md/(M0-m0))
+            scnv = (Md/(M0-m0) < 0.01)
+            if verbose #& ((o == 0) & (k > 1) | (o > 0))
+                println("Outer loop: " * string(o) * " - " * "Inner loop: " * string(k))
+                println("Seasonal Convergence: " * string(Md/(M0-m0)))
+            end
             Sv0 = Sv
 
-            # Sesonal Smoothing 2,3,4
+            # Seasonal Smoothing 2,3,4
             ## 2. Cycle-subseries Smoothing
             for csi in 1:np
                 Cv[csi:np:N+2*np] = loess(csi:np:N,
@@ -157,7 +163,10 @@ function stl(Yv, #::AbstractVector{T},
             Md = maximum(abs.(skipmissing(Tv-Tv0)))
             M0 = maximum(skipmissing(Tv0))
             m0 = minimum(skipmissing(Tv0))
-            cnv = cnv & (Md/(M0-m0) < 0.01)
+            tcnv = (Md/(M0-m0) < 0.01)
+            if verbose #& ((o == 0) & (k > 1) | (o > 0))
+                println("Trend    Convergence: " * string(Md/(M0-m0)) *"\n")
+            end
             Tv0 = Tv
 
         end
@@ -182,12 +191,20 @@ function stl(Yv, #::AbstractVector{T},
         Rv = Yv - Tv - Sv
     end
     
-    if cnv
-        @info "Seasonal and Trend corvengence achieved"
+    if scnv
+        @info "Seasonal corvengence achieved"
     else
-        @warn "Seasonal and/or Trend convergence not achieved, consider increasing the number of inner and/or outer cycles"
+        @warn "Seasonal convergence not achieved (>0.01)
+         Consider increasing the number of inner and/or outer cycles"
     end
 
+    if tcnv
+        @info "Trend corvengence achieved"
+    else
+        @warn "Trend convergence not achieved (>0.01)
+         Consider increasing the number of inner and/or outer cycles"
+    end
+    
      (seasonal = Sv,
       trend = Tv,
       remainder = Rv)
