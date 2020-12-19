@@ -52,7 +52,8 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
 # Examples
 ```julia-repl
 julia> Forecast.stl(co2_ts, 365; robust=true, spm=true)
-[ Info: Seasonal and Trend corvengence achieved
+[ Info: Seasonal corvengence achieved
+[ Info: Trend corvengence achieved
 4609×3 TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31
 │            │ Seasonal │ Trend    │ Remainder │
 ├────────────┼──────────┼──────────┼───────────┤
@@ -60,10 +61,9 @@ julia> Forecast.stl(co2_ts, 365; robust=true, spm=true)
 │ 1974-05-18 │ 3.3813   │ 329.9891 │ -0.2604   │
 │ 1974-05-19 │ 3.3359   │ 329.9919 │ 0.1322    │
 │ 1974-05-20 │ 3.2894   │ 329.9947 │ 0.3559    │
-  ...
+   ⋮
 ```
 """
-
 
 function stl(Yv::TimeArray,np::Integer;
              robust=false,
