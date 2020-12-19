@@ -42,9 +42,11 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
         `ns`: Smoothing parameter for the seasonal component. It is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7. The default value is not advised on the original paper but it is  the same chosen by the stl implementation in R.
         `nt`: Smoothing parameter for the trend decomposition.
         `ni`: Number of inner loop cycles.
-        `no`: Number of outer loop cycles. The paper advises 5 ("safe value") or 10 ("near certainty of convergence") cycles when robustness is required, however the default is set at 15 following R implementation.
+        `no`: Number of outer loop cycles. The paper advises 5 ("safe value") or 10 ("near certainty of convergence") cycles  or a convergence criterion when robustness is required, in this case when `robust` is true computations stop when convergence is achieved.
         `spm`: Seasonal post-smoothing.
         `qsmp`: Loess q window for Seasonal post-smoothing.
+        `verbose`: If true shows the updates for the Seasonal and Trend convergence for each inner and outter iteration.
+        `cth`: Corvengence threshold for Seasonal and Trend.
     Returns:
         An `stl` object with the seasonal, trend and remainder components if Yv is an Array and
         a TimeSeries object with the same components if Yv is a TimeSeries.
@@ -52,15 +54,14 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
 # Examples
 ```julia-repl
 julia> Forecast.stl(co2_ts, 365; robust=true, spm=true)
-[ Info: Seasonal corvengence achieved
-[ Info: Trend corvengence achieved
+[ Info: Corvengence achieved (< 0.01); Stopping computation...
 4609×3 TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31
 │            │ Seasonal │ Trend    │ Remainder │
 ├────────────┼──────────┼──────────┼───────────┤
-│ 1974-05-17 │ 3.4255   │ 329.9863 │ -0.0318   │
-│ 1974-05-18 │ 3.3813   │ 329.9891 │ -0.2604   │
-│ 1974-05-19 │ 3.3359   │ 329.9919 │ 0.1322    │
-│ 1974-05-20 │ 3.2894   │ 329.9947 │ 0.3559    │
+│ 1974-05-17 │ 3.4606   │ 330.0237 │ -0.1043   │
+│ 1974-05-18 │ 3.4151   │ 330.0265 │ -0.3316   │
+│ 1974-05-19 │ 3.3681   │ 330.0292 │ 0.0626    │
+│ 1974-05-20 │ 3.3198   │ 330.032  │ 0.2882    │
    ⋮
 ```
 """
@@ -71,10 +72,11 @@ function stl(Yv::TimeArray,np::Integer;
              ns=10*length(Yv)+1,
              nt=sodd(1.5*np/(1-1.5/ns)),
              ni=robust ? 1 : 2,
-             no=robust ? 15 : 0,
+             no=robust ? typemax(Int64) : 0,
              spm=false,
              qsmp=max(div(np,7),2),
-             verbose=false)
+             verbose=false,
+             cth = 0.01)
 
     str = stl(TimeSeries.values(Yv),np;
               robust=robust, nl=nl, ns=ns, nt=nt,
@@ -93,10 +95,11 @@ function stl(Yv, #::AbstractVector{T},
              ns=10*length(Yv)+1,
              nt=sodd(1.5*np/(1-1.5/ns)),
              ni=robust ? 1 : 2,
-             no=robust ? 15 : 0,
+             no=robust ? typemax(Int64) : 0,
              spm=false,
              qsmp=max(div(np,7),2),
-             verbose = false) #where T<:Union{Missing, Number}
+             verbose = false,
+             cth = 0.01) #where T<:Union{Missing, Number}
 
     @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
@@ -114,7 +117,9 @@ function stl(Yv, #::AbstractVector{T},
     Cv = Array{Float64,1}(undef,N+2*np)
     scnv = false # seasonal convergence flag
     tcnv = false # trend convergence flag
-    for o in 0:no
+    #for o in 0:no
+    o = 0
+    while robust | (o <= no)
         for k in 1:ni
             # Updating sesonal and trend components
             ## 1. Detrending (Yv = Tv + Sv)
@@ -124,7 +129,7 @@ function stl(Yv, #::AbstractVector{T},
             Md = maximum(abs.(skipmissing(Sv-Sv0)))
             M0 = maximum(skipmissing(Sv0))
             m0 = minimum(skipmissing(Sv0))
-            scnv = (Md/(M0-m0) < 0.01)
+            scnv = (Md/(M0-m0) < cth)
             if verbose
                 println("Outer loop: " * string(o) * " - " * "Inner loop: " * string(k))
                 println("Seasonal Convergence: " * string(Md/(M0-m0)))
@@ -162,12 +167,13 @@ function stl(Yv, #::AbstractVector{T},
             Md = maximum(abs.(skipmissing(Tv-Tv0)))
             M0 = maximum(skipmissing(Tv0))
             m0 = minimum(skipmissing(Tv0))
-            tcnv = (Md/(M0-m0) < 0.01)
+            tcnv = (Md/(M0-m0) < cth)
             if verbose
                 println("Trend    Convergence: " * string(Md/(M0-m0)) * "\n")
             end
             Tv0 = Tv
 
+            scnv & tcnv ? break : nothing
         end
         # Computation of robustness weights
         ## These new weights will reduce the influence of transient behaviour
@@ -177,11 +183,18 @@ function stl(Yv, #::AbstractVector{T},
         # where Yv has missing values
 
         Rv = Yv - Tv - Sv
+
+        if scnv & tcnv
+            @info "Corvengence achieved (< " * string(cth) * "); Stopping computation..."    
+            break 
+        end
+        
         if 0 < o <= no
             smRv = skipmissing(Rv)
             h = 6*median(abs.(smRv))
             rhov = B.(abs.(Rv)/h)
         end
+        o += 1
     end
 
     if spm
@@ -191,18 +204,14 @@ function stl(Yv, #::AbstractVector{T},
         Rv = Yv - Tv - Sv
     end
     
-    if scnv
-        @info "Seasonal corvengence achieved"
-    else
-        @warn "Seasonal convergence not achieved (>= 0.01)
-         Consider increasing the number of inner and/or outer cycles"
+    if !scnv
+        @warn "Seasonal convergence not achieved (>= " * string(cth) * ")
+         Consider a robust estimation"
     end
 
-    if tcnv
-        @info "Trend corvengence achieved"
-    else
-        @warn "Trend convergence not achieved (>= 0.01)
-         Consider increasing the number of inner and/or outer cycles"
+    if !tcnv
+        @warn "Trend convergence not achieved (>= " * string(cth) * ")
+         Consider a robust estimation"
     end
     
      (seasonal = Sv,
