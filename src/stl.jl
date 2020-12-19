@@ -35,17 +35,21 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
               Robert B. Cleveland, William S. Cleveland, Jean E. McRae, and Irma Terpenning.
               Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Sweden.
 
+All default values are chosen following the recommendations of the original paper when those were recommended. `ns` is recommended to be chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; it must nonethelessbe  always odd and at least 7. A default value is not advised on the original paper, instead the same default value used in the stl implementation in R in usere here.
+
+for `no` the authors advise 5 ("safe value") or 10 ("near certainty of convergence") cycles  or a convergence criterion when robustness is required, in this case when `robust` is true computations stop when convergence is achieved in trend and seasonality.
+
     Args:
         `np`: Seasonality.
         `robust`: Robust stl.
         `nl`: Smoothing parameter of the low-pass filter.
-        `ns`: Smoothing parameter for the seasonal component. It is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7. The default value is not advised on the original paper but it is  the same chosen by the stl implementation in R.
+        `ns`: Smoothing parameter for the seasonal component.
         `nt`: Smoothing parameter for the trend decomposition.
         `ni`: Number of inner loop cycles.
-        `no`: Number of outer loop cycles. The paper advises 5 ("safe value") or 10 ("near certainty of convergence") cycles  or a convergence criterion when robustness is required, in this case when `robust` is true computations stop when convergence is achieved.
+        `no`: Number of outer loop cycles.
         `spm`: Seasonal post-smoothing.
         `qsmp`: Loess q window for Seasonal post-smoothing.
-        `verbose`: If true shows the updates for the Seasonal and Trend convergence for each inner and outter iteration.
+        `verbose`: If true shows updates for the Seasonal and Trend convergence.
         `cth`: Corvengence threshold for Seasonal and Trend.
     Returns:
         An `stl` object with the seasonal, trend and remainder components if Yv is an Array and
@@ -101,7 +105,7 @@ function stl(Yv, #::AbstractVector{T},
              verbose = false,
              cth = 0.01) #where T<:Union{Missing, Number}
 
-    @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
+    @assert mod(ns,2)==1 & (ns>=7) "`ns` is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
     function B(u)
         (u < 1) & !ismissing(u) ? (1.0-u^2)^2 : 0.0
