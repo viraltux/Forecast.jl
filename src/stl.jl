@@ -101,7 +101,7 @@ function stl(Yv, #::AbstractVector{T},
     @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
     function B(u)
-        u < 1 ? (1.0-u^2)^2 : 0.0
+        (u < 1) & !ismissing(u) ? (1.0-u^2)^2 : 0.0
     end
 
     N = length(Yv)
@@ -109,7 +109,7 @@ function stl(Yv, #::AbstractVector{T},
     rhov = ones(N)
     # intial trend
     Tv = Tv0 = zeros(N)
-    Sv = Sv0 = zeros(N)#Array{Float64,1}(undef,N)
+    Sv = Sv0 = zeros(N)
     Rv = Array{Float64,1}(undef,N)
     Cv = Array{Float64,1}(undef,N+2*np)
     scnv = false # seasonal convergence flag
@@ -125,7 +125,7 @@ function stl(Yv, #::AbstractVector{T},
             M0 = maximum(skipmissing(Sv0))
             m0 = minimum(skipmissing(Sv0))
             scnv = (Md/(M0-m0) < 0.01)
-            if verbose #& ((o == 0) & (k > 1) | (o > 0))
+            if verbose
                 println("Outer loop: " * string(o) * " - " * "Inner loop: " * string(k))
                 println("Seasonal Convergence: " * string(Md/(M0-m0)))
             end
@@ -145,7 +145,6 @@ function stl(Yv, #::AbstractVector{T},
                        collect(skipmissing(sma(sma(sma(Cv,np),np),3))),
                        d=1,q=nl,rho=rhov)
             ## 4. Detreending of Smoothed Cycle-Subseries
-
             ### Lv is substracted to prevent low-frenquency power
             ### from entering the seasonal component.
             Sv = Cv[np+1:end-np] - Lv
@@ -164,8 +163,8 @@ function stl(Yv, #::AbstractVector{T},
             M0 = maximum(skipmissing(Tv0))
             m0 = minimum(skipmissing(Tv0))
             tcnv = (Md/(M0-m0) < 0.01)
-            if verbose #& ((o == 0) & (k > 1) | (o > 0))
-                println("Trend    Convergence: " * string(Md/(M0-m0)) *"\n")
+            if verbose
+                println("Trend    Convergence: " * string(Md/(M0-m0)) * "\n")
             end
             Tv0 = Tv
 
@@ -176,11 +175,12 @@ function stl(Yv, #::AbstractVector{T},
 
         # Tv and Sv defined everywhere but Rv is not defined
         # where Yv has missing values
+
         Rv = Yv - Tv - Sv
         if 0 < o <= no
             smRv = skipmissing(Rv)
             h = 6*median(abs.(smRv))
-            rhov = B.(abs.(smRv)/h)
+            rhov = B.(abs.(Rv)/h)
         end
     end
 
@@ -194,14 +194,14 @@ function stl(Yv, #::AbstractVector{T},
     if scnv
         @info "Seasonal corvengence achieved"
     else
-        @warn "Seasonal convergence not achieved (>0.01)
+        @warn "Seasonal convergence not achieved (>= 0.01)
          Consider increasing the number of inner and/or outer cycles"
     end
 
     if tcnv
         @info "Trend corvengence achieved"
     else
-        @warn "Trend convergence not achieved (>0.01)
+        @warn "Trend convergence not achieved (>= 0.01)
          Consider increasing the number of inner and/or outer cycles"
     end
     
