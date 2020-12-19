@@ -5,6 +5,8 @@ export stl
 include("sma.jl")
 include("loess.jl")
 
+using TimeSeries
+
 """
     sodd(x)
 
@@ -44,20 +46,26 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
         `spm`: Seasonal post-smoothing.
         `qsmp`: Loess q window for Seasonal post-smoothing.
     Returns:
-        An `stl` object with the seasonal, trend and remainder components.
+        An `stl` object with the seasonal, trend and remainder components if Yv is an Array and
+        a TimeSeries object with the same components if Yv is a TimeSeries.
 
 # Examples
 ```julia-repl
-julia> stl(log.(AirPassengers),12)
-144×3 Array{Float64,2}:
- -0.0898973   4.80079   0.00760601
- -0.0186113   4.80725  -0.017953
-  0.0844463   4.81352  -0.0151602
+julia> Forecast.stl(co2_ts, 365; robust=true, spm=true)
+[ Info: Seasonal and Trend corvengence achieved
+4609×3 TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31
+│            │ Seasonal │ Trend    │ Remainder │
+├────────────┼──────────┼──────────┼───────────┤
+│ 1974-05-17 │ 3.4255   │ 329.9863 │ -0.0318   │
+│ 1974-05-18 │ 3.3813   │ 329.9891 │ -0.2604   │
+│ 1974-05-19 │ 3.3359   │ 329.9919 │ 0.1322    │
+│ 1974-05-20 │ 3.2894   │ 329.9947 │ 0.3559    │
   ...
 ```
 """
 
-function stl(Yv,np;
+
+function stl(Yv::TimeArray,np::Integer;
              robust=false,
              nl=sodd(np),
              ns=10*length(Yv)+1,
@@ -66,7 +74,28 @@ function stl(Yv,np;
              no=robust ? 15 : 0,
              spm=false,
              qsmp=max(div(np,7),2))
-    
+
+    str = stl(TimeSeries.values(Yv),np;
+              robust=robust, nl=nl, ns=ns, nt=nt,
+              ni=ni, no=no, spm=spm, qsmp=qsmp)
+    stl_ts = (Timestamp = TimeSeries.timestamp(Yv),
+              Seasonal = str.seasonal,
+              Trend = str.trend,
+              Remainder = str.remainder)
+    TimeArray(stl_ts; timestamp = :Timestamp)
+end
+
+function stl(Yv, #::AbstractVector{T},
+             np::Integer;
+             robust=false,
+             nl=sodd(np),
+             ns=10*length(Yv)+1,
+             nt=sodd(1.5*np/(1-1.5/ns)),
+             ni=robust ? 1 : 2,
+             no=robust ? 15 : 0,
+             spm=false,
+             qsmp=max(div(np,7),2)) #where T<:Union{Missing, Number}
+
     @assert mod(ns,2)==1 & (ns>=7) "ns is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
     function B(u)
@@ -93,6 +122,7 @@ function stl(Yv,np;
             M0 = maximum(skipmissing(Sv0))
             m0 = minimum(skipmissing(Sv0))
             cnv = (Md/(M0-m0) < 0.01)
+            println(Md/(M0-m0))
             Sv0 = Sv
 
             # Sesonal Smoothing 2,3,4
@@ -158,7 +188,10 @@ function stl(Yv,np;
         @warn "Seasonal and/or Trend convergence not achieved, consider increasing the number of inner and/or outer cycles"
     end
 
-    hcat(Sv,Tv,Rv)
+     (seasonal = Sv,
+      trend = Tv,
+      remainder = Rv)
 end
+
 
 end
