@@ -2,28 +2,24 @@ module Forecast
 
 export stl
 
+include("utils.jl")
 include("sma.jl")
 include("loess.jl")
 
 using TimeSeries
 
-"""
-    sodd(x)
-
-Return the smallest odd integer greater than or equal to `x`.        
-"""
-function sodd(x::Number)::Integer
-    cx = Integer(ceil(x))
-    mod(cx,2)==0 ? cx+1 : cx
+mutable struct STL{T<:TimeArray}
+    ta::T         # A time array with three time series from a fitted STL model
+    call::String  # method called to generate ta
 end
 
 """
     stl(Yv, np; robust=false, 
-                nl=sodd(np), 
+                nl=nextodd(np), 
                 ns=10*length(Yv)+1,
-                nt=sodd(1.5*np/(1-1.5/ns)), 
+                nt=nextodd(1.5*np/(1-1.5/ns)), 
                 ni=robust ? 1 : 2,
-                no=robust ? 15 : 0,
+                no=0,
                 spm=false,
                 qsmp=max(div(np,7),2))
     
@@ -38,6 +34,8 @@ Excerpt from "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
 All default values are chosen following the recommendations of the original paper when those were recommended. `ns` is recommended to be chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; it must nonethelessbe  always odd and at least 7. A default value is not advised on the original paper, instead the same default value used in the stl implementation in R in usere here.
 
 for `no` the authors advise 5 ("safe value") or 10 ("near certainty of convergence") cycles  or a convergence criterion when robustness is required, in this case when `robust` is true computations stop when convergence is achieved in trend and seasonality.
+
+for `qsmp` the authors do not adivise a default but they use a value close to div(`np`,7).
 
     Args:
         `np`: Seasonality.
@@ -72,9 +70,9 @@ julia> Forecast.stl(co2_ts, 365; robust=true, spm=true)
 
 function stl(Yv::TimeArray,np::Integer;
              robust=false,
-             nl=sodd(np),
+             nl=nextodd(np),
              ns=10*length(Yv)+1,
-             nt=sodd(1.5*np/(1-1.5/ns)),
+             nt=nextodd(1.5*np/(1-1.5/ns)),
              ni=robust ? 1 : 2,
              no=0,
              spm=false,
@@ -82,22 +80,20 @@ function stl(Yv::TimeArray,np::Integer;
              verbose=false,
              cth = 0.01)
 
-    str = stl(TimeSeries.values(Yv),np;
+    stl_obj = stl(TimeSeries.values(Yv),np;
               robust=robust, nl=nl, ns=ns, nt=nt,
               ni=ni, no=no, spm=spm, qsmp=qsmp, verbose=verbose)
-    stl_ts = (Timestamp = TimeSeries.timestamp(Yv),
-              Seasonal = str.seasonal,
-              Trend = str.trend,
-              Remainder = str.remainder)
-    TimeArray(stl_ts; timestamp = :Timestamp)
+    
+    STL(TimeArray(stl_obj.ta; timestamp = timestamp(Yv)), stl_obj.call)
+        
 end
 
-function stl(Yv, #::AbstractVector{T},
+function stl(Yv,
              np::Integer;
              robust=false,
-             nl=sodd(np),
+             nl=nextodd(np),
              ns=10*length(Yv)+1,
-             nt=sodd(1.5*np/(1-1.5/ns)),
+             nt=nextodd(1.5*np/(1-1.5/ns)),
              ni=robust ? 1 : 2,
              no=0,
              spm=false,
@@ -217,10 +213,23 @@ function stl(Yv, #::AbstractVector{T},
         @warn "Trend convergence not achieved (>= " * string(cth) * ")
          Consider a robust estimation"
     end
+
+    call = "stl(Yn, np="*string(np)*
+        "; nl="*string(nl)*
+        ", ns="*string(ns)*
+        ", nt="*string(nt)*
+        ", ni="*string(ni)*
+        ", no="*string(no)*
+        ", spm="*string(spm)*
+        ", qsmp="*string(qsmp)*")"
+
+    # Dates.datetime2unix(DateTime(1970,1,1,0,0,1)) = 1.0
+    stl_ts = (Timestamp = DateTime(1970,1,1,0,0,1):Second(1):DateTime(1970,1,1,0,0,1)+Second(N-1),
+              Seasonal = Sv,
+              Trend = Tv,
+              Remainder = Rv)
     
-     (seasonal = Sv,
-      trend = Tv,
-      remainder = Rv)
+    STL(TimeArray(stl_ts; timestamp = :Timestamp), call)
 end
 
 
