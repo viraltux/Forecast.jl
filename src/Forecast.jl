@@ -8,9 +8,10 @@ export STL
 export loess, sma, stl
 
 # source files
-include("utils.jl")
-include("sma.jl")
 include("loess.jl")
+include("sma.jl")
+include("stl.jl")
+include("utils.jl")
 
 """
 Collection of methods for Time Series analysis
