@@ -55,16 +55,9 @@ for `qsmp` the authors do not adivise a default but they use a value close to di
 
 # Examples
 ```julia-repl
-julia> Forecast.stl(co2_ts, 365; robust=true, spm=true)
+julia> stl_co2 = Forecast.stl(co2, 365; robust=true, spm=true)
 [ Info: Corvengence achieved (< 0.01); Stopping computation...
-4609×3 TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31
-│            │ Seasonal │ Trend    │ Remainder │
-├────────────┼──────────┼──────────┼───────────┤
-│ 1974-05-17 │ 3.4606   │ 330.0237 │ -0.1043   │
-│ 1974-05-18 │ 3.4151   │ 330.0265 │ -0.3316   │
-│ 1974-05-19 │ 3.3681   │ 330.0292 │ 0.0626    │
-│ 1974-05-20 │ 3.3198   │ 330.032  │ 0.2882    │
-   ⋮
+Main.Forecast.STL{TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}}}(4609×3 TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31, "stl(Yn, np=365; nl=365, ns=46091, nt=549, ni=1, no=0, spm=true, qsmp=52)")
 ```
 """
 
