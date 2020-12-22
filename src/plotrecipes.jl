@@ -31,7 +31,7 @@
         yguide := "Data"
         xaxis := nothing
         bottom_margin := -7Plots.mm    
-        fSTL.ta[:Seasonal] .+ fsts.ta[:Trend] .+ fsts.ta[:Remainder]
+        fSTL.ta[:Seasonal] .+ fSTL.ta[:Trend] .+ fSTL.ta[:Remainder]
     end
 
     @series begin
