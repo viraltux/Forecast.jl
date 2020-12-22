@@ -214,6 +214,3 @@ function stl(Yv,
     
     STL(TimeArray(stl_ts; timestamp = :Timestamp), call)
 end
-
-
-end
