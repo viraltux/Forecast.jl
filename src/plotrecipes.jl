@@ -1,4 +1,4 @@
-@recipe function f(fSTL::Main.Forecast.STL)
+@recipe function f(fSTL::STL)
 
     # subplots configuration
     legend:= false
