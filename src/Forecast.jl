@@ -9,10 +9,12 @@ export loess, sma, stl
 
 # source files
 include("loess.jl")
-include("plotrecipes.jl")
 include("sma.jl")
 include("stl.jl")
-include("utils.jl")
+include("utils.jl") 
+
+# recipes
+include("plotrecipes.jl")
 
 """
 Collection of methods for Time Series analysis
