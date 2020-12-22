@@ -9,6 +9,7 @@ export loess, sma, stl
 
 # source files
 include("loess.jl")
+include("plotrecipes.jl")
 include("sma.jl")
 include("stl.jl")
 include("utils.jl")
