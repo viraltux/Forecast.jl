@@ -1,13 +1,3 @@
-module Forecast
-
-export stl
-
-include("utils.jl")
-include("sma.jl")
-include("loess.jl")
-
-using TimeSeries
-
 mutable struct STL{T<:TimeArray}
     ta::T         # A time array with three time series from a fitted STL model
     call::String  # method called to generate ta

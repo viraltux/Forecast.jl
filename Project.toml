@@ -3,6 +3,10 @@ uuid = "6efb3b9f-b065-4dd1-b1a5-fac2350e161b"
 authors = ["Fran Urbano <viraltux@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+TimeSeries = "9e3dc215-6440-5c97-bce1-76c03772f85e"
+
 [compat]
 julia = "1"
 
