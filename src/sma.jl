@@ -21,7 +21,6 @@ julia> sma(1:5,3;center=true)
   missing
 ```
 """
-
 function sma(x, n; center = true)
 
     if n == 1

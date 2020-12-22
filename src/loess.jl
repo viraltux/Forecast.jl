@@ -66,7 +66,6 @@ julia> loess(rand(5),rand(5))
  0.2564676547690037
 ```
 """
-
 function loess(xv,yv;
                d=2,
                q=Int64(round(3/4*length(xv))),

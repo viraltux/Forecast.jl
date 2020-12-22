@@ -50,7 +50,6 @@ julia> stl_co2 = Forecast.stl(co2, 365; robust=true, spm=true)
 Main.Forecast.STL{TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}}}(4609×3 TimeArray{Union{Missing, Float64},2,Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31, "stl(Yn, np=365; nl=365, ns=46091, nt=549, ni=1, no=0, spm=true, qsmp=52)")
 ```
 """
-
 function stl(Yv::TimeArray,np::Integer;
              robust=false,
              nl=nextodd(np),
