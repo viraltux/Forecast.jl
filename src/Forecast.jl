@@ -1,6 +1,6 @@
 module Forecast
 
-using LinearAlgebra, Plots, RecipesBase, TimeSeries
+using CSV, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries
 
 # types
 export STL
