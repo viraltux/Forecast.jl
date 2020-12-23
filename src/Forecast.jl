@@ -6,6 +6,8 @@ using CSV, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries
 export STL
 # methods
 export loess, sma, stl
+# datasets
+export co2
 
 # source files
 include("loess.jl")
