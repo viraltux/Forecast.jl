@@ -13,9 +13,12 @@ export co2
 include("loess.jl")
 include("sma.jl")
 include("stl.jl")
-include("utils.jl") 
 
-# recipes
+include("utils.jl")
+
+include("datasets.jl")
+
+## recipes
 include("plotrecipes.jl")
 
 """
