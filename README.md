@@ -1,4 +1,4 @@
-# Forecast
+# Forecast [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://viraltux.github.io/Forecast.jl/stable)
 
 Julia package containing utilities intended for Time Series analysis.
 
@@ -14,8 +14,8 @@ Julia package containing utilities intended for Time Series analysis.
 
 K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dry Air Mole Fractions from continuous measurements at Mauna Loa, Hawaii, Barrow, Alaska, American Samoa and South Pole. 1973-2019, Version 2020-08 National Oceanic and Atmospheric Administration (NOAA), Global Monitoring Laboratory (GML), Boulder, Colorado, USA https://doi.org/10.15138/yaf1-bk21 FTP path: ftp://aftp.cmdl.noaa.gov/data/greenhouse_gases/co2/in-situ/surface/
 
-## Resources
+## References
 
-* **Documentation**: [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://viraltux.github.io/Forecast.jl/stable)
+[Cleveland et al. 1990]  Cleveland,  R.  B.;  Cleveland,  W.  S.;McRae, J. E.; and Terpenning, I.  1990.  STL: A seasonal-trend decomposition procedure based on loess. Journal of Official Statistics 6(1):3–73.
 
 [![Coverage](https://codecov.io/gh/viraltux/Forecast.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/viraltux/Forecast.jl)
