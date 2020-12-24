@@ -6,7 +6,8 @@ using Logging
 const tests = [
     "sma",
     "loess",
-    "stl"
+    "stl",
+    "datasets"
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)
@@ -32,6 +33,6 @@ for t in tests
     end
 end
 
-println("\nAmbiguous methods: ")
+println("\nAmbiguous methods:")
 display(detect_ambiguities(Forecast, imported=true))
 println()
