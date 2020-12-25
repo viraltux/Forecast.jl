@@ -7,7 +7,7 @@ makedocs(;
     repo="https://github.com/viraltux/Forecast.jl/blob/{commit}{path}#L{line}",
     sitename="Forecast.jl",
     format=Documenter.HTML(;
-        prettyurls=get(ENV, "SCI", "false") == "true",
+        prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://viraltux.github.io/Forecast.jl",
         assets=String[],
     ),
@@ -17,6 +17,6 @@ makedocs(;
 )
 
 deploydocs(;
-           repo="github.com/viraltux/Forecast.jl",
-           versions = ["stable" => "v^", "v#.#", "dev" => "master"],
+           repo="github.com/viraltux/Forecast.jl.git",
+           push_preview=true,
 )
