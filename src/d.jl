@@ -1,22 +1,68 @@
 """
-function d(x::AbstractArray,
+function d(x::{AbstractVector,AbstractArray},
            order::Int=1;
            lag::Int=1,
            center::Bool=true,
            padding::Bool=true)
 
-    Return lagged (and iterated) differences for an Array
+    Return lagged (and iterated) differences for a Vector or an Array
 
     Args:
-        `x`: Array of data.
+        `x`: Vector or Array of data.
         `lag`: Lag for the difference.
         `center`: Center the result in the response using Missing values.
-        `order`: Order of the differences (number of recursive iterations
-                 on the same array).
+        `order`: Order of the differences; number of recursive iterations
+                 on the same vector/array.
     Returns:
-        Lagged differences Array of a given order
+        Lagged differences Vector or Array of a given order
 
 # Examples
+```julia-repl
+julia> x = [1,2,3,4,5];
+julia> d(x)
+5-element Array{Any,1}:
+ 1
+ 1
+ 1
+ 1
+  missing
+
+julia> d(x,2)
+5-element Array{Any,1}:
+  missing
+ 0
+ 0
+ 0
+  missing
+
+julia> d(x;lag=2,padding=false)
+3-element Array{Any,1}:
+ 2
+ 2
+ 2
+
+julia> x = reshape(collect(1:20),10,2)
+10×2 Array{Int64,2}:
+  1  11
+  2  12
+  3  13
+  4  14
+  5  15
+  6  16
+  7  17
+  8  18
+  9  19
+ 10  20 
+
+julia> d(x,2;lag=2,padding=false)
+6×2 Array{Any,2}:
+ 0  0
+ 0  0
+ 0  0
+ 0  0
+ 0  0
+ 0  0
+```
 """
 function d(x::AbstractVector,
            order::Int=1;
@@ -27,27 +73,35 @@ function d(x::AbstractVector,
     N = length(x)
     @assert 0 <= lag & lag <= (N-1)
 
-    if lag == 0
+    if (lag == 0) | (order == 0)
         return x
     end
 
     dx = Vector{Any}(missing,N)
-    
-    # using missing to center values
-    a = center ? div(lag,2)+1 : 1
-    
-    if (lag == 1)
-        dx[a:(N-lag+a-1)] = diff(x)
-    else
-        dx[a:(N-lag+a-1)] = diff(hcat(circshift(x,lag),x),dims=2)[(1+lag):end]
+
+    # update dx function
+    function udx(v)
+        if (lag == 1)
+            dx[1:(N-lag)] = diff(v)
+        else
+            dx[1:(N-lag)] = diff(hcat(circshift(v,lag),v),dims=2)[(1+lag):end]
+        end
     end
 
+    # update dx with x
+    udx(x)
+
+    # update dx with previous dx
     for i in 2:order
-        dx = d(dx, order-1; lag=lag, center=center, padding=padding)
+        udx(dx)
     end
-    
-    dx
+
+    # center values
+    padding ? circshift(dx,div(lag,2)+div(order,2)) :
+              collect(skipmissing(dx))
+
 end
+
 
 function d(x::AbstractArray,
            order::Int=1;
@@ -56,27 +110,36 @@ function d(x::AbstractArray,
            padding::Bool=true)
 
     N,M = size(x)
+    
     @assert 0 <= lag & lag <= (N-1)
 
-    if lag == 0 | order == 0
+    if (lag == 0) | (order == 0)
         return x
     end
 
     dx = Array{Any}(missing,N,M)
 
-    # using missing to center values
-    a = center ? div(lag,2)+1 : 1
-    
-    if (lag == 1)
-        dx[a:(N-lag+a-1),:] = diff(x,dims=1)
-    else
-        xh = hcat(circshift(x,lag),x)
-        dx[a:(N-lag+a-1),:] = xh[(1+lag):end,M+1:2*M] - xh[(1+lag):end,1:M]
+    # update dx function
+    function udx(v)
+        if (lag == 1)
+            dx[1:(N-lag),:] = diff(v,dims=1)
+        else
+            xh = hcat(circshift(v,lag),v)
+            dx[1:(N-lag),:] = xh[(1+lag):end,M+1:2*M] - xh[(1+lag):end,1:M]
+        end
     end
 
+    # update dx with x
+    udx(x)
+
+    # update dx with previous dx
     for i in 2:order
-        dx = d(dx, order-1; lag=lag, center=center, padding=padding)
+        udx(dx)
     end
-    
-    dx
+
+    # center values
+    padding ? circshift(dx,div(lag,2)+div(order,2)) :
+              reshape(collect(skipmissing(dx)),N-2*(div(lag,2)+div(order,2)),M)
+
 end
+
