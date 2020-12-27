@@ -9,10 +9,11 @@ function d(x::{AbstractVector,AbstractArray},
 
     Args:
         `x`: Vector or Array of data.
-        `lag`: Lag for the difference.
-        `center`: Center the result in the response using Missing values.
         `order`: Order of the differences; number of recursive iterations
                  on the same vector/array.
+        `lag`: Lag for the difference.
+        `center`: Center the result in the response using Missing values.
+        `padding`: Includes or removes `missing` padding.
     Returns:
         Lagged differences Vector or Array of a given order
 
