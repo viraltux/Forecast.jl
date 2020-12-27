@@ -97,9 +97,15 @@ function d(x::AbstractVector,
         udx(dx)
     end
 
+    
     # center values
-    padding ? circshift(dx,div(lag,2)+div(order,2)) :
-              collect(skipmissing(dx))
+    if padding
+        return circshift(dx,div(lag,2)+div(order,2))
+    else
+        ivp = findfirst(!ismissing, dx)
+        fvp = findlast(!ismissing, dx)
+        return(dx[ivp:fvp])
+    end
 
 end
 
@@ -139,8 +145,13 @@ function d(x::AbstractArray,
     end
 
     # center values
-    padding ? circshift(dx,div(lag,2)+div(order,2)) :
-              reshape(collect(skipmissing(dx)),N-2*(div(lag,2)+div(order,2)),M)
+        # center values
+    if padding
+        return circshift(dx,div(lag,2)+div(order,2))
+    else
+        ivp = findfirst(!ismissing, dx)
+        fvp = findlast(!ismissing, dx)
+        return(dx[ivp:fvp])
+    end
 
 end
-
