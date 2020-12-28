@@ -7,7 +7,8 @@ const tests = [
     "sma",
     "loess",
     "stl",
-    "datasets"
+    "datasets",
+    "d"
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)
