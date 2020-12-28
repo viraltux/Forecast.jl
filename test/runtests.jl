@@ -7,7 +7,8 @@ const tests = [
     "sma",
     "loess",
     "stl",
-    "datasets"
+    "datasets",
+    "d"
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)
@@ -33,6 +34,4 @@ for t in tests
     end
 end
 
-println("\nAmbiguous methods:")
-display(detect_ambiguities(Forecast, imported=true))
 println()

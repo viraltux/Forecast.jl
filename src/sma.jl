@@ -23,12 +23,13 @@ julia> sma(1:5,3;center=true)
 """
 function sma(x, n; center = true)
 
+    N = length(x)
+    @assert 1 <= n & n <= N
+
     if n == 1
         return x
     end
 
-    N = length(x)
-    @assert 1 <= n & n <= N
     res = Vector{Any}(missing,N)
 
     # initial and final value positions
