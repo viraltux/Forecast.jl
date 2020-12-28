@@ -34,6 +34,4 @@ for t in tests
     end
 end
 
-println("\nAmbiguous methods:")
-display(detect_ambiguities(Forecast, imported=true))
 println()
