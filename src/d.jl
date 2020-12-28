@@ -178,11 +178,8 @@ function d(x::TimeArray,
     tsx = timestamp(x)
     replace!(vx, NaN => missing)
 
-    dvx = d(vx, order; lag=laga, center=center, pad=pad)
+    dvx = d(vx, order; lag=lag, center=center, pad=pad)
     
     TimeArray(tsx,dvx)
 
 end
-
-x = TimeArray(Date(1970, 1, 1):Day(1):Date(1970, 1, 7), [1 11; 2 22; 3 33; 4 44; missing missing; missing missing; 1 5])
-diff(x)
