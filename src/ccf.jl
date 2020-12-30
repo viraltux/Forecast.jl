@@ -1,3 +1,8 @@
+mutable struct CCF{T<:AbstractVector}
+    ccf::T        # A vector with either a cross-correlation or a covariance
+    call::String  # method called to generate ccf
+end
+
 """
 Package: Forecast
 
@@ -105,5 +110,13 @@ function ccf(x1::AbstractVector,
         end
         display(ps)
     end
-    ccf_res
+
+    call = "ccf(x1,x2; type=\""*type*
+        "\", lag="*string(lag)*
+        ", plot="*string(plot)*
+        ", alpha="*string(alpha)*")"
+               
+    CCF(ccf_res, call)
+    
 end
+
