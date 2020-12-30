@@ -8,16 +8,16 @@ function ccf(x1::{AbstractVector,TimeArray},
              plot::Bool = false,
              alpha = (0.95,0.99))
 
-Compute the cross-correlation or cross-covariance of two univariate series.
+Compute the cross-correlation or covariance of two univariate series.
 
 The cros-correlation is normalized to the standard error of lag 0 to preserve homoscedasticity. The distribution used to normalize the data is an approximation of a Fisher Transformation via a Normal Distribution.
 
     Args:
-        `x1`: Vector/TimeArray of data.
-        `x2`: Vector/TimeArray of data.
+        `x1`: Vector or uni-dimensional TimeArray of data.
+        `x2`: Vector or uni-dimensional TimeArray of data.
         `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
         `lag`: Maximum number of lags.
-        `plot`: When true plots the ccf with confidence intervals
+        `plot`: When true plots the ccf values and if type is `cor` with confidence intervals.
         `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
     Returns:
         Vector of cross-correlation or covariance between two vectors 
@@ -26,18 +26,18 @@ The cros-correlation is normalized to the standard error of lag 0 to preserve ho
 # Examples
 ```julia-repl
 julia> x1 = rand(100);
-x2 = circshift(x1,4);
+x2 = circshift(x1,6);
 ccf(x1, x2; type="cor", plot=true);
 ```
 """
-function ccf(x1::TimeArray,
-             x2::TimeArray;
+function ccf(ta1::TimeArray,
+             ta2::TimeArray;
              type = "cor",
              lag = Integer(ceil(10*log10(length(x1)))),
              plot::Bool = false,
              alpha = (0.95,0.99))
 
-    ccf(values(x1), values(x2); type = type, lag = lag, plot = plot, alpha = alpha)
+    ccf(values(ta1), values(ta2); type = type, lag = lag, plot = plot, alpha = alpha)
 end
 
 function ccf(x1::AbstractVector,
@@ -59,7 +59,7 @@ function ccf(x1::AbstractVector,
     @assert length(alpha) == 2
     @assert 0.0 < alpha[1] <= alpha[2] < 1.0
 
-    ft = (type == "cor" ? cor : cov)
+    ft = (type == "cor" ? Statistics.cor : Statistics.cov)
     
     x = []
     for i in 0:lag
@@ -82,17 +82,28 @@ function ccf(x1::AbstractVector,
     ccf_res = x ./ k
 
     if plot
-        z0 = Distributions.quantile(Normal(), alpha[1] + (1-alpha[1])/2)
-        z1 = Distributions.quantile(Normal(), alpha[2] + (1-alpha[2])/2)
+        lr = length(ccf_res)
+        gap = div(lr,11)
+        mp = div(lr+1,2)
+        rs = mp:gap:lr
+        ls = mp-gap:-gap:1
+        xt = vcat(reverse(collect(ls)),collect(rs))
+        xt .- xt[div(length(xt),2)]
+                 
         ps = Plots.sticks(ccf_res,
+                          ylabel = (type == "cor" ? "Cros-Correlation" : "Covariance"),
+                          xlabel = "Lag",
                           linewidth = 100/(lag+1),
                           legend = nothing,
-                          xticks = (1:div(lag,5):2*lag+1,
-                                    -lag:div(lag,5):lag))
-        ci0 = z0*fse(N)
-        ci1 = z1*fse(N)
-        Plots.hline!([-ci0,ci0], color = :green, linealpha = 0.5, linestyle = :dash)
-        Plots.hline!([-ci1,ci1], color = :orange, linealpha = 0.5, linestyle = :dot)
+                          xticks = (xt, xt .- xt[div(end+1,2)]))
+        if type == "cor"
+            z0 = Distributions.quantile(Normal(), alpha[1] + (1-alpha[1])/2)
+            z1 = Distributions.quantile(Normal(), alpha[2] + (1-alpha[2])/2)
+            ci0 = z0*fse(N)
+            ci1 = z1*fse(N)
+            Plots.hline!([-ci0,ci0], color = :green, linealpha = 0.5, linestyle = :dash)
+            Plots.hline!([-ci1,ci1], color = :orange, linealpha = 0.5, linestyle = :dot)
+        end
         display(ps)
     end
     ccf_res

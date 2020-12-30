@@ -1,11 +1,11 @@
 module Forecast
 
-using CSV, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries
+using CSV, Distributions, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries, Statistics
 
 # types
 export STL
 # methods
-export d, loess, sma, stl
+export ccf, d, loess, sma, stl
 # datasets
 export co2
 
