@@ -1,23 +1,24 @@
-using Plots
-using Statistics
-using Distributions
-
 """
-function ccf(x1::AbstractVector,
-             x2::AbstractVector;
+Package: Forecast
+
+function ccf(x1::{AbstractVector,TimeArray},
+             x2::TimeArray;
              type = "cor",
-             lag = Integer(10*log10(length(x1))),
+             lag = Integer(ceil(10*log10(length(x1)))),
              plot::Bool = false,
              alpha = (0.95,0.99))
 
 Compute the cross-correlation or cross-covariance of two univariate series.
 
+The cros-correlation is normalized to the standard error of lag 0 to preserve homoscedasticity. The distribution used to normalize the data is an approximation of a Fisher Transformation via a Normal Distribution.
+
     Args:
-        `x1`: Vector of data.
-        `x2`: Vector of data.
+        `x1`: Vector/TimeArray of data.
+        `x2`: Vector/TimeArray of data.
         `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
-        `plot`: Plots the ccf with a confidence interval at 0.95 (alpha)
-        `alpha`: Two thresholds to plot confidence intervals
+        `lag`: Maximum number of lags.
+        `plot`: When true plots the ccf with confidence intervals
+        `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
     Returns:
         Vector of cross-correlation or covariance between two vectors 
         plus an optional plot with cofidence intervals
@@ -25,15 +26,24 @@ Compute the cross-correlation or cross-covariance of two univariate series.
 # Examples
 ```julia-repl
 julia> x1 = rand(100);
-x2 = circshift(x1,5);
+x2 = circshift(x1,4);
 ccf(x1, x2; type="cor", plot=true);
-
 ```
 """
+function ccf(x1::TimeArray,
+             x2::TimeArray;
+             type = "cor",
+             lag = Integer(ceil(10*log10(length(x1)))),
+             plot::Bool = false,
+             alpha = (0.95,0.99))
+
+    ccf(values(x1), values(x2); type = type, lag = lag, plot = plot, alpha = alpha)
+end
+
 function ccf(x1::AbstractVector,
              x2::AbstractVector;
              type = "cor",
-             lag = Integer(10*log10(length(x1))),
+             lag::Integer = Integer(ceil(10*log10(length(x1)))),
              plot::Bool = false,
              alpha = (0.95,0.99))
 
@@ -42,6 +52,8 @@ function ccf(x1::AbstractVector,
     @assert N >= 4 "Vectors should have at least four values"
     @assert isnothing(findfirst(isnan,x1)) "No missing values allowed"
     @assert isnothing(findfirst(isnan,x2)) "No missing values allowed"
+    @assert isnothing(findfirst(ismissing,x1)) "No missing values allowed"
+    @assert isnothing(findfirst(ismissing,x2)) "No missing values allowed"
     @assert type in  ["cor","cov"] "The options for `type` are `cor` and `cov`"
     @assert 1 <= lag <= N-4
     @assert length(alpha) == 2
