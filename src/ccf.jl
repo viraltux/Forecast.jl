@@ -88,7 +88,6 @@ function ccf(x1::AbstractVector,
         rs = mp:gap:lr
         ls = mp-gap:-gap:1
         xt = vcat(reverse(collect(ls)),collect(rs))
-        xt .- xt[div(length(xt),2)]
                  
         ps = Plots.sticks(ccf_res,
                           ylabel = (type == "cor" ? "Cros-Correlation" : "Covariance"),
