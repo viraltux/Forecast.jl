@@ -1,3 +1,69 @@
+@recipe function f(fCCF::CCF)
+
+    # plot configuration
+    legend:= false
+
+    titlefont:= font(8, "Courier")
+    xtickfont:= font(3, "Courier")
+    ytickfont:= font(3, "Courier")
+    yguidefont:= font(5, "Courier")
+    xguidefont:= font(5, "Courier")
+
+    N = fCCF.N
+    type = (fCCF.type == "cor") ? "Correlation" : "Covariance"
+    auto = fCCF.auto ? "Auto" : "Cross"
+    yguide := auto*'-'*type
+    xguide := "Lag"
+    
+    # Center ticks
+    lr = length(fCCF.ccf)
+    gap = div(lr,11)
+    mp = div(lr+1,2)
+    rs = mp:gap:lr
+    ls = mp-gap:-gap:1
+
+    if fCCF.auto
+        xticks := 1:gap:lr
+    else
+        xt = vcat(reverse(collect(ls)),collect(rs))
+        xticks := (xt, xt .- xt[div(end+1,2)])
+    end
+    
+    @series begin
+        seriestype := :sticks
+        ymirror := false
+        guide_position := :left
+        linewidth := 100/(fCCF.lag+1)
+        fCCF.ccf
+    end
+
+    if fCCF.type == "cor"
+        lg = fCCF.lag
+        a1 = fCCF.alpha[1]; c1 = fCCF.ci[1]
+        a2 = fCCF.alpha[2]; c2 = fCCF.ci[2]
+        da = a2-a1
+
+        @series begin
+            seriestype := :hline
+            seriescolor := :black
+            linealpha := 0.5
+            linestyle := :dash
+            [-c1,c1]
+        end
+
+        @series begin
+            seriestype := :hline
+            seriescolor := :black
+            linealpha := 0.5
+            linestyle := :dot
+            annotations := 
+                [(2*lg+1,c1+da/4,string("CI %",Int(a1*100)),font(3, "Courier")),
+                 (2*lg+1,c2+da/4,string("CI %",Int(a2*100)),font(3, "Courier"))]
+            [-c2,c2]
+        end
+    end
+end 
+
 @recipe function f(fSTL::STL)
 
     # subplots configuration

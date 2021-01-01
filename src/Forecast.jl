@@ -14,6 +14,7 @@ include("loess.jl")
 include("sma.jl")
 include("stl.jl")
 include("d.jl")
+include("ccf.jl")
 
 include("utils.jl")
 
