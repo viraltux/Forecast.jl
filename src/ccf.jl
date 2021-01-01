@@ -13,7 +13,7 @@ end
 Package: Forecast
 
 function ccf(x1::{AbstractVector,TimeArray},
-             x2::TimeArray;
+             x2::{AbstractVector,TimeArray};
              type = "cor",
              lag = Integer(ceil(10*log10(length(x1)))),
              alpha = (0.95,0.99))
@@ -31,7 +31,7 @@ If, for a given integer `k`, `x2` repeats `x1` values such that x1[t] = x2[t+k] 
         `lag`: Maximum number of lags.
         `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
     Returns:
-        Vector of cross-correlation or covariance between two vectors 
+        Vector of cross-correlation or cross-covariance between two vectors 
         plus an optional plot with cofidence intervals
 
 # Examples
@@ -67,7 +67,7 @@ function ccf(x1::AbstractVector,
     @assert type in  ["cor","cov"] "The options for `type` are `cor` and `cov`"
     @assert 1 <= lag <= N-4
     @assert length(alpha) == 2
-    @assert 0.0 < alpha[1] <= alpha[2] < 1.0
+    @assert 0.0 < alpha[1] < alpha[2] < 1.0
 
     # auto-ccf
     auto = x1 == x2

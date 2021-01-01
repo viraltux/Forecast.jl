@@ -11,8 +11,8 @@
 
     N = fCCF.N
     type = (fCCF.type == "cor") ? "Correlation" : "Covariance"
-    auto = fCCF.auto ? "Auto" : "Cross"
-    yguide := auto*'-'*type
+    auto_prefix = fCCF.auto ? "Auto" : "Cross"
+    yguide := auto_prefix*'-'*type
     xguide := "Lag"
     
     # Center ticks
@@ -41,7 +41,7 @@
         lg = fCCF.lag
         a1 = fCCF.alpha[1]; c1 = fCCF.ci[1]
         a2 = fCCF.alpha[2]; c2 = fCCF.ci[2]
-        da = a2-a1
+        dc = c2-c1
 
         @series begin
             seriestype := :hline
@@ -56,9 +56,10 @@
             seriescolor := :black
             linealpha := 0.5
             linestyle := :dot
+            ax = fCCF.auto ? lg : 2*lg + 1
             annotations := 
-                [(2*lg+1,c1+da/4,string("CI %",Int(a1*100)),font(3, "Courier")),
-                 (2*lg+1,c2+da/4,string("CI %",Int(a2*100)),font(3, "Courier"))]
+                [(ax,c1+dc/8,string("CI %",a1*100),font(3, "Courier")),
+                 (ax,c2+dc/8,string("CI %",a2*100),font(3, "Courier"))]
             [-c2,c2]
         end
     end
