@@ -100,7 +100,8 @@ function ccf(x1::AbstractVector,
     k = fse.(kx)/fse(N)
     ccf_res = x ./ k
 
-    call = "ccf(x1,x2; type=\""*type*
+    call = "ccf("* (auto ? "x" : "x1, x2") *
+        "; type=\""*type*
         "\", lag="*string(lag)*
         ", alpha="*string(alpha)*")"
 

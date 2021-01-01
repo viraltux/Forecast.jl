@@ -3,16 +3,21 @@ module Forecast
 using CSV, Distributions, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries, Statistics
 
 # types
-export STL
+export CCF, STL
 # methods
 export acf, ccf, d, loess, sma, stl
 # datasets
 export co2
 
 # source files
-include("acf.jl")
+
+## ccf
 include("ccf.jl")
+include("acf.jl")
+
 include("d.jl")
+
+## stl 
 include("loess.jl")
 include("sma.jl")
 include("stl.jl")
