@@ -4,9 +4,14 @@ Julia package containing utilities intended for Time Series analysis.
 
 ## Methods
 
-* Simple Moving Average
+* Auto-correlation/covariance function
+* Cros-correlation/covariance function
+* Lagged differences of a given order
 * Locally Estimated Scatterplot Smoothing (LOESS)
 * Seasonal and Trend decomposition based on Loess (STL)
+* Simple Moving Average
+
+There are also customized plots for methods returning CCF and STL objects.
 
 ## Datasets
 
