@@ -1,3 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-Forecast = "6efb3b9f-b065-4dd1-b1a5-fac2350e161b"
+
+[compat]
+Documenter = "0.26"

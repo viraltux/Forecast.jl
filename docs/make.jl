@@ -1,23 +1,9 @@
-using Forecast
-using Documenter
+push!(LOAD_PATH,"../src/")
+using Documenter, Forecast
 
-makedocs(;
-    modules=[Forecast],
-    authors="Fran Urbano <viraltux@gmail.com> and contributors",
-    repo="https://github.com/viraltux/Forecast.jl/blob/{commit}{path}#L{line}",
-    sitename="Forecast.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://viraltux.github.io/Forecast.jl",
-        assets=String[],
-    ),
-    pages=[
-        "Home" => "index.md",
-    ],
+makedocs(sitename="Forecast.jl")
+
+deploydocs(
+    repo = "github.com/viraltux/Forecast.jl.git",
 )
 
-deploydocs(;
-           repo="github.com/viraltux/Forecast.jl.git",
-           devbranch = "main",
-           push_preview=true,
-)
