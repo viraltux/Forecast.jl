@@ -1,5 +1,9 @@
 # Methods
 
-# Listing
+## Loess
+```@docs
+loess
+```
+
 
 

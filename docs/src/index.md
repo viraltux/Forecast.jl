@@ -11,7 +11,8 @@ Julia package containing utilities intended for Time Series analysis.
 !!! note
 
     This package is under development and its functionality has not been thoroughly tested.
-    Please, consider to report issues if you find any.
+    Please, consider to report issues if you find any. To begin exploring the package
+    functionality visit [Quick Start](@ref) for basic examples.
 
 ## List of Methods
 
@@ -23,6 +24,8 @@ Julia package containing utilities intended for Time Series analysis.
 - Simple Moving Average
 
 ## Manual Outline
+
+
 
 ```@contents
 Pages = [
