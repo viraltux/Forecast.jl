@@ -25,7 +25,7 @@ julia> co2()
 """
 function co2(full = false)
 
-    data = "data/co2.csv"
+    data = "data/co2.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
     co2_df = CSV.read(path, DataFrame)
 
