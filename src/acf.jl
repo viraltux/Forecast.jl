@@ -1,23 +1,23 @@
 """
 Package: Forecast
 
-function acf(x::{AbstractVector,TimeArray},
-             type = "cor",
-             lag = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+    acf(x::{AbstractVector,TimeArray},
+        type = "cor",
+        lag = Integer(ceil(10*log10(length(x1)))),
+        alpha = (0.95,0.99))
 
-    Compute the auto-correlation or auto-covariance for an univariate series.
+Compute the auto-correlation or auto-covariance for an univariate series.
 
 The results are normalized preserve homoscedasticity. The distribution used to normalize the data is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object, if the type is `cor` the plot will also show confidence intervals for the given alpha values.
 
-    Args:
-        `x`: Vector or uni-dimensional TimeArray of data.
-        `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
-        `lag`: Maximum number of lags.
-        `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
-    Returns:
-        Vector of auto-correlation or auto-covariance between two vectors 
-        plus an optional plot with cofidence intervals
+# Arguments
+- `x`: Vector or uni-dimensional TimeArray of data.
+- `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
+- `lag`: Maximum number of lags.
+- `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
+
+# Returns
+Vector of auto-correlation or auto-covariance between two vectors plus an optional plot with cofidence intervals.
 
 # Examples
 ```julia-repl

@@ -1,4 +1,6 @@
 """
+Package: Forecast
+
     nextodd(x)
 
 Return the smallest odd integer greater than or equal to `x`.        

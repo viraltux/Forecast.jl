@@ -37,7 +37,7 @@ plot!(x,sma(y,100), linewidth = 2, label= "MA 100", color = :orange)
 ## STL example
 
 For this example we will be using the co2 data used by the creators of STL to
-demostrate its funcitonality. Below we can see such time series.
+demostrate its funcitonality, below we can see such time series.
 
 ```@example tutorial
 using Plots

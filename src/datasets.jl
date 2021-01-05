@@ -1,5 +1,7 @@
 """
-co2(full = false)
+Package: Forecast
+
+    co2(full = false)
 
 Return dataset with atmospheric Carbon Dioxide Dry Air Mole Fractions from quasi-continuous measurements at Mauna Loa, Hawaii.
 

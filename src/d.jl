@@ -1,11 +1,13 @@
 """
-function d(x::{AbstractVector,AbstractArray,TimeArray},
-           order::Int=1;
-           lag::Int=1,
-           center::Bool=true,
-           pad::Bool=true)
+Package: Forecast
 
-    Return Lagged differences of a given order for Vector, Array and TimeSeries.
+    function d(x::{AbstractVector,AbstractArray,TimeArray},
+               order::Int=1;
+               lag::Int=1,
+               center::Bool=true,
+               pad::Bool=true)
+
+Return Lagged differences of a given order for Vector, Array and TimeSeries.
 
     Args:
         `x`: Vector or Array of data.

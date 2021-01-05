@@ -1,5 +1,7 @@
 """
-sma(x, n; center = true)
+Package: Forecast
+
+    sma(x, n; center = true)
 
 Smooth a vector of data using a simple moving average.
 

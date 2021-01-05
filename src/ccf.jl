@@ -12,11 +12,11 @@ end
 """
 Package: Forecast
 
-function ccf(x1::{AbstractVector,TimeArray},
-             x2::{AbstractVector,TimeArray};
-             type = "cor",
-             lag = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+    ccf(x1::{AbstractVector,TimeArray},
+        x2::{AbstractVector,TimeArray};
+        type = "cor",
+        lag = Integer(ceil(10*log10(length(x1)))),
+        alpha = (0.95,0.99))
 
 Compute the cross-correlation or cros-covariance of two univariate series.
 
