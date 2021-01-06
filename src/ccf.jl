@@ -20,7 +20,7 @@ Package: Forecast
 
 Compute the cross-correlation or cros-covariance of two univariate series.
 
-The results are normalized preserve homoscedasticity. The distribution used to normalize the data is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object, if the type is `cor` the plot will also show confidence intervals for the given alpha values.
+The results are normalized to preserve homoscedasticity. The distribution used to normalize the data is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object, if the type is `cor` the plot will also show confidence intervals for the given alpha values.
 
 If, for a given integer `k`, `x2` repeats `x1` values such that x1[t] = x2[t+k] for all `i` then high correlation value will be placed *at the right from the center* in the results. That is, this convention will be represented in the plots as `x1_t = x2_{t+k} -> _____0__k__` meaning x2 behavior can be predicted by x1 in k units.
 
@@ -32,7 +32,7 @@ If, for a given integer `k`, `x2` repeats `x1` values such that x1[t] = x2[t+k] 
 - `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
     
 # Returns
-Vector of cross-correlation or cross-covariance between two vectors plus an optional plot with cofidence intervals
+A CCF object. 
 
 # Examples
 ```julia-repl
