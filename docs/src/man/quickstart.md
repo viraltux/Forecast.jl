@@ -1,9 +1,3 @@
-```@setup ecosystem
-using Plots
-using Forecast
-using Random
-```
-
 # Quick Start
 
 ## Installing Forecast.jl
@@ -22,6 +16,7 @@ Alternatively you can also type:
     julia> Pkg.add(url="https://github.com/viraltux/Forecast.jl")
 
     julia> using Forecast
+
 
 ## LOESS example
 
