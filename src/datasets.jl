@@ -28,7 +28,7 @@ function co2(full = false)
     data = "data/co2.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
     co2_df = CSV.File(transcode(GzipDecompressor, Mmap.mmap(path))) |> DataFrame
-    
+
     if full
         @info "Full dataset from 1973 to 2020"
         return co2_df
