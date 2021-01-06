@@ -1,6 +1,6 @@
 module Forecast
 
-using CSV, Distributions, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries, Statistics
+using CSV, Distributions, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSeries, Statistics, CodecZlib, Mmap
 
 # types
 export CCF, STL
