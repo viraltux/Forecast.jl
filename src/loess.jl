@@ -47,18 +47,16 @@ The loess functionality and nomenclature follows the descriptions in:
 Robert B. Cleveland, William S. Cleveland, Jean E. McRae, and Irma Terpenning.
 Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Sweden.
 
-    Args:
-        `xv`: Observations' support.
-        `yv`: Observation values.
-        `d`: Degree of the linear fit, it accepts values 1 or 2.
-        `q`: As q increases loess becomes smoother, when q tends to infinity loess tends to
-             an ordinary least square poynomial fit of degree `d`. It defaults to the rounding
-             of 3/4 of xv's length.
-        `rho`: Weights expressing the reliability of the observations (e.g. if yi had variances
-               sigma^2*ki where ki where known, the rhoi could be 1/ki). It defaults to 1.0.
-        `predict`: Vector containing the real values to be predicted, by default predicts xv.
-    Returns:
-        The loess values for the values contained in `predict`.
+# Arguments
+- `xv`: Observations' support.
+- `yv`: Observation values.
+- `d`: Degree of the linear fit, it accepts values 1 or 2.
+- `q`: As q increases loess becomes smoother, when q tends to infinity loess tends to an ordinary least square poynomial fit of degree `d`. It defaults to the rounding of 3/4 of xv's length.
+- `rho`: Weights expressing the reliability of the observations (e.g. if yi had variances sigma^2*ki where ki where known, the rhoi could be 1/ki). It defaults to 1.0.
+- `predict`: Vector containing the real values to be predicted, by default predicts xv.
+
+# Returns
+The loess values for the values contained in `predict`.
 
 # Examples
 ```julia-repl

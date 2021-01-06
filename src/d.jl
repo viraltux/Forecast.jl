@@ -9,15 +9,15 @@ Package: Forecast
 
 Return Lagged differences of a given order for Vector, Array and TimeSeries.
 
-    Args:
-        `x`: Vector or Array of data.
-        `order`: Order of the differences; number of recursive iterations
-                 on the same vector/array.
-        `lag`: Lag for the difference.
-        `center`: Center the result in the response using Missing values.
-        `pad`: Includes or removes `missing` pad.
-    Returns:
-        Lagged differences Vector or Array of a given order
+# Arguments
+- `x`: Vector or Array of data.
+- `order`: Order of the differences; number of recursive iterations on the same vector/array.
+- `lag`: Lag for the difference.
+- `center`: Center the result in the response using Missing values.
+- `pad`: Includes or removes `missing` pad.
+
+# Returns
+Lagged differences Vector or Array of a given order.
 
 # Examples
 ```julia-repl
