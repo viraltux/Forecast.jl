@@ -45,7 +45,7 @@ An `STL` object with the seasonal, trend and remainder components if Yv is an Ar
 
             
 # Examples
-```jldoctest
+```julia-repl
 julia> stl(co2(),365; robust=true, spm=true)
 [ Info: Dataset used in Cleveland et al. paper
 [ Info: Corvengence achieved (< 0.01); Stopping computation...
