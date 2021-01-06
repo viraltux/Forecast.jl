@@ -24,15 +24,15 @@ The results are normalized preserve homoscedasticity. The distribution used to n
 
 If, for a given integer `k`, `x2` repeats `x1` values such that x1[t] = x2[t+k] for all `i` then high correlation value will be placed *at the right from the center* in the results. That is, this convention will be represented in the plots as `x1_t = x2_{t+k} -> _____0__k__` meaning x2 behavior can be predicted by x1 in k units.
 
-    Args:
-        `x1`: Vector or uni-dimensional TimeArray of data.
-        `x2`: Vector or uni-dimensional TimeArray of data.
-        `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
-        `lag`: Maximum number of lags.
-        `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
-    Returns:
-        Vector of cross-correlation or cross-covariance between two vectors 
-        plus an optional plot with cofidence intervals
+# Arguments
+- `x1`: Vector or uni-dimensional TimeArray of data.
+- `x2`: Vector or uni-dimensional TimeArray of data.
+- `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
+- `lag`: Maximum number of lags.
+- `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
+    
+# Returns
+Vector of cross-correlation or cross-covariance between two vectors plus an optional plot with cofidence intervals
 
 # Examples
 ```julia-repl
