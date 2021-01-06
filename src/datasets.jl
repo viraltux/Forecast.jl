@@ -17,7 +17,8 @@ K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dr
 ```julia-repl
 julia> co2()
 [ Info: Dataset used in Cleveland et al. paper
-4609×1 TimeArray{Union{Missing, Float64},1,Date,Array{Union{Missing, Float64},1}} 1974-05-17 to 1986-12-31
+4609×1 TimeArray{Union{Missing, Float64},1,Date,Array{Union{Missing, Float64},1}}
+1974-05-17 to 1986-12-31
 │            │ co2     │
 ├────────────┼─────────┤
 │ 1974-05-17 │ 333.38  │

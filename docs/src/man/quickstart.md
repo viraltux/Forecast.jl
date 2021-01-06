@@ -1,3 +1,9 @@
+```@setup ecosystem
+using Plots
+using Forecast
+using Random
+```
+
 # Quick Start
 
 ## Installing Forecast.jl
@@ -25,6 +31,7 @@ to a simple moving average result with a window size of 100.
 ```@example tutorial
 using Plots
 using Forecast
+
 n = 1000
 axb = LinRange(-1/2,pi+1/2,n)
 x = LinRange(0,pi,n)
@@ -42,6 +49,7 @@ demostrate its funcitonality, below we can see such time series.
 ```@example tutorial
 using Plots
 using Forecast
+
 plot(co2(), legend=:bottomright,size=(800,500))
 ```
 
@@ -52,6 +60,7 @@ seasonality post-smoothing is applied.
 ```@example tutorial
 using Plots
 using Forecast
+
 stl_co2 = stl(co2(),365; robust=true, spm=true)
 plot(stl_co2,size=(800,1000))
 ```
@@ -67,7 +76,10 @@ Here we cross-correlate two identical series shifted by six positions, the plot
 shows how the peak correlation is at position six.
 
 ```@example tutorial
+using Plots
+using Forecast
 using Random
+
 Random.seed!(36)
 x1 = rand(100);
 x2 = circshift(x1,6);

@@ -60,13 +60,9 @@ The loess values for the values contained in `predict`.
 
 # Examples
 ```julia-repl
-julia> loess(rand(5),rand(5))
-5-element Array{Float64,1}:
- 0.8279856470091445
- 0.6498793177642597
- 0.017078421335739336
- 0.8595786774014016
- 0.2564676547690037
+julia> loess(rand(5), rand(5); predict=rand(10))
+10-element Array{Float64,1}:
+[...]
 ```
 """
 function loess(xv,yv;

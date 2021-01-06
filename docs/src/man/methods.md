@@ -19,6 +19,12 @@ acf
 ccf
 ```
 
+## d
+**Lagged differences of a given order**
+```@docs
+d
+```
+
 ## loess
 **Locally Estimated Scatterplot Smoothing (LOESS)**
 ```@docs

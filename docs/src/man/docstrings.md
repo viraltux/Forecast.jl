@@ -1,4 +1,4 @@
-# Internal Documentation
+# Docstrings
 
 ```@autodocs
 Modules = [Forecast]
