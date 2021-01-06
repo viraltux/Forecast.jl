@@ -29,7 +29,10 @@ function co2(full = false)
 
     data = "data/co2.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
-    co2_df = CSV.read(path, DataFrame)
+    
+    co2_df = GZip.open(path, "r") do io
+        CSV.read(io,DataFrame)
+    end
 
     if full
         @info "Full dataset from 1973 to 2020"
