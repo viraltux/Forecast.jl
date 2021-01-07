@@ -25,6 +25,7 @@ mutable struct CCF{T<:AbstractVector}
     call::String       # Method called to generate ccf
 end
 
+"""
 Package: Forecast
 
     ccf(x1::{AbstractVector,TimeArray},
