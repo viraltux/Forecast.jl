@@ -2,7 +2,7 @@
 
 Julia package containing utilities intended for Time Series analysis.
 
-:warning: This package is in an early development stage and its functionality has not been thoroughly tested. Please, consider to report issues if you find any.
+> :warning: This package is in an early development stage and its functionality has not been thoroughly tested. Please, consider to report issues if you find any.
 
 ## Methods
 
