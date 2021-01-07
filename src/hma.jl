@@ -1,11 +1,8 @@
-"""
-Implementation of Henderson filter in Julia.
-"""
 # Ported https://github.com/bpalmer4 Python implementation 
 # Reference:
 # - https://www.abs.gov.au/websitedbs/d3310114.nsf/4a256353001af3ed4b2562bb00121564/5fc845406def2c3dca256ce100188f8e!OpenDocument
 
-
+# Henderson symmetric weights
 function hmaSymmetricWeights(n::Int)
     m = (n-1)÷2
     m1 = (m+1)^2
@@ -22,6 +19,7 @@ function hmaSymmetricWeights(n::Int)
     end
 end
 
+# Henderson asymmetric weights for dataset edges
 function hmaAsymmetricWeights(m::Int, w::AbstractArray{<:Number})
     n = length(w)
 
