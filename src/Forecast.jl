@@ -38,13 +38,13 @@ Collection of methods for Time Series analysis
 
 Methods implemented:
 
-    acf:        Auto-correlation or auto-covariance of a univariate serie. 
+    acf:        Auto-correlation or auto-covariance of univariate series. 
     ccf:        Cross-correlation or cros-covariance of two univariate series.
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
-    loess:      Locally weighted smoothed series.
+    hma:        Henderson moving average filters.
+    loess:      Locally estimated scatterplot smoothing.
     sma:        Simple moving average.
     stl:        Seasonal and Trend decomposition using loess.
-    hma:        Henderson moving average filters.
 """
 Forecast
 
