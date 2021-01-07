@@ -6,7 +6,7 @@ using CSV, Distributions, DataFrames, GZip, LinearAlgebra, Plots,
 # types
 export CCF, STL
 # methods
-export acf, ccf, d, loess, sma, stl
+export acf, ccf, d, loess, sma, stl, hma, hmaSymmetricWeights
 # datasets
 export co2
 
@@ -22,6 +22,9 @@ include("d.jl")
 include("loess.jl")
 include("sma.jl")
 include("stl.jl")
+
+## hma
+include("hma.jl")
 
 include("utils.jl")
 
@@ -41,6 +44,7 @@ Methods implemented:
     loess:      Locally weighted smoothed series.
     sma:        Simple moving average.
     stl:        Seasonal and Trend decomposition using loess.
+    hma:        Henderson moving average filters.
 """
 Forecast
 
