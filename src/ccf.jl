@@ -1,14 +1,3 @@
-mutable struct CCF{T<:AbstractVector}
-    ccf::T             # A vector with either a cross-correlation or a covariance
-    N::Integer         # Length of vector x1 and x2
-    type::String       # Cross-Correlation or Covariance
-    lag::Integer       # Maximum number of lags
-    alpha::Tuple       # CI thresholds
-    ci::Tuple          # CI for alpha
-    auto::Bool         # Auto-correlation
-    call::String       # Method called to generate ccf
-end
-
 """
 Package: Forecast
 

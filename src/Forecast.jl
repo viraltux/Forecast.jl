@@ -4,29 +4,30 @@ using CSV, Distributions, DataFrames, LinearAlgebra, Plots, RecipesBase, TimeSer
 
 # types
 export CCF, STL
+
 # methods
-export acf, ccf, d, loess, sma, stl
+export acf, ccf, d, hma, loess, pacf, sma, stl
+
 # datasets
 export co2
 
+# types
+include("CCF.jl")
+include("STL.jl")
+
 # source files
-
-## ccf
+include("acf.jl") 
 include("ccf.jl")
-include("acf.jl")
-
 include("d.jl")
-
-## stl 
+include("datasets.jl")
+include("hma.jl") 
 include("loess.jl")
+include("pacf.jl")
 include("sma.jl")
-include("stl.jl")
-
+include("stl.jl") 
 include("utils.jl")
 
-include("datasets.jl")
-
-## recipes
+# recipes
 include("plotrecipes.jl")
 
 """

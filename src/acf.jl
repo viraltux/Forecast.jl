@@ -36,7 +36,7 @@ end
 
 function acf(x::AbstractVector;
              type = "cor",
-             lag = Integer(ceil(10*log10(length(x1)))),
+             lag = Integer(ceil(10*log10(length(x)))),
              alpha = (0.95,0.99))
 
     ccf(x,x; type = type, lag = lag, alpha = alpha)

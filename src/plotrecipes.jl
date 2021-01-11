@@ -10,9 +10,16 @@
     xguidefont:= font(5, "Courier")
 
     N = fCCF.N
-    type = (fCCF.type == "cor") ? "Correlation" : "Covariance"
-    auto_prefix = fCCF.auto ? "Auto" : "Cross"
-    yguide := auto_prefix*'-'*type
+    if split(fCCF.type,'_')[1] == "pacf"
+        type = (fCCF.type) == "pacf_step" ? "Step PACF" : "Real PACF"
+        type = (fCCF.type) == "pacf_step-real" ? "Step and Real PACF   |s|r|" : type
+        auto_prefix = ""
+    else
+        type = (fCCF.type == "cor") ? "Correlation" : "Covariance"
+        auto_prefix = fCCF.auto ? "Auto-" : "Cross-"
+    end
+
+    yguide := auto_prefix*type
     xguide := "Lag"
     
     # Center ticks
@@ -34,10 +41,24 @@
         ymirror := false
         guide_position := :left
         linewidth := 100/(fCCF.lag+1)
-        fCCF.ccf
+        
+        collect(1:size(fCCF.ccf)[1]+1) .- .1,
+        ndims(fCCF.ccf) == 2 ? fCCF.ccf[:,1] : fCCF.ccf
     end
 
-    if fCCF.type == "cor"
+    if ndims(fCCF.ccf) == 2
+        @series begin
+            seriestype := :sticks
+            ymirror := false
+            guide_position := :left
+            linewidth := 100/(fCCF.lag+1)
+
+            collect(1:size(fCCF.ccf)[1]+1) .+ .1,
+            fCCF.ccf[:,2]
+        end
+    end
+    
+    if (fCCF.type == "cor") | (split(fCCF.type,'_')[1] == "pacf")
         lg = fCCF.lag
         a1 = fCCF.alpha[1]; c1 = fCCF.ci[1]
         a2 = fCCF.alpha[2]; c2 = fCCF.ci[2]

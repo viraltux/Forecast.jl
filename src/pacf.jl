@@ -20,26 +20,65 @@ A CCF object
 # Examples
 ```julia-repl
 julia> x = rand(100);
-res = pacf(x1);
+res = pacf(x);
 plot(res)
 ```
 """
 function pacf(ta::TimeArray;
-             lag = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+              type = "step-real",
+              lag = Integer(ceil(10*log10(length(x1)))),
+              alpha = (0.95,0.99))
 
-    ccf(values(ta), values(ta); type = type, lag = lag, alpha = alpha)
+    pacf(values(ta); lag = lag, alpha = alpha)
 end
 
 function pacf(x::AbstractVector;
-             lag = Integer(ceil(10*log10(length(x)))),
-             alpha = (0.95,0.99))
+              type = "step-real",
+              lag = Integer(ceil(10*log10(length(x)))),
+              alpha = (0.95,0.99))
 
-    ccf(x,x; type = type, lag = lag, alpha = alpha)
+    N = length(x)
+    @assert type in  ["step","real","step-real"] "The options for `type` are `step`, `real` and `both`"
+    @assert 1 <= lag <= N-4
+    @assert length(alpha) == 2
+    @assert 0.0 < alpha[1] < alpha[2] < 1.0
+
+    # Confidence Intervals
+    function fse(v)::AbstractFloat
+        1/sqrt(v-3)
+    end
+
+    a1 = alpha[1]
+    a2 = alpha[2]
+    z1 = quantile(Normal(), a1 + (1-a1)/2)
+    ci1 = z1*fse(N-lag)
+    z2 = quantile(Normal(), a2 + (1-a2)/2)
+    ci2 = z2*fse(N-lag)
+    ci = (ci1,ci2)
+
+    call = "pacf(x"*
+        "; type=\""*type*
+        "\", lag="*string(lag)*
+        ", alpha="*string(alpha)*")"
+
+    if (type == "step") 
+        pac = pacf_step(x; lag, alpha)
+        return CCF(pac, N, "pacf_step", lag, alpha, ci, true, call)
+    end
+
+    if (type == "real") 
+        pac = pacf_real(x; lag, alpha)
+        return CCF(pac, N, "pacf_real", lag, alpha, ci, true, call)
+    end
+
+    if type == "step-real"
+        pacs = pacf_step(x; lag, alpha)
+        pacr = pacf_real(x; lag, alpha)
+        return CCF(hcat(pacs, pacr),
+                   N, "pacf_step-real", lag, alpha, ci, true, call)
+    end
+
 end
-
-
-
 
 function pacf_step(x::AbstractVector;
                    lag = Integer(ceil(10*log10(length(x)))),
@@ -65,27 +104,10 @@ function pacf_step(x::AbstractVector;
 
 end
 
-```
-Package: Forecast
-
-    drop rows and columns from a matrix
-```
-function drop(M::AbstractMatrix;
-              r=nothing,
-              c=nothing)
-    s = size(M)
-    dr = collect(1:s[1])
-    dc = collect(1:s[2])
-    isnothing(r) ? nothing : splice!(dr,r)
-    isnothing(c) ? nothing : splice!(dc,c)
-    M[dr,dc]
-end
-
 function pacf_real(x::AbstractVector;
              lag = Integer(ceil(10*log10(length(x)))),
              alpha = (0.95,0.99))
 
-    
     # prevent singularities
     lambda = 10^-36
 
@@ -107,7 +129,7 @@ function pacf_real(x::AbstractVector;
         bt0 = A[:,i-1]
         lsq = (A1i'*A1i+lambda*I(lag))\(A1i'*bt0)
         r0 = round.(bt0.-A1i*lsq, digits=10)
-        push!(pacf_res,cor(r0.-mean(r0),r1.-mean(r1)))
+        push!(pacf_res,cor(r0,r1))
         
     end
     
