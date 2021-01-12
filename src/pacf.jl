@@ -66,18 +66,18 @@ function pacf(x::AbstractVector;
         ", alpha="*string(alpha)*")"
 
     if (type == "step") 
-        pac = pacf_step(x; lag, alpha)
+        pac = pacf_step(x; lag=lag, alpha=alpha)
         return CCF(pac, N, "pacf_step", lag, alpha, ci, true, call)
     end
 
     if (type == "real") 
-        pac = pacf_real(x; lag, alpha)
+        pac = pacf_real(x; lag=lag, alpha=alpha)
         return CCF(pac, N, "pacf_real", lag, alpha, ci, true, call)
     end
 
     if type == "step-real"
-        pacs = pacf_step(x; lag, alpha)
-        pacr = pacf_real(x; lag, alpha)
+        pacs = pacf_step(x; lag=lag, alpha=alpha)
+        pacr = pacf_real(x; lag=lag, alpha=alpha)
         return CCF(hcat(pacs, pacr),
                    N, "pacf_step-real", lag, alpha, ci, true, call)
     end
