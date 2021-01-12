@@ -6,12 +6,12 @@ using Logging
 const tests = [
     "acf",
     "ccf",
-    "datasets",
     "d",
+    "datasets",
+    "hma"
     "loess",
     "sma",
     "stl",
-    "hma"
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)
