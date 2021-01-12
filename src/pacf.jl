@@ -33,7 +33,7 @@ function pacf(ta::TimeArray;
               lag = Integer(ceil(10*log10(length(x1)))),
               alpha = (0.95,0.99))
 
-    pacf(values(ta); lag = lag, alpha = alpha)
+    pacf(values(ta); type = type, lag = lag, alpha = alpha)
 end
 
 function pacf(x::AbstractVector;
