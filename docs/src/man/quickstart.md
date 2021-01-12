@@ -82,3 +82,20 @@ res = ccf(x1, x2; type="cor");
 plot(res,size=(800,500))
 ```
 
+## PACF example
+
+The `pacf` function is useful to identify significant parameters in ARIMA models. For instance, in R the default `pacf` function estimates partial auto-correlation in a stepwise fashion, however in cases where the model is highly correlated with many previous steps this approach identifies the first lag as highly correlated and the rest as near zeroes when, in reality, all partial auto-correlations should be around zero since that's the information left once taken away the linear influence from the all other lags. Below is an example of such effect where the `stepwise` (in blue) and `real` (in red) partial auto-correlations are compared for a series where all lags highly correlate to each other.
+
+```@example tutorial
+using Plots
+using Forecast
+using Random
+
+Random.seed!(36)
+x = collect(1:100) + rand(100)
+res = pacf(x)
+plot(res,size=(800,500))
+```
+
+
+

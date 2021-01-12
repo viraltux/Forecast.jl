@@ -42,7 +42,7 @@
         guide_position := :left
         linewidth := 100/(fCCF.lag+1)
         
-        collect(1:size(fCCF.ccf)[1]+1) .- ndims(fCCF.ccf) == 2 ? .1 : 0,
+        collect(1:size(fCCF.ccf)[1]+1) .- ((ndims(fCCF.ccf) == 2) ? .1 : 0),
         ndims(fCCF.ccf) == 2 ? fCCF.ccf[:,1] : fCCF.ccf
     end
 
