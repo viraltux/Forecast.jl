@@ -8,13 +8,13 @@ Package: Forecast
 
 Compute the partial auto-correlation for an univariate series.
 
-There are two versions; the "step" version estimates the auto-regressive parameters of an increasing model, the "real" version estimates the actual partial auto-correlation by eliminating the linear information provided by the lags. When using the default type "step-real" both versions are calculated.
+There are two versions; the "step" version estimates the auto-regressive parameters of an increasing model, the "real" version estimates the actual partial auto-correlation by eliminating the linear information provided by the lags. When using the default type "stepwise-real" both versions are calculated.
 
 The distribution used to estimate the confidence intervals is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object.
 
 # Arguments
 - `x`: Vector or uni-dimensional TimeArray of data.
-- `type` = Valid values are "step", "real" and "step-real".
+- `type` = Valid values are "stepwise", "real" and "stepwise-real".
 - `lag`: Maximum number of lags.
 - `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
 
@@ -29,7 +29,7 @@ plot(res)
 ```
 """
 function pacf(ta::TimeArray;
-              type = "step-real",
+              type = "stepwise-real",
               lag = Integer(ceil(10*log10(length(x1)))),
               alpha = (0.95,0.99))
 
@@ -37,12 +37,12 @@ function pacf(ta::TimeArray;
 end
 
 function pacf(x::AbstractVector;
-              type = "step-real",
+              type = "stepwise-real",
               lag = Integer(ceil(10*log10(length(x)))),
               alpha = (0.95,0.99))
 
     N = length(x)
-    @assert type in  ["step","real","step-real"] "The options for `type` are `step`, `real` and `both`"
+    @assert type in  ["stepwise","real","stepwise-real"] "The options for `type` are `stepwise`, `real` and `both`"
     @assert 1 <= lag <= N-4
     @assert length(alpha) == 2
     @assert 0.0 < alpha[1] < alpha[2] < 1.0
@@ -65,9 +65,9 @@ function pacf(x::AbstractVector;
         "\", lag="*string(lag)*
         ", alpha="*string(alpha)*")"
 
-    if (type == "step") 
-        pac = pacf_step(x; lag=lag, alpha=alpha)
-        return CCF(pac, N, "pacf_step", lag, alpha, ci, true, call)
+    if (type == "stepwise") 
+        pac = pacf_stepwise(x; lag=lag, alpha=alpha)
+        return CCF(pac, N, "pacf_stepwise", lag, alpha, ci, true, call)
     end
 
     if (type == "real") 
@@ -75,16 +75,16 @@ function pacf(x::AbstractVector;
         return CCF(pac, N, "pacf_real", lag, alpha, ci, true, call)
     end
 
-    if type == "step-real"
-        pacs = pacf_step(x; lag=lag, alpha=alpha)
+    if type == "stepwise-real"
+        pacs = pacf_stepwise(x; lag=lag, alpha=alpha)
         pacr = pacf_real(x; lag=lag, alpha=alpha)
         return CCF(hcat(pacs, pacr),
-                   N, "pacf_step-real", lag, alpha, ci, true, call)
+                   N, "pacf_stepwise-real", lag, alpha, ci, true, call)
     end
 
 end
 
-function pacf_step(x::AbstractVector;
+function pacf_stepwise(x::AbstractVector;
                    lag = Integer(ceil(10*log10(length(x)))),
                    alpha = (0.95,0.99))
 
