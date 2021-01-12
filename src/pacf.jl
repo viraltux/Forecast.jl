@@ -10,7 +10,7 @@ Compute the partial auto-correlation for an univariate series.
 
 There are two versions; the "step" version estimates the auto-regressive parameters of an increasing model, the "real" version estimates the actual partial auto-correlation by eliminating the linear information provided by the lags. When using the default type "step-real" both versions are calculated.
 
-The results are normalized to preserve homoscedasticity. The distribution used to estimate the confidence intervals is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object.
+The distribution used to estimate the confidence intervals is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object.
 
 # Arguments
 - `x`: Vector or uni-dimensional TimeArray of data.
