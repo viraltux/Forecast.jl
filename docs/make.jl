@@ -1,4 +1,6 @@
 push!(LOAD_PATH,"../src/")
+ENV["GKSwstype"] = "nul"
+
 using Documenter, Forecast
 
 makedocs(
