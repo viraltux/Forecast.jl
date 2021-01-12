@@ -8,7 +8,7 @@ const tests = [
     "ccf",
     "d",
     "datasets",
-    "hma"
+    "hma",
     "loess",
     "sma",
     "stl",
