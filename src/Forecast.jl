@@ -5,32 +5,30 @@ using CSV, Distributions, DataFrames, GZip, LinearAlgebra, Plots,
 
 # types
 export CCF, STL
+
 # methods
-export acf, ccf, d, loess, sma, stl, hma, hmaSymmetricWeights
+export acf, ccf, d, hma, loess, pacf, sma, stl
+
 # datasets
 export co2
 
+# types
+include("CCF.jl")
+include("STL.jl")
+
 # source files
-
-## ccf
+include("acf.jl") 
 include("ccf.jl")
-include("acf.jl")
-
 include("d.jl")
-
-## stl 
+include("datasets.jl")
+include("hma.jl") 
 include("loess.jl")
+include("pacf.jl")
 include("sma.jl")
-include("stl.jl")
-
-## hma
-include("hma.jl")
-
+include("stl.jl") 
 include("utils.jl")
 
-include("datasets.jl")
-
-## recipes
+# recipes
 include("plotrecipes.jl")
 
 """
@@ -43,6 +41,7 @@ Methods implemented:
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
     hma:        Henderson moving average filters.
     loess:      Locally estimated scatterplot smoothing.
+    pacf:       Partial Auto-correlation function.
     sma:        Simple moving average.
     stl:        Seasonal and Trend decomposition using loess.
 """

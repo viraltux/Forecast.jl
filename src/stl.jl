@@ -1,8 +1,3 @@
-mutable struct STL{T<:TimeArray}
-    ta::T         # A time array with three time series from a fitted STL model
-    call::String  # method called to generate ta
-end
-
 """
 Package: Forecast
 
