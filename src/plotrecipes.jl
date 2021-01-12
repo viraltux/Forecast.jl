@@ -11,8 +11,8 @@
 
     N = fCCF.N
     if split(fCCF.type,'_')[1] == "pacf"
-        type = (fCCF.type) == "pacf_step" ? "Step PACF" : "Real PACF"
-        type = (fCCF.type) == "pacf_step-real" ? "Step and Real PACF   |s|r|" : type
+        type = (fCCF.type) == "pacf_step" ? "Stepwise PACF" : "Real PACF"
+        type = (fCCF.type) == "pacf_stepwise-real" ? "Stepwise and Real PACF   |s|r|" : type
         auto_prefix = ""
     else
         type = (fCCF.type == "cor") ? "Correlation" : "Covariance"
