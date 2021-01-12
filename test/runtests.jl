@@ -10,7 +10,8 @@ const tests = [
     "d",
     "loess",
     "sma",
-    "stl"
+    "stl",
+    "hma"
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)
