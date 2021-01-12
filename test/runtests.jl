@@ -10,6 +10,7 @@ const tests = [
     "datasets",
     "hma",
     "loess",
+    "pacf",
     "sma",
     "stl",
 ]

@@ -1,5 +1,6 @@
 using Test
 using Forecast
+import Forecast: hmaSymmetricWeights
 
 @testset "hma" begin
     r_data = rand(24)
@@ -13,7 +14,7 @@ using Forecast
     # asserting correct application of the 13-term moving average
     x = hma(r_data, 13)
     @test length(x)             == 24
-    @test first(x)              == 0.5508635070863032
-    @test last(x)               == 0.5843536698022159
-    @test x[length(x)//2|>Int]  == 0.32899917067680573
+    @test first(x)              ≈ 0.5508635070863032
+    @test last(x)               ≈ 0.5843536698022159
+    @test x[length(x)//2|>Int]  ≈ 0.32899917067680573
 end

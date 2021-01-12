@@ -1,16 +1,20 @@
 """
 Package: Forecast
 
-    pacf(x::{AbstractVector,TimeArray},
+    pacf(x::{AbstractVector,TimeArray};
+         type = "step-real",
          lag = Integer(ceil(10*log10(length(x1)))),
          alpha = (0.95,0.99))
 
 Compute the partial auto-correlation for an univariate series.
 
-The results are normalized to preserve homoscedasticity. The distribution used to normalize the data is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object, if the type is `cor` the plot will also show confidence intervals for the given alpha values.
+There are two versions; the "step" version estimates the auto-regressive parameters of an increasing model, the "real" version estimates the actual partial auto-correlation by eliminating the linear information provided by the lags. When using the default type "step-real" both versions are calculated.
+
+The results are normalized to preserve homoscedasticity. The distribution used to estimate the confidence intervals is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object.
 
 # Arguments
 - `x`: Vector or uni-dimensional TimeArray of data.
+- `type` = Valid values are "step", "real" and "step-real".
 - `lag`: Maximum number of lags.
 - `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
 

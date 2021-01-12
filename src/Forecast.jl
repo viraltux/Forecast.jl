@@ -41,6 +41,7 @@ Methods implemented:
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
     hma:        Henderson moving average filters.
     loess:      Locally estimated scatterplot smoothing.
+    pacf:       Partial Auto-correlation function.
     sma:        Simple moving average.
     stl:        Seasonal and Trend decomposition using loess.
 """
