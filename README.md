@@ -11,6 +11,7 @@ Julia package containing utilities intended for Time Series analysis.
 * Henderson moving average filter
 * Lagged differences of a given order
 * Locally Estimated Scatterplot Smoothing (LOESS)
+* Partial Auto-correlation function (stepwise and real)
 * Seasonal and Trend decomposition based on Loess (STL)
 * Simple Moving Average
 
