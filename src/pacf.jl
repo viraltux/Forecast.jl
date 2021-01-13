@@ -84,29 +84,39 @@ function pacf(x::AbstractVector;
 
 end
 
+function pacf_lag(x::AbstractVector;
+                   lag = Integer(ceil(10*log10(length(x)))),
+                   alpha = (0.95,0.99))
+
+    R = vcat(cov(x,x),acf(x; lag=lag, type = "cov").ccf)
+    p = length(R)-1
+
+    A = zeros(p,p)
+    for i in p:-1:1
+        A[i,i:end] = R[1:p-i+1]
+        A[i:end,i] = R[1:p-i+1]
+    end
+    b = R[2:end]
+
+    lambda = 10^-36
+    (A'*A+lambda*I(p))\(A'*b)
+
+end
+
 function pacf_stepwise(x::AbstractVector;
                    lag = Integer(ceil(10*log10(length(x)))),
                    alpha = (0.95,0.99))
 
-    pacf_res = [1.0]
-    lambda = 10^-36
-    N = length(x)
-    M = zeros(N-lag,lag+1)
-    for i in 1:(N-lag)
-        M[i,:] = x[i:i+lag]
-    end
-
+    #TODO optimize with Levinson-Durbin algorithm
+    pac = []
     for i in 1:lag
-        b = M[:,1:i]*pacf_res
-        A = M[:,i+1]
-        A = hcat(A,repeat([1.0],N-lag))
-        lsq = (A'*A+lambda*I(2))\(A'*b)
-        push!(pacf_res,-lsq[end-1]) 
+        push!(pac, pacf_lag(x; lag = i)[end])
     end
-
-    -pacf_res[2:end]
-
+    pac
+    
 end
+
+
 
 function pacf_real(x::AbstractVector;
              lag = Integer(ceil(10*log10(length(x)))),
