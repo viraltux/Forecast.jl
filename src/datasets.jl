@@ -1,33 +1,40 @@
 """
-co2(full = false)
+Package: Forecast
+
+    co2(full = false)
 
 Return dataset with atmospheric Carbon Dioxide Dry Air Mole Fractions from quasi-continuous measurements at Mauna Loa, Hawaii.
 
 K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dry Air Mole Fractions from continuous measurements at Mauna Loa, Hawaii, Barrow, Alaska, American Samoa and South Pole. 1973-2019, Version 2020-08 National Oceanic and Atmospheric Administration (NOAA), Global Monitoring Laboratory (GML), Boulder, Colorado, USA https://doi.org/10.15138/yaf1-bk21 FTP path: ftp://aftp.cmdl.noaa.gov/data/greenhouse_gases/co2/in-situ/surface/
 
-    Args:
-        `full`: if `true` Returns full original dataset from 1973 to 2020 in a DataFrame, otherwise returns the subset used in "STL: A Seasonal-Trend Decomposition Procedure Based on Loess" from Cleveland et. al.
-    Returns:
-        Dataframe or TimeArray containing the descrived dataset.
+# Arguments
+- `full`: if `true` Returns full original dataset from 1973 to 2020 in a DataFrame, otherwise returns the subset used in "STL: A Seasonal-Trend Decomposition Procedure Based on Loess" from Cleveland et. al. Its default value is `false`.
+
+# Returns
+ Dataframe or TimeArray containing the descrived dataset.
 
 # Examples
 ```julia-repl
 julia> co2()
 [ Info: Dataset used in Cleveland et al. paper
-4609×1 TimeArray{Union{Missing, Float64},1,Date,Array{Union{Missing, Float64},1}} 1974-05-17 to 1986-12-31
+4609×1 TimeArray{Union{Missing, Float64},1,Date,Array{Union{Missing, Float64},1}}
+1974-05-17 to 1986-12-31
 │            │ co2     │
 ├────────────┼─────────┤
 │ 1974-05-17 │ 333.38  │
 │ 1974-05-18 │ 333.11  │
 │ 1974-05-19 │ 333.46  │
-   ⋮
+   [...]
 ```
 """
 function co2(full = false)
 
-    data = "data/co2.csv"
+    data = "data/co2.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
-    co2_df = CSV.read(path, DataFrame)
+    
+    co2_df = GZip.open(path, "r") do io
+        CSV.read(io,DataFrame)
+    end
 
     if full
         @info "Full dataset from 1973 to 2020"
