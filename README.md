@@ -17,6 +17,8 @@ Julia package containing utilities intended for Time Series analysis.
 
 There are also customized plots for methods returning CCF and STL objects.
 
+<img src="./docs/src/images/stl_readme.png">
+
 ## Datasets
 
 * Atmospheric Carbon Dioxide Dry Air Mole Fractions from quasi-continuous measurements at Mauna Loa, Hawaii.
