@@ -1,0 +1,5 @@
+# Docstrings
+
+```@autodocs
+Modules = [Forecast]
+```
