@@ -8,8 +8,8 @@ using TimeSeries
 
     res = pacf(x; lag = 20);
     @test res isa CCF
-    @test res.call == "pacf(x; type=\"step-real\", lag=20, alpha=(0.95, 0.99))"
-    @test res.type == "pacf_step-real"
+    @test res.call == "pacf(x; type=\"stepwise-real\", lag=20, alpha=(0.95, 0.99))"
+    @test res.type == "pacf_stepwise-real"
     @test res.auto
     @test res.lag == 20
     @test res.N == 100
