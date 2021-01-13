@@ -29,11 +29,13 @@ end
 
 
 """
-function loess(xv,yv;
-               d=2,
-               q=Int64(round(3/4*length(xv))),
-               rho=repeat([1.0],inner=length(xv)),  
-               predict = xv)
+Package: Forecast
+
+    loess(xv,yv;
+          d=2,
+          q=Int64(round(3/4*length(xv))),
+          rho=repeat([1.0],inner=length(xv)),  
+          predict = xv)
 
 Smooth a vector of observations using locally weighted regressions.
 
@@ -41,29 +43,26 @@ Although loess can be used to smooth observations for any given number of indepe
 
 The loess functionality and nomenclature follows the descriptions in:
 
-    "STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
-     Robert B. Cleveland, William S. Cleveland, Jean E. McRae, and Irma Terpenning.
-     Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Sweden.
+"STL: A Seasonal, Trend Decomposition Procedure Based on Loess"
+Robert B. Cleveland, William S. Cleveland, Jean E. McRae, and Irma Terpenning.
+Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Sweden.
 
-    Args:
-        `xv`: Observations' support.
-        `yv`: Observation values.
-        `d`: Degree of the linear fit, it accepts values 1 or 2.
-        `q`: As q increases loess becomes smoother, when q tends to infinity loess tends to an ordinary least square poynomial fit of degree `d`. It defaults to the rounding of 3/4 of xv's length.
-        `rho`: Weights expressing the reliability of the observations (e.g. if yi had variances sigma^2*ki where ki where known, the rhoi could be 1/ki). It defaults to 1.0.
-        `predict`: Vector containing the real values to be predicted, by default predicts xv.
-    Returns:
-        The loess values for the values contained in `predict`.
+# Arguments
+- `xv`: Observations' support.
+- `yv`: Observation values.
+- `d`: Degree of the linear fit, it accepts values 1 or 2.
+- `q`: As q increases loess becomes smoother, when q tends to infinity loess tends to an ordinary least square poynomial fit of degree `d`. It defaults to the rounding of 3/4 of xv's length.
+- `rho`: Weights expressing the reliability of the observations (e.g. if yi had variances sigma^2*ki where ki where known, the rhoi could be 1/ki). It defaults to 1.0.
+- `predict`: Vector containing the real values to be predicted, by default predicts xv.
+
+# Returns
+The loess values for the values contained in `predict`.
 
 # Examples
 ```julia-repl
-julia> loess(rand(5),rand(5))
-5-element Array{Float64,1}:
- 0.8279856470091445
- 0.6498793177642597
- 0.017078421335739336
- 0.8595786774014016
- 0.2564676547690037
+julia> loess(rand(5), rand(5); predict=rand(10))
+10-element Array{Float64,1}:
+[...]
 ```
 """
 function loess(xv,yv;

@@ -1,14 +1,17 @@
 """
-sma(x, n; center = true)
+Package: Forecast
+
+    sma(x, n; center = true)
 
 Smooth a vector of data using a simple moving average.
 
-    Args:
-        `x`: Vector of data.
-        `n`: Size of the moving average.
-        `center`: centers the moving averaged values in the response.
-    Returns:
-        Vector of moving average smoothed values containing `missing` values to preserve the size of the original vector.
+# Arguments
+- `x`: Vector of data.
+- `n`: Size of the moving average.
+- `center`: centers the moving averaged values in the response.
+
+# Returns
+Vector of moving average smoothed values containing `missing` values to preserve the size of the original vector.
 
 # Examples
 ```julia-repl
@@ -23,12 +26,13 @@ julia> sma(1:5,3;center=true)
 """
 function sma(x, n; center = true)
 
+    N = length(x)
+    @assert 1 <= n & n <= N
+
     if n == 1
         return x
     end
 
-    N = length(x)
-    @assert 1 <= n & n <= N
     res = Vector{Any}(missing,N)
 
     # initial and final value positions
