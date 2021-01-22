@@ -87,7 +87,9 @@ function d(x::AbstractVector,
     end
 
     a = findfirst(!ismissing,x)
+    ma = a-1
     b = findlast(!ismissing,x)
+    mb = length(x)-b
     x = x[a:b]
 
     N = length(x)
@@ -112,10 +114,10 @@ function d(x::AbstractVector,
         dxOL = circshift(dxOL,div(Nl,2))
     end
 
-    if (a-1 > 0) | (b-N > 0)
-        return(vcat(Array{Any}(missing,a-1),
+    if (ma > 0) | (mb > 0)
+        return(vcat(Array{Any}(missing,ma),
                     dxOL,
-                    Array{Any}(missing,b-N)))
+                    Array{Any}(missing,mb)))
     else
         return(dxOL)
     end
@@ -128,7 +130,9 @@ function d(x::AbstractArray,
            center::Bool=false)
 
     a = findfirst(!ismissing,x)[1]
+    ma = a-1
     b = findlast(!ismissing,x)[1]
+    mb = size(x)[1]-b
     x = x[a:b,:]
 
     N,M = size(x)
@@ -159,9 +163,13 @@ function d(x::AbstractArray,
         dxOL = circshift(dxOL,(div(Nl,2),0))
     end
     
-    vcat(Array{Any}(missing,a-1,M),
-         dxOL,
-         Array{Any}(missing,b-N,M))
+    if (ma > 0) | (mb > 0)
+        vcat(Array{Any}(missing,ma,M),
+             dxOL,
+             Array{Any}(missing,mb,M))
+    else
+        return(dxOL)
+    end
 
 end
 
@@ -171,11 +179,12 @@ function d(x::TimeArray,
            center::Bool=false)
 
     vx = values(x)
-    tsx = timestamp(x)
     replace!(vx, NaN => missing)
 
-    dvx = d(vx, order, lag=lag; center=center)
-    
+    dvx = d(vx, order, lag; center=center)
+
+    tsx = timestamp(x)[1:length(dvx)]
+
     TimeArray(tsx,dvx)
 
 end
