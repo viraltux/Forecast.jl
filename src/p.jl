@@ -29,10 +29,19 @@ true
 function p(dx::AbstractVector,
            orderlag::AbstractVector = [[0]];
            center::Bool=false)
+
+
+    format_ol = "orderlag format is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]"
+    @assert orderlag[1] isa Array format_ol
+    @assert orderlag isa Array format_ol
     
     order = length(orderlag)
     lag = length(orderlag[1])
     N = length(dx)
+
+    if (lag == 0)
+        return x
+    end
     
     a = findfirst(!ismissing,dx)
     b = findlast(!ismissing,dx)
@@ -59,6 +68,18 @@ function p(dx::AbstractVector,
     
     pxOL = (px1L ∘ pxO1)(dx)
 
-    return(pxOL)
+    if center
+        Nl = N-length(pxOL)
+        pxOL = vcat(pxOL,Array{Any}(missing,Nl))
+        pxOL = circshift(pxOL,div(Nl,2))
+    end
+
+    if (a-1 > 0) | (b-N > 0)
+        return(vcat(Array{Any}(missing,a-1),
+                    pxOL,
+                    Array{Any}(missing,b-N)))
+    else
+        return(pxOL)
+    end
     
 end
