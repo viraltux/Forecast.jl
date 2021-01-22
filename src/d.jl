@@ -65,16 +65,16 @@ julia> d(x,2,2)
 
 julia> d(co2())
 [ Info: Dataset used in Cleveland et al. paper
-4609×1 TimeArray{Any,1,Date,Array{Any,1}} 1974-05-17 to 1986-12-31
+4608×1 TimeArray{Any,1,Date,Array{Any,1}} 1974-05-17 to 1986-12-30
 │            │ A       │
 ├────────────┼─────────┤
 │ 1974-05-17 │ -0.27   │
 │ 1974-05-18 │ 0.35    │
 │ 1974-05-19 │ 0.18    │
    ⋮
+│ 1986-12-28 │ 0.04    │
+│ 1986-12-29 │ -0.12   │
 │ 1986-12-30 │ missing │
-│ 1986-12-31 │ missing │
-
 ```
 """
 function d(x::AbstractVector,
