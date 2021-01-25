@@ -149,8 +149,7 @@ function d(x::AbstractArray,
 
     function dxO1(v)
         for i in 2:order
-            xh = hcat(circshift(v,lag),v)
-            xh[(1+1):end,M+1:2*M] - xh[(1+1):end,1:M]
+            v = diff(v, dims = 1)
         end
         v
     end
@@ -183,7 +182,7 @@ function d(x::TimeArray,
 
     dvx = d(vx, order, lag; center=center)
 
-    tsx = timestamp(x)[1:length(dvx)]
+    tsx = timestamp(x)[1:size(dvx)[1]]
 
     TimeArray(tsx,dvx)
 
