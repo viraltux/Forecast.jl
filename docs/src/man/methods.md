@@ -25,16 +25,16 @@ ccf
 d
 ```
 
-## d
-**Inverse lagged differences of a given order**
-```@docs
-p
-```
-
 ## loess
 **Locally Estimated Scatterplot Smoothing (LOESS)**
 ```@docs
 loess
+```
+
+## p
+**Inverse lagged differences of a given order**
+```@docs
+p
 ```
 
 ## stl

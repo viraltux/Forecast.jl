@@ -7,7 +7,7 @@ using CSV, Distributions, DataFrames, GZip, LinearAlgebra, Plots,
 export CCF, STL
 
 # methods
-export acf, ccf, d, hma, loess, pacf, sma, stl
+export acf, ccf, d, hma, loess, p, pacf, sma, stl
 
 # datasets
 export co2
@@ -24,6 +24,7 @@ include("datasets.jl")
 include("hma.jl") 
 include("loess.jl")
 include("pacf.jl")
+include("p.jl")
 include("sma.jl")
 include("stl.jl") 
 include("utils.jl")
