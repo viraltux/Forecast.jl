@@ -29,4 +29,8 @@ import TimeSeries: TimeArray
     @test values(p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] )) ≈ values(tx)
     @test values(p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27] )) ≈ values(tx)
 
+    # estimation of π
+    x = 0:0.001:1
+    y = sqrt.(1 .- x.^2)
+    isapprox(4*p(y)[end]/1000 , π, atol = 0.01)
 end
