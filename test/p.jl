@@ -17,6 +17,9 @@ import TimeSeries: TimeArray
     @test p(d(x),orderlag=[[x[1]]]) ≈ x
     @test p(d(hcat(x,x,x)), orderlag=[ [[x[1]]] [[x[1]]] [[x[1]]] ] ) ≈ hcat(x,x,x)
 
+    x = rand(100,3)
+    @test p(d(x), orderlag=[ [[x[1,1]]] [[x[1,2]]] [[x[1,3]]] ] ) ≈ x
+
     x = repeat(1:12,3)
     dx = d(x; order=12, lag=12)
     orderlag = vcat([collect(1:12)],repeat([0],11))
