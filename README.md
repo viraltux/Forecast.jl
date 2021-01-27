@@ -1,4 +1,4 @@
-# Forecast [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://viraltux.github.io/Forecast.jl/stable)
+# Forecast [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://viraltux.github.io/Forecast.jl/dev)
 
 Julia package containing utilities intended for Time Series analysis.
 
@@ -9,7 +9,7 @@ Julia package containing utilities intended for Time Series analysis.
 * Auto-correlation/covariance function
 * Cros-correlation/covariance function
 * Henderson moving average filter
-* Lagged differences of a given order
+* Lagged differences (and inverse) of a given order
 * Locally Estimated Scatterplot Smoothing (LOESS)
 * Partial Auto-correlation function (stepwise and real)
 * Seasonal and Trend decomposition based on Loess (STL)
@@ -29,5 +29,4 @@ K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dr
 
 [Cleveland et al. 1990]  Cleveland,  R.  B.;  Cleveland,  W.  S.;McRae, J. E.; and Terpenning, I.  1990.  STL: A seasonal-trend decomposition procedure based on loess. Journal of Official Statistics 6(1):3–73.
 
-[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://viraltux.github.io/Forecast.jl/latest)
 [![Coverage](https://codecov.io/gh/viraltux/Forecast.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/viraltux/Forecast.jl)
