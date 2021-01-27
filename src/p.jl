@@ -1,24 +1,24 @@
 """
 Package: Forecast
 
-    function p(dx::{AbstractVector,AbstractArray,TimeArray},
+    function p(dx::{AbstractVector,AbstractArray,TimeArray};
                orderlag::{AbstractVector,AbstractArray} = [[0]])
 
 Return reverse lagged differences of a given order for Vector, Array and TimeSeries.
 
 # Arguments
-- `dx`:       Vector or Array of data.
-- `orderlag`: Initial values of the inverted series. The format per column for the order and lag values is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]. the default values is an initial constant of zero for an inversion of order one and lag one.
+- `dx`:       Vector, Array or TimeArray of data.
+- `orderlag`: Initial values of the inverted series. The format per column for the order and lag values is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]. the default values are zeroes.
 
 # Returns
-Lagged differences Vector or Array of a given order.
+Lagged differences Vector, Array or TimeArray of a given order.
 
 # Examples
 ```julia-repl
 julia> x = repeat(1:12,3);
-julia> dx = d(x,12,12);
+julia> dx = d(x; order=12, lag=12);
 julia> orderlag = vcat([collect(1:12)],repeat([0],11));
-julia> p(dx,orderlag) ≈ x
+julia> p(dx; orderlag=orderlag) ≈ x
 true
 julia> p(d(x),[[1]]) ≈ x
 true
@@ -26,13 +26,13 @@ true
 julia> tx = hcat(co2(), co2(), co2());
 julia> vtx = values(tx);
 julia> tx = TimeArray(timestamp(tx),replace(vtx, missing => 0.0));
-julia> values(p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] )) ≈ values(tx)
+julia> values(p(d(tx); orderlag = [ [[333.38]] [[333.38]] [[333.38]] ] )) ≈ values(tx)
 true
-julia> values(p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27] )) ≈ values(tx)
+julia> values(p(d(tx,2), orderlag = [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27] )) ≈ values(tx)
 true
 ```
 """
-function p(dx::AbstractVector,
+function p(dx::AbstractVector;
            orderlag::AbstractVector = [[0]])
 
     format_ol = "orderlag format is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]"
@@ -89,7 +89,7 @@ function p(dx::AbstractVector,
     
 end
 
-function p(dx::AbstractArray,
+function p(dx::AbstractArray;
            orderlag::AbstractArray = [[0]])
 
     nc = size(dx)[2]
@@ -108,7 +108,7 @@ function p(dx::AbstractArray,
         return dx
     end
 
-    pdx(idx) = p(dx[:,idx], orderlag[:,idx])
+    pdx(idx) = p(dx[:,idx], orderlag=orderlag[:,idx])
 
     px = pdx(1)
     for i in 2:nc
@@ -118,11 +118,11 @@ function p(dx::AbstractArray,
     
 end
 
-function p(dx::TimeArray,
+function p(dx::TimeArray;
            orderlag::AbstractArray = [[0]])
 
     vx = values(dx)
-    pvx = p(vx, orderlag)
+    pvx = p(vx; orderlag=orderlag)
 
     tsx = timestamp(dx)
     dt = tsx[2]-tsx[1]

@@ -1,9 +1,9 @@
 """
 Package: Forecast
 
-    function d(x::{AbstractVector,AbstractArray,TimeArray},
+    function d(x::{AbstractVector,AbstractArray,TimeArray};
                order::Int=1,
-               lag::Int=1;
+               lag::Int=1,
                center::Bool=false)
 
 Return Lagged differences of a given order for Vector, Array and TimeSeries.
@@ -27,13 +27,13 @@ julia> d(x)
  1
  1
 
-julia> d(x,2)
+julia> d(x; order=2)
 3-element Array{Int64,1}:
  0
  0
  0
 
-julia> d(x,1,2)
+julia> d(x; order=1, lag=2)
 3-element Array{Int64,1}:
  2
  2
@@ -52,9 +52,8 @@ julia> x = reshape(collect(1:20),10,2)
   9  19
  10  20 
 
-julia> d(x,2,2)
-8×2 Array{Any,2}:
- 2  2
+julia> d(x; order=2, lag=2)
+7×2 Array{Any,2}:
  2  2
  2  2
  2  2
@@ -77,9 +76,9 @@ julia> d(co2())
 │ 1986-12-30 │ missing │
 ```
 """
-function d(x::AbstractVector,
+function d(x::AbstractVector;
            order::Int=1,
-           lag::Int=1;
+           lag::Int=1,
            center::Bool=false)
 
     if (lag == 0) | (order == 0)
@@ -124,9 +123,9 @@ function d(x::AbstractVector,
     
 end
 
-function d(x::AbstractArray,
+function d(x::AbstractArray;
            order::Int=1,
-           lag::Int=1;
+           lag::Int=1,
            center::Bool=false)
 
     a = findfirst(!ismissing,x)[1]
@@ -172,15 +171,15 @@ function d(x::AbstractArray,
 
 end
 
-function d(x::TimeArray,
+function d(x::TimeArray;
            order::Int=1,
-           lag::Int=1;
+           lag::Int=1,
            center::Bool=false)
 
     vx = values(x)
     replace!(vx, NaN => missing)
 
-    dvx = d(vx, order, lag; center=center)
+    dvx = d(vx; order=order, lag=lag, center=center)
 
     tsx = timestamp(x)[1:size(dvx)[1]]
 
