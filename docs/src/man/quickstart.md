@@ -69,7 +69,7 @@ The image below comes from the original paper for comparison purposes.
 <img src="../../images/stl.png" width="800px"/>
 ```
 
-## Cros-Correlation example
+## Cross-Correlation example
 
 Here we cross-correlate two identical series shifted by six positions, the plot
 shows how the peak correlation is at position six.
