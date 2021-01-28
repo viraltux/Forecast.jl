@@ -72,13 +72,13 @@ shows how the peak correlation is at position six.
 
 ```@example tutorial
 using Plots
-using Forecast
 using Random
+using Forecast
 
 Random.seed!(36)
-x1 = rand(100);
-x2 = circshift(x1,6);
-res = ccf(x1, x2; type="cor");
+x1 = rand(100)
+x2 = circshift(x1,6)
+res = ccf(x1, x2; type="cor")
 plot(res,size=(800,500))
 ```
 
@@ -88,8 +88,8 @@ The `pacf` function is useful to identify significant parameters in ARIMA models
 
 ```@example tutorial
 using Plots
-using Forecast
 using Random
+using Forecast
 
 Random.seed!(36)
 x = collect(1:100) + rand(100)
