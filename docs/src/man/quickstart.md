@@ -1,3 +1,7 @@
+```@setup quickstart
+using Plots; gr()
+Plots.reset_defaults()
+```
 # Quick Start
 
 ## Installing Forecast.jl
@@ -23,7 +27,7 @@ Alternatively you can also type:
 The example below compares LOESS result with extrapolated predictions compared
 to a simple moving average result with a window size of 100.
 
-```@example tutorial
+```@example quickstart
 using Plots
 using Forecast
 
@@ -41,7 +45,7 @@ plot!(x,sma(y,100), linewidth = 2, label= "MA 100", color = :orange)
 For this example we will be using the co2 data used by the creators of STL to
 demostrate its funcitonality, below we can see such time series.
 
-```@example tutorial
+```@example quickstart
 using Plots
 using Forecast
 
@@ -52,7 +56,7 @@ The parameters used for STL they're also from the orginal paper, a period of
 365 days is used (removing leap years extra day), a robust fit is required and
 seasonality post-smoothing is applied.
 
-```@example tutorial
+```@example quickstart
 using Plots
 using Forecast
 
@@ -70,7 +74,7 @@ The image below comes from the original paper for comparison purposes.
 Here we cross-correlate two identical series shifted by six positions, the plot
 shows how the peak correlation is at position six.
 
-```@example tutorial
+```@example quickstart
 using Plots
 using Random
 using Forecast
@@ -86,7 +90,7 @@ plot(res,size=(800,500))
 
 The `pacf` function is useful to identify significant parameters in ARIMA models. For instance, in R the default `pacf` function estimates partial auto-correlation in a stepwise fashion, however in cases where the model is highly correlated with many previous steps this approach identifies the first lag as highly correlated and the rest as near zeroes when, in reality, all partial auto-correlations should be around zero since that's the information left once taken away the linear influence from the all other lags. Below is an example of such effect where the `stepwise` (in blue) and `real` (in red) partial auto-correlations are compared for a series where all lags highly correlate to each other.
 
-```@example tutorial
+```@example quickstart
 using Plots
 using Random
 using Forecast
