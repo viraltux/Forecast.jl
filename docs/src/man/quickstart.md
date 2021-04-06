@@ -22,7 +22,7 @@ Alternatively you can also type:
     julia> using Forecast
 
 
-## LOESS example
+## LOESS extrapolated
 
 The example below compares LOESS result with extrapolated predictions compared
 to a simple moving average result with a window size of 100.
@@ -40,7 +40,7 @@ plot!(axb,loess(x,y,predict=axb), linewidth = 4, label = "LOESS", color = :blue)
 plot!(x,sma(y,100), linewidth = 2, label= "MA 100", color = :orange)
 ```
 
-## STL example
+## STL on CO2 dataset
 
 For this example we will be using the co2 data used by the creators of STL to
 demostrate its funcitonality, below we can see such time series.
@@ -69,7 +69,7 @@ The image below comes from the original paper for comparison purposes.
 <img src="../../images/stl.png" width="800px"/>
 ```
 
-## Cross-Correlation example
+## Cross-Correlation on shifted dasaset
 
 Here we cross-correlate two identical series shifted by six positions, the plot
 shows how the peak correlation is at position six.
@@ -86,7 +86,7 @@ res = ccf(x1, x2; type="cor")
 plot(res,size=(800,500))
 ```
 
-## PACF example
+## PACF on random dataset
 
 The `pacf` function is useful to identify significant parameters in ARIMA models. For instance, in R the default `pacf` function estimates partial auto-correlation in a stepwise fashion, however in cases where the model is highly correlated with many previous steps this approach identifies the first lag as highly correlated and the rest as near zeroes when, in reality, all partial auto-correlations should be around zero since that's the information left once taken away the linear influence from the all other lags. Below is an example of such effect where the `stepwise` (in blue) and `real` (in red) partial auto-correlations are compared for a series where all lags highly correlate to each other.
 
@@ -101,5 +101,12 @@ res = pacf(x)
 plot(res,size=(800,500))
 ```
 
+## Seasonal Plot on CO2 dataset 
 
+To compare seasonal behaviour we can use splot to display it side by side.
 
+```@example quickstart
+using Plots
+using Forecast
+splot(co2())
+```
