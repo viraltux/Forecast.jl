@@ -45,7 +45,7 @@ Methods implemented:
     acf:        Auto-correlation or auto-covariance of univariate series. 
     ccf:        Cross-correlation or cros-covariance of two univariate series.
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
-    hma:        Henderson moving average filters.
+    hma:        Henderson moving average filter.
     loess:      Locally estimated scatterplot smoothing.
     p:          Reverse lagged differences of a given order for types Vector, Array and TimeArray.
     pacf:       Partial Auto-correlation function.
