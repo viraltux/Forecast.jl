@@ -8,20 +8,20 @@ CurrentModule = Forecast
 
 Julia package containing utilities intended for Time Series analysis.
 
-:warning: This package is under development and its functionality has not been thoroughly tested. Please, consider to report issues if you find any.
+**Warning**: This package is under development and its functionality has not been thoroughly tested. Please, consider to report issues if you find any.
 
 ## List of Methods
 
-- Auto-correlation/covariance function
-- Cros-correlation/covariance function
-- Lagged differences of a given order
+- Auto-correlation/covariance function and custom plots
+- Cros-correlation/covariance function and custom plots
+- Henderson Moving Average Filter
+- Lagged differences and Reverse lagged differences of a given order
 - Locally Estimated Scatterplot Smoothing (LOESS)
-- Seasonal and Trend decomposition based on Loess (STL)
+- Seasonal and Trend decomposition based on Loess (STL) and custom plot
 - Simple Moving Average
+- Seasonal Plot for series and Time Series
 
 ## Manual Outline
-
-
 
 ```@contents
 Pages = [
