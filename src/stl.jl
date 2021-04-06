@@ -41,7 +41,7 @@ An `STL` object with the seasonal, trend and remainder components if Yv is an Ar
             
 # Examples
 ```julia-repl
-julia> stl(co2(),365; robust=true, spm=true)
+julia> stl_co2 = stl(co2(),365; robust=true, spm=true)
 [ Info: Dataset used in Cleveland et al. paper
 [ Info: Corvengence achieved (< 0.01); Stopping computation...
 STL{TimeSeries.TimeArray{Union{Missing, Float64},2,
@@ -49,6 +49,8 @@ Dates.Date,Array{Union{Missing, Float64},2}}}
 (4609×3 TimeSeries.TimeArray{Union{Missing, Float64},2,
 Dates.Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31, 
 "stl(Yn, np=365; nl=365, ns=46091, nt=549, ni=1, no=0, spm=true, qsmp=52)")
+
+julia> plot(stl_co2)
 ```
 """
 function stl(Yv::TimeArray,np::Integer;

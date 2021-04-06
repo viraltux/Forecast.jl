@@ -29,8 +29,13 @@ include("sma.jl")
 include("stl.jl") 
 include("utils.jl")
 
-# recipes
-include("plotrecipes.jl")
+# plot recipes
+##  type
+include("CCFplot.jl")
+include("STLplot.jl")
+
+## user
+include("splot.jl")
 
 """
 Collection of methods for Time Series analysis
@@ -42,8 +47,10 @@ Methods implemented:
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
     hma:        Henderson moving average filters.
     loess:      Locally estimated scatterplot smoothing.
+    p:          Reverse lagged differences of a given order for types Vector, Array and TimeArray.
     pacf:       Partial Auto-correlation function.
     sma:        Simple moving average.
+    splot:      Plot a seasonal plot for types Vector and TimeArray.
     stl:        Seasonal and Trend decomposition using loess.
 """
 Forecast
