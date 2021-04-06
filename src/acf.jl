@@ -22,7 +22,7 @@ A CCF object.
 # Examples
 ```julia-repl
 julia> x = rand(100);
-res = acf(x1; type="cor");
+res = acf(x; type="cor");
 plot(res)
 ```
 """
