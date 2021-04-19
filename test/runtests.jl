@@ -5,6 +5,8 @@ using Logging
 
 const tests = [
     "acf",
+    "ar",
+    "arsim",
     "ccf",
     "d",
     "datasets",
@@ -12,6 +14,7 @@ const tests = [
     "loess",
     "p",
     "pacf",
+    "predict_ar",
     "sma",
     "stl",
 ]

@@ -4,27 +4,31 @@ using CSV, Distributions, DataFrames, GZip, LinearAlgebra, Plots,
       RecipesBase, TimeSeries, Statistics
 
 # types
-export CCF, STL
+export AR, CCF, STL
 
 # methods
-export acf, ccf, d, hma, loess, p, pacf, sma, stl
+export acf, ar, arsim, ccf, d, hma, loess, p, pacf, predict, sma, stl
 
 # datasets
 export co2
 
 # types
+include("AR.jl")
 include("CCF.jl")
 include("STL.jl")
 
 # source files
-include("acf.jl") 
+include("acf.jl")
+include("ar.jl")
+include("arsim.jl") 
 include("ccf.jl")
 include("d.jl")
 include("datasets.jl")
 include("hma.jl") 
 include("loess.jl")
-include("pacf.jl")
 include("p.jl")
+include("pacf.jl")
+include("predict_ar.jl")
 include("sma.jl")
 include("stl.jl") 
 include("utils.jl")
@@ -43,6 +47,8 @@ Collection of methods for Time Series analysis
 Methods implemented:
 
     acf:        Auto-correlation or auto-covariance of univariate series. 
+    ar:         Multivariate Autoregressive Model.
+    arsim:      Simulated Multivariate Autoregressive Model.
     ccf:        Cross-correlation or cros-covariance of two univariate series.
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
     hma:        Henderson moving average filter.

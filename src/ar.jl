@@ -19,7 +19,6 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 
 # Returns
 An AR object containing the model coefficients, the prediction variance/covariance matrix, residuals a collection of information criteria
-
 """
 function ar(x::AbstractArray, order::Integer, constant = true; method = "ols")
 
@@ -80,10 +79,14 @@ function ar_ols(x::AbstractArray, order::Integer, constant = true)
     constant = Φ0
     variance = Σ
 
+    ar_ols(x, order, constant)
+    call = "ar(X, order="*string(order)*
+        ", constant="*string(constant)*")"
+    
     AR(Φ,coefficients,
        Φ0,constant,
        Σ,variance, 
        residuals,
-       IC,PC,xt,"")
+       IC,PC,xt,call)
 
 end
