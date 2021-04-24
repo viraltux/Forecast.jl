@@ -26,3 +26,14 @@ function drop(M::AbstractMatrix;
     M[dr,dc]
 end
 
+
+```
+Package: Forecast
+
+    Standarize format Arrays in a compact way
+```
+function compact(x)
+    if x isa Number return x end
+    x = dropdims(x, dims = tuple(findall(size(x) .== 1)...))
+    ndims(x) == 0 ? x[1] : x
+end

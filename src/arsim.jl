@@ -17,16 +17,22 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 ```
 
 # Arguments
-`Φ`            Array with dimensions (m,m,p) for the parameters in the AR model.
-`Φ0`           Vector size `m` for the constant in the AR model. Default value is 0.
-`x0`           Array with dimensions (m,p) for the initial value in the AR model. Default value is a random value from zero to one.
-`Σ`            Variance/Covariance matrix for the AR model with a MvNormal distribution for the noise. Default value is an identity Matrix.
-`n`            Number of simulations.
-`E`            Distribution for the error.
-`AR`           AR struct coming from an `ar` fitting.
+- `Φ`:            Array with dimensions (m,m,p) for the parameters in the AR model.
+- `Φ0`:           Vector size `m` for the constant in the AR model. Default value is 0.
+- `x0`:           Array with dimensions (m,p) for the initial value in the AR model. Default value is a random value from zero to one.
+- `Σ`:            Variance/Covariance matrix for the AR model with a MvNormal distribution for the noise. Default value is an identity Matrix.
+- `n`:            Number of simulations.
+- `E`:            Distribution for the error.
+- `AR`:           AR struct coming from an `ar` fitting.
 
 # Returns
 A multivariate series simulating an AR model each column containing a dimension and ordered by time ascending rows.
+
+# Examples
+```julia-repl
+julia> arsim(1,10)
+10-element Vector{Float64,1}:
+[...]
 """
 function arsim(Φ,n::Integer)
     arsim(Φ,nothing,nothing,MvNormal(0,0),n)
@@ -55,7 +61,6 @@ end
 function arsim(ar_str::AR,n::Integer)
     Φ = ar_str.Φ
     Φ0 = ar_str.Φ0
-    x0 = ar_str.x0
     Σ = ar_str.Σ
     arsim(Φ,Φ0,x0,Σ,n)
 end
@@ -95,11 +100,4 @@ function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
     end
 
     compact(x)
-end
-
-## Standarize format for calculations
-function compact(x)
-    if x isa Number return x end
-    x = dropdims(x, dims = tuple(findall(size(x) .== 1)...))
-    ndims(x) == 0 ? x[1] : x
 end

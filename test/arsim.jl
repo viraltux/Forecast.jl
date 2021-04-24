@@ -51,7 +51,11 @@ using Forecast
     @test x isa Matrix
     @test size(x) == (10,2)
 
-    # arsim(Φ,Φ0,x0,Σ,100)
+    # arsim(Φ,Φ0,x0,Σ,n)
+    Φ,Φ0,x0,Σ,n = .1,.2,.3,0,3
+    x = arsim(Φ,Φ0,x0,Σ,n)
+    @test x ≈ [0.23, 0.223, 0.2223]
+    
     Φ,Φ0,x0,Σ,n = .1,.2,.3,.4,10
     x = arsim(Φ,Φ0,x0,Σ,n)
     @test x isa Vector
@@ -75,22 +79,29 @@ using Forecast
     @test size(x) == (10,2)
 
     
-    # arsim(Φ,Φ0,x0,E,100)
+    # arsim(Φ,Φ0,x0,E,n)
     E1 = MvLogNormal(MvNormal(1,1))
-    x = arsim(.1,.2,.3,E1,10)
+    Φ,Φ0,x0,n = .1,.2,.3,10
+    x = arsim(Φ,Φ0,x0,E1,n)
     @test x isa Vector
     @test length(x) == 10
-
-    x = arsim([.1,.2],.3,[.4,.5],E1,10)
+    
+    Φ,Φ0,x0,n = [.1,.2],.3,[.4,.5],10
+    x = arsim(Φ,Φ0,x0,E1,n)
     @test x isa Vector
     @test length(x) == 10
 
     E2 = MvLogNormal(MvNormal(2,1))
-    x = arsim([.1 .2; .3 .4],[.5, .6],[.7,.8],E2,10)
+    Φ,Φ0,x0,n = [.1 .2; .3 .4],[.5, .6],[.7,.8],10
+    x = arsim(Φ,Φ0,x0,E2,n)
     @test x isa Matrix
     @test size(x) == (10,2)
 
     # arsim(AR,100)
-    # ar_str = ar
-    
+    Φ,Φ0,Σ,n = .1,.2,.3,1000
+    xar = ar(arsim(Φ,Φ0,Σ,n),1)
+    x = arsim(xar,100)
+    @test x isa Vector
+    @test length(x) == 100
+
 end

@@ -18,15 +18,20 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 - `method`: Method to fit the `ar` model. Currently only "ols".
 
 # Returns
-An AR object containing the model coefficients, the prediction variance/covariance matrix, residuals a collection of information criteria
+An AR object containing the model coefficients, the error sigma matrix, residuals and a collection of information criteria
+
+# Examples
+```julia-repl
+julia> ar(rand(10),2)
+AR([...])
 """
-function ar(x::AbstractArray, order::Integer, constant = true; method = "ols")
+function ar(x::AbstractArray, order::Integer, constant::Bool = true; method = "ols")
 
     return ar_ols(x, order, constant)
     
 end
 
-function ar_ols(x::AbstractArray, order::Integer, constant = true)
+function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true)
 
     @assert 1 <= length(size(x)) <= 2
     n = length(x[:,1])
@@ -48,7 +53,7 @@ function ar_ols(x::AbstractArray, order::Integer, constant = true)
 
     W = (X'*X)\(X'*Y)
 
-    Φ0= constant ? W[1,:] : repeat([0.0],inner=m)
+    Φ0 = constant ? W[1,:] : repeat([0.0],inner=m)
 
     Φ = Array{Float64,3}(undef,(m,m,p))
     for (i,j,k) in zip(repeat(1:m,inner=p),repeat(1:p,m),1:p*m)
@@ -62,11 +67,11 @@ function ar_ols(x::AbstractArray, order::Integer, constant = true)
     # ML parameters covariance
     PC = kron(Σ, (X'*X)^-1)
 
-    # Prediction Error
-    residuals = Y - X*W
-
-    # `order` most recent values of x time series 
-    xt = x[(end-order+1):end,:]
+    # Fitted values
+    fitted = X*W
+    
+    # Prediction error
+    residuals = Y - fitted
 
     # Information Criteria
     lΣ   = log(norm(Σ))
@@ -75,18 +80,18 @@ function ar_ols(x::AbstractArray, order::Integer, constant = true)
                ("BIC",  n*log(norm(Σ)+m)+(m^2*p+m*(m+1)/2)*log(n)),
                ("H&Q",  lΣ + 2*log(log(n))*p*m^2/n)])
     
-    coefficients = Φ
-    constant = Φ0
-    variance = Σ
+    coefficients = Φ = compact(Φ)
+    ar_constant = Φ0  = compact(Φ0)
+    stdev = Σ = real(sqrt(compact(Σ)))
+    residuals = compact(residuals)
 
-    ar_ols(x, order, constant)
     call = "ar(X, order="*string(order)*
         ", constant="*string(constant)*")"
     
     AR(Φ,coefficients,
-       Φ0,constant,
-       Σ,variance, 
-       residuals,
-       IC,PC,xt,call)
+       Φ0,ar_constant,
+       Σ,stdev, 
+       fitted,residuals,
+       IC,PC,call)
 
 end

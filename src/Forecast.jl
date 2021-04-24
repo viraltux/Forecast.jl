@@ -28,7 +28,7 @@ include("hma.jl")
 include("loess.jl")
 include("p.jl")
 include("pacf.jl")
-include("predict_ar.jl")
+include("forecast_ar.jl")
 include("sma.jl")
 include("stl.jl") 
 include("utils.jl")
@@ -51,6 +51,7 @@ Methods implemented:
     arsim:      Simulated Multivariate Autoregressive Model.
     ccf:        Cross-correlation or cros-covariance of two univariate series.
     d:          Lagged differences of a given order for Vector, Array and TimeSeries.
+    forecast:   Forecast values of fitted time series models.
     hma:        Henderson moving average filter.
     loess:      Locally estimated scatterplot smoothing.
     p:          Reverse lagged differences of a given order for types Vector, Array and TimeArray.
