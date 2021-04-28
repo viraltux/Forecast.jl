@@ -52,6 +52,10 @@ using Forecast
     @test size(x) == (10,2)
 
     # arsim(Φ,Φ0,x0,Σ,n)
+    Φ,Φ0,x0,Σ,n = 1,0,1,0,3
+    x = arsim(Φ,Φ0,x0,Σ,n)
+    @test x ≈ [0.23, 0.223, 0.2223]
+    
     Φ,Φ0,x0,Σ,n = .1,.2,.3,0,3
     x = arsim(Φ,Φ0,x0,Σ,n)
     @test x ≈ [0.23, 0.223, 0.2223]
@@ -71,13 +75,11 @@ using Forecast
     @test x isa Matrix
     @test size(x) == (10,2)
 
-    
     Φ,Φ0,x0,Σ,n = reshape([[.1 .2; .3 .4] [.5 .6; .7 .8]],2,2,2),
                   [.9, .10],[.11 .12; .13 .14],[.9 .10; .10 .9],10
     x = arsim(Φ,Φ0,x0,Σ,n)
     @test x isa Matrix
     @test size(x) == (10,2)
-
     
     # arsim(Φ,Φ0,x0,E,n)
     E1 = MvLogNormal(MvNormal(1,1))
@@ -96,6 +98,14 @@ using Forecast
     x = arsim(Φ,Φ0,x0,E2,n)
     @test x isa Matrix
     @test size(x) == (10,2)
+
+    E3 = MvNormal(2,1)
+    Φ,Φ0,x0,Σ,n = reshape([[.1 .2; .3 .4] [.5 .6; .7 .8]],2,2,2),
+    [.9, .10],[.11 .12; .13 .14],[.9 .10; .10 .9],10
+    x = arsim(Φ,Φ0,x0,E3,n)
+    @test x isa Matrix
+    @test size(x) == (10,2)
+
 
     # arsim(AR,100)
     Φ,Φ0,Σ,n = .1,.2,.3,1000

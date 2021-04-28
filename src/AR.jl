@@ -17,13 +17,14 @@ Store results from the function `ar`
 `xt::AbstractArray`           Initial values x_t, x_{t-1} ... x_{t-order+1}
 `call::String`                method called to generate AR
 """
-struct AR
+mutable struct AR
     Φ
     coefficients
     Φ0
     constant
     Σ
     stdev
+    x
     fitted
     residuals
     IC::Dict
@@ -43,13 +44,15 @@ function Base.show(io::IO, xar::AR)
     println(); printstyled("Φ Coefficients' Std. Error",bold=true,color=:underline); println()
     sΦi = []
     nd = ndims(xar.Φ)
-    sz = size(xar.Φ)
+    sz = nd == 0 ? 1 : size(xar.Φ)
     for i in 1:(nd <= 1 ? 1 : sz[1])
         for j in 0:(nd == 0 ? 1 : ( nd <= 2 ? sz[1] : sz[1]*sz[3]))
             push!(sΦi, "Φ["*string(i)*","*string(j)*"]:")
         end
     end
-    display(hcat(sΦi,sqrt.(abs.(diag(xar.PC)))))
+    constant = length(xar.Φ) != length(xar.PC)
+    stderror = vcat(constant ? [] : 0 , sqrt.(abs.(diag(xar.PC))))
+    display(hcat(sΦi,stderror))
     println(); printstyled("Σ Noise Std. Deviation",bold=true,color=:underline); println()
     display(xar.Σ)
     println(); printstyled("Information Criteria",bold=true,color=:underline); println()

@@ -62,7 +62,7 @@ function arsim(ar_str::AR,n::Integer)
     Φ = ar_str.Φ
     Φ0 = ar_str.Φ0
     Σ = ar_str.Σ
-    arsim(Φ,Φ0,x0,Σ,n)
+    arsim(Φ,Φ0,nothing,Σ,n)
 end
 
 function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
@@ -83,14 +83,14 @@ function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
     end
 
     Φ0 = isnothing(Φ0) ? compact(zeros(m)) : compact(Φ0)
-    x0 = isnothing(x0) ? compact(rand(m,p)) : compact(x0)
+    x0 = isnothing(x0) ? compact(rand(m*p)) : compact(x0)
     E = size(E)[1] == 0 ? MvNormal(m,1) : E
     
     e = rand(E,n)
     x = compact(Array{Float64}(undef,n,m))
     
     # reshape and format for matrix operation
-    Φ = d == 0 ?  reshape([Φ],1,1) : reshape(Φ,m,m*p)
+    Φ  = d == 0 ? reshape([Φ],1,1) : reshape(Φ,m,m*p)
     Φ0 = d <= 1 ? [Φ0] : Φ0
     x0 = d == 0 ? [x0] : reshape(x0,m*p,1)
 

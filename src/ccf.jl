@@ -44,7 +44,7 @@ function ccf(x1::AbstractVector,
              x2::AbstractVector;
              type = "cor",
              lag::Integer = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+             levels = (0.95,0.99))
 
     N = length(x1)
     @assert N == length(x2) "Vectors should be of equal size"
@@ -55,8 +55,8 @@ function ccf(x1::AbstractVector,
     @assert isnothing(findfirst(ismissing,x2)) "No missing values allowed"
     @assert type in  ["cor","cov"] "The options for `type` are `cor` and `cov`"
     @assert 1 <= lag <= N-4
-    @assert length(alpha) == 2
-    @assert 0.0 < alpha[1] < alpha[2] < 1.0
+    @assert length(levels) == 2
+    @assert 0.0 < levels[1] < levels[2] < 1.0
 
     # auto-ccf
     auto = x1 == x2
@@ -92,18 +92,18 @@ function ccf(x1::AbstractVector,
     call = "ccf("* (auto ? "x" : "x1, x2") *
         "; type=\""*type*
         "\", lag="*string(lag)*
-        ", alpha="*string(alpha)*")"
+        ", levels="*string(levels)*")"
 
     # Confidence Intervals
-    a1 = alpha[1]
-    a2 = alpha[2]
+    a1 = levels[1]
+    a2 = levels[2]
     z1 = Distributions.quantile(Normal(), a1 + (1-a1)/2)
     ci1 = z1*fse(N)
     z2 = Distributions.quantile(Normal(), a2 + (1-a2)/2)
     ci2 = z2*fse(N)
     ci = (ci1,ci2)
 
-    CCF(ccf_res, N, type,lag,alpha, ci, auto, call)
+    CCF(ccf_res, N, type,lag,levels, ci, auto, call)
 
 end
 

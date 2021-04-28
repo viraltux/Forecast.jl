@@ -1,7 +1,7 @@
 """
 Package: Forecast
 
-    ar(x::AbstractArray, order::Integer, constant = true; method = "ols")
+    ar(x, order, constant = true; method = "ols")
 
 Fit a multivariate autoregressive series model.
     
@@ -25,6 +25,12 @@ An AR object containing the model coefficients, the error sigma matrix, residual
 julia> ar(rand(10),2)
 AR([...])
 """
+function ar(x::TimeArray, order::Integer, constant::Bool = true; method = "ols")
+
+    return ar_ols(values(x), order, constant)
+    
+end
+
 function ar(x::AbstractArray, order::Integer, constant::Bool = true; method = "ols")
 
     return ar_ols(x, order, constant)
@@ -91,7 +97,7 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true)
     AR(Φ,coefficients,
        Φ0,ar_constant,
        Σ,stdev, 
-       fitted,residuals,
+       x,fitted,residuals,
        IC,PC,call)
 
 end
