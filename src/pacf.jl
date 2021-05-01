@@ -63,7 +63,7 @@ function pacf(x::AbstractVector;
     call = "pacf(x"*
         "; type=\""*type*
         "\", lag="*string(lag)*
-        ", alpha="*string(alpha)*")"
+        ", levels="*string(alpha)*")"
 
     if (type == "stepwise") 
         pac = pacf_stepwise(x; lag=lag, alpha=alpha)

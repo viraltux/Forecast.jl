@@ -60,8 +60,8 @@
     
     if (fCCF.type == "cor") | (split(fCCF.type,'_')[1] == "pacf")
         lg = fCCF.lag
-        a1 = fCCF.alpha[1]; c1 = fCCF.ci[1]
-        a2 = fCCF.alpha[2]; c2 = fCCF.ci[2]
+        a1 = fCCF.levels[1]; c1 = fCCF.ci[1]
+        a2 = fCCF.levels[2]; c2 = fCCF.ci[2]
         dc = c2-c1
 
         @series begin

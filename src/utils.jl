@@ -10,11 +10,13 @@ function nextodd(x::Real)::Integer
     mod(cx,2)==0 ? cx+1 : cx
 end
 
-```
+"""
 Package: Forecast
 
-    drop rows and columns from a matrix
-```
+    drop(M;r,c)
+
+Drop rows and columns from a matrix.
+"""
 function drop(M::AbstractMatrix;
               r=nothing,
               c=nothing)
@@ -27,13 +29,20 @@ function drop(M::AbstractMatrix;
 end
 
 
-```
+"""
 Package: Forecast
 
-    Standarize format Arrays in a compact way
-```
+    compact(x)
+
+Standarize input by dropping empty dimensions and returning either a Number or an Array.
+"""
 function compact(x)
     if x isa Number return x end
+    x = Array(x)
+    sx = size(x)
+    x = reshape(x,sx)
     x = dropdims(x, dims = tuple(findall(size(x) .== 1)...))
-    ndims(x) == 0 ? x[1] : x
+    ndims(x) == 0 ? x[1] : x 
 end
+
+

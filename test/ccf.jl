@@ -9,7 +9,7 @@ using TimeSeries
 
     res = ccf(x1, x2; lag = 20, type="cor");
     @test res isa CCF
-    @test res.call == "ccf(x1, x2; type=\"cor\", lag=20, alpha=(0.95, 0.99))"
+    @test res.call == "ccf(x1, x2; type=\"cor\", lag=20, levels=(0.95, 0.99))"
     @test res.type == "cor"
     @test !res.auto
     @test res.lag == 20

@@ -1,13 +1,13 @@
 module Forecast
 
 using CSV, Distributions, ColorSchemes, DataFrames, GZip, LinearAlgebra, Plots,
-      RecipesBase, TimeSeries, Statistics
+      PrettyTables, RecipesBase, TimeSeries, StatsBase, Statistics
 
 # types
 export AR, CCF, STL
 
 # methods
-export acf, ar, arsim, ccf, d, hma, loess, p, pacf, predict, sma, stl, summarize
+export acf, ar, arsim, ccf, d, hma, loess, p, pacf, forecast, sma, stl, summarize
 
 # datasets
 export co2
@@ -17,6 +17,7 @@ include("AR.jl")
 include("CCF.jl")
 include("FORECAST.jl")
 include("STL.jl")
+include("SUMMARIZE.jl")
 
 # source files
 include("acf.jl")
@@ -37,8 +38,9 @@ include("utils.jl")
 
 # plot recipes
 ##  type
-include("CCFplot.jl")
-include("STLplot.jl")
+include("plot_CCF.jl")
+include("plot_FORECAST.jl")
+include("plot_STL.jl")
 
 ## user
 include("splot.jl")

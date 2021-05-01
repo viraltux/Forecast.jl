@@ -1,5 +1,6 @@
 using Test
 using Forecast
+import Forecast: fvar
 
 @testset "forecast_ar" begin
 
@@ -23,7 +24,6 @@ using Forecast
     Φ,n = .5,n
     xar = ar(arsim(Φ,n),1)
     fxar = forecast(xar,10)
-    @test length(fxar) == 10
+    @test length(fxar.mean) == 10
 
-    
 end

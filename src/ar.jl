@@ -16,6 +16,7 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 - `order`: Number of parameters Φ to be estimated.
 - `constant`: If `true` `ar` estimates Φ0 otherwise it is assume to be zero.
 - `method`: Method to fit the `ar` model. Currently only "ols".
+- `varnames`: Names of the dimenions (by default xi where `i` is an integer)
 
 # Returns
 An AR object containing the model coefficients, the error sigma matrix, residuals and a collection of information criteria
@@ -25,19 +26,33 @@ An AR object containing the model coefficients, the error sigma matrix, residual
 julia> ar(rand(10),2)
 AR([...])
 """
-function ar(x::TimeArray, order::Integer, constant::Bool = true; method = "ols")
+function ar(ta::TimeArray, order::Integer, constant::Bool = true;
+            method = "ols")
 
-    return ar_ols(values(x), order, constant)
+    vx = values(x)
+    @assert sum((x -> x isa Number).(vx)) == size(vx,1) "All values in the time series must be numeric"
+
+    return ar_ols(vx, order, constant; method = method, varnames = string(colvarnames(ta)))
     
 end
 
-function ar(x::AbstractArray, order::Integer, constant::Bool = true; method = "ols")
+function ar(x::AbstractArray, order::Integer, constant::Bool = true;
+            method = "ols")
 
-    return ar_ols(x, order, constant)
+    return ar_ols(x, order, true)
     
 end
 
-function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true)
+
+function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true;
+                varnames = nothing)
+
+    if isnothing(varnames)
+        varnames = String[]
+        for i in 1:size(x,2)
+            push!(varnames,"x"*string(i))
+        end
+    end
 
     @assert 1 <= length(size(x)) <= 2
     n = length(x[:,1])
@@ -68,10 +83,10 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true)
 
     # Maximum Likelihood noise covariance
     k = p*m*m
-    Σ = 1/(n-k)*(Y-X*W)'*(Y-X*W)
+    Σ2 = 1/(n-k)*(Y-X*W)'*(Y-X*W)
 
     # ML parameters covariance
-    PC = kron(Σ, (X'*X)^-1)
+    PC = kron(Σ2, (X'*X)^-1)
 
     # Fitted values
     fitted = X*W
@@ -80,21 +95,22 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true)
     residuals = Y - fitted
 
     # Information Criteria
-    lΣ   = log(norm(Σ))
-    IC = Dict([("AIC",  lΣ + 2*p*m^2/n),
-               ("AICC", lΣ + 2*(p*m^2+1)/(n-(p*m^2+2))),
-               ("BIC",  n*log(norm(Σ)+m)+(m^2*p+m*(m+1)/2)*log(n)),
-               ("H&Q",  lΣ + 2*log(log(n))*p*m^2/n)])
+    lΣ2   = log(norm(Σ2))
+    IC = Dict([("AIC",  lΣ2 + 2*p*m^2/n),
+               ("AICC", lΣ2 + 2*(p*m^2+1)/(n-(p*m^2+2))),
+               ("BIC",  n*log(norm(Σ2)+m)+(m^2*p+m*(m+1)/2)*log(n)),
+               ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
     
     coefficients = Φ = compact(Φ)
     ar_constant = Φ0  = compact(Φ0)
-    stdev = Σ = real(sqrt(compact(Σ)))
+    stdev = Σ = real(sqrt(compact(Σ2)))
     residuals = compact(residuals)
 
     call = "ar(X, order="*string(order)*
         ", constant="*string(constant)*")"
     
-    AR(Φ,coefficients,
+    AR(varnames,
+       Φ,coefficients,
        Φ0,ar_constant,
        Σ,stdev, 
        x,fitted,residuals,

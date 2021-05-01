@@ -68,6 +68,29 @@ end
 function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
     Φ = compact(Φ)
 
+    m,p = arsize(Φ)
+    
+    Φ0 = isnothing(Φ0) ? compact(zeros(m)) : compact(Φ0)
+    x0 = isnothing(x0) ? compact(rand(m*p)) : compact(x0)
+    E = size(E)[1] == 0 ? MvNormal(m,1) : E
+    
+    e = rand(E,n)
+    x = compact(Array{Float64}(undef,n,m))
+    
+    # reshape and format for matrix operation
+    Φ = Φ  isa Number ? reshape([Φ],1,1) : reshape(Φ,m,m*p)
+    Φ0 = Φ0 isa Number ? [Φ0] : Φ0
+    x0 = x0 isa Number ? [x0] : reshape(x0,m*p,1)
+
+    for i in 1:n
+        x[i,:] = Φ * x0 + Φ0  + e[:,i]
+        x0 = vcat(x[i,:],x0)[1:m*p]
+    end
+
+    compact(x)
+end
+
+function arsize(Φ)
     d = ndims(Φ)
     sΦ = size(Φ)
     if d == 0
@@ -81,23 +104,5 @@ function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
     else
         @error "Φ should have less the 4 dimensions"
     end
-
-    Φ0 = isnothing(Φ0) ? compact(zeros(m)) : compact(Φ0)
-    x0 = isnothing(x0) ? compact(rand(m*p)) : compact(x0)
-    E = size(E)[1] == 0 ? MvNormal(m,1) : E
-    
-    e = rand(E,n)
-    x = compact(Array{Float64}(undef,n,m))
-    
-    # reshape and format for matrix operation
-    Φ  = d == 0 ? reshape([Φ],1,1) : reshape(Φ,m,m*p)
-    Φ0 = d <= 1 ? [Φ0] : Φ0
-    x0 = d == 0 ? [x0] : reshape(x0,m*p,1)
-
-    for i in 1:n
-        x[i,:] = Φ * x0 + Φ0  + e[:,i]
-        x0 = vcat(x[i,:],x0)[1:m*p]
-    end
-
-    compact(x)
+    (m,p)
 end

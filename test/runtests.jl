@@ -10,13 +10,14 @@ const tests = [
     "ccf",
     "d",
     "datasets",
+    "forecast_ar",
     "hma",
     "loess",
     "p",
     "pacf",
-    "predict_ar",
     "sma",
     "stl",
+    "summarize",
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)

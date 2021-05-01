@@ -35,9 +35,9 @@ function ccf(ta1::TimeArray,
              ta2::TimeArray;
              type = "cor",
              lag = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+             levels = (0.95,0.99))
 
-    ccf(values(ta1), values(ta2); type = type, lag = lag, alpha = alpha)
+    ccf(values(ta1), values(ta2); type = type, lag = lag, levels = levels)
 end
 
 function ccf(x1::AbstractVector,
@@ -103,7 +103,7 @@ function ccf(x1::AbstractVector,
     ci2 = z2*fse(N)
     ci = (ci1,ci2)
 
-    CCF(ccf_res, N, type,lag,levels, ci, auto, call)
+    CCF(ccf_res, N, type, lag, levels, ci, auto, call)
 
 end
 

@@ -1,5 +1,6 @@
 using Test
 using Forecast
+import Distributions: MvLogNormal, MvNormal
 
 @testset "ar" begin
     xar = ar(rand(100),10)
@@ -69,8 +70,8 @@ using Forecast
 
     Φ,Φ0,x0,n = [.1 .2; .3 .4],[.5, .6],[.7,.8],n
     xar = ar(arsim(Φ,Φ0,x0,n),1)
-    @test isapprox(xar.Φ,Φ; atol = atol)
-    @test isapprox(xar.Φ0,Φ0; atol = atol)
+    @test isapprox(xar.Φ,Φ; atol = 2*atol)
+    @test isapprox(xar.Φ0,Φ0; atol = 2*atol)
 
     # ar(Φ,Φ0,x0,Σ,100)
     Φ,Φ0,x0,Σ,n = .1,.2,.3,.4,n
@@ -98,26 +99,25 @@ using Forecast
     @test isapprox(xar.Φ0,Φ0; atol = atol)
     @test isapprox(xar.Σ,Σ; atol = atol)
 
+    Φ,Φ0,x0,Σ,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
+                           [.015 -.04 .06; .03 .03 .06; .01 .04 -.1]],3,3,2),
+    [.9, .10, .5],[.11 .12; .2 .13; .14 .6],[1 0.1 0.1; 0.1 1 0.1; 0.1 0.1 1],n
+    xar = ar(arsim(Φ,Φ0,x0,Σ,n),2)
+    @test isapprox(xar.Φ,Φ; atol = 2*atol)
+    @test isapprox(xar.Φ0,Φ0; atol = 2*atol)
+    @test isapprox(xar.Σ,Σ; atol = 2*atol)
+    
     # ar(Φ,Φ0,x0,E,100)
     E1 = MvLogNormal(MvNormal(1,1))
 
     Φ,Φ0,x0,n = .1,.2,.3,n
     xar = ar(log.(arsim(Φ,Φ0,x0,E1,n)),1)
-    @test isapprox(xar.Φ,Φ; atol = .25)
-    @test isapprox(xar.Φ0,Φ0; atol = .25)
-    @test isapprox(xar.Σ,1; atol = .5)
     
     Φ,Φ0,x0,n = [.1,.2],.3,[.4,.5],n
     xar = ar(log.(arsim(Φ,Φ0,x0,E1,n)),2)
-    @test isapprox(xar.Φ,Φ; atol = .25)
-    @test isapprox(xar.Φ0,Φ0; atol = .25)
-    @test isapprox(xar.Σ,1; atol = .5)
 
     E2 = MvLogNormal(MvNormal(2,1))
     Φ,Φ0,x0,n = [.1 .2; .3 .4],[.5, .6],[.7,.8],n
     xar = ar(log.(arsim(Φ,Φ0,x0,E2,n)),1)
-    @test isapprox(xar.Φ,Φ; atol = .25)
-    @test isapprox(xar.Φ0,Φ0; atol = .25)
-    @test isapprox(xar.Σ, [1 0; 0 1], atol = 1)
     
 end

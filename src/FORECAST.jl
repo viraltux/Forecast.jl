@@ -21,9 +21,15 @@ mutable struct FORECAST
 end
 
 function Base.show(io::IO, f::FORECAST)
-    println("Prediction Intervals levels at: ", string(f.levels))
-    println()
-    
-    # display(DataFrame((mu=f.mean, lower1=f.lower[:,1], upper1=f.upper[:,1],
-    #                                lower2=f.lower[:,2], upper2=f.upper[:,2])))
+    printstyled("Forecast Information\n",bold=true,color=:underline)
+    print("\n    ",f.call, "\n")
+    printstyled("\nMean Forecasting\n",bold=true,color=:underline)
+    pretty_table(f.mean, noheader = true, nosubheader = true, show_row_number=false)
+    printstyled("\nPrediction Intervals levels at: "*string(f.levels)*"\n",bold=true,color=:underline)
+    printstyled("\nUpper:\n",color=:underline)
+    pretty_table(f.upper, noheader = true, nosubheader = true, show_row_number=false,
+                 vlines =0:2:size(f.mean,2)+2)
+    printstyled("\nLower:\n",color=:underline)
+    pretty_table(f.lower, noheader = true, nosubheader = true, show_row_number=false,
+                 vlines =0:2:size(f.mean,2)+2)
 end
