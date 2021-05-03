@@ -18,7 +18,7 @@ import Distributions: MvLogNormal, MvNormal
     @test length(xar.residuals) == 100 - 10
 
     n = 1000
-    atol = .15
+    atol = .2
     
     # ar(Φ,n)
     Φ,n = .5,n
@@ -92,6 +92,12 @@ import Distributions: MvLogNormal, MvNormal
     @test isapprox(xar.Φ0,Φ0; atol = atol)
     @test isapprox(xar.Σ,Σ; atol = atol)
 
+    Φ,Φ0,x0,Σ,n = [.1 .2; .3 .4],[.0, .0],[.7,.8],[.9 .10; .10 .9],n
+    xar = ar(arsim(Φ,Φ0,x0,Σ,n),1,false)
+    @test isapprox(xar.Φ,Φ; atol = atol)
+    @test isapprox(xar.Φ0,Φ0; atol = atol)
+    @test isapprox(xar.Σ,Σ; atol = atol)
+    
     Φ,Φ0,x0,Σ,n = reshape([[.1 -.1; .05 -.1] [.15 -.4; .3 .6]],2,2,2),
     [.9, .10],[.11 .12; .13 .14],[.9 .10; .10 .9],n
     xar = ar(arsim(Φ,Φ0,x0,Σ,n),2)

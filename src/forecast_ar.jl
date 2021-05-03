@@ -19,20 +19,23 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 # Returns
 A multivariate series simulating an AR model each column containing a dimension and ordered by time ascending rows.
 """
-function forecast(xar::AR, n::Integer; xlevels = (0.8,.95))
+function forecast(xar::AR, n::Integer; levels = (0.8,.95))
 
+    @assert n > 0 "n must be greater than 0"
+    
     Φ,Φ0,Σ = xar.Φ,xar.Φ0,xar.Σ
 
     m,p = arsize(Φ)
-    
-    x0 = compact(xar.x[end:-1:end-p+1,:]')
+
+    x = xar.x isa TimeArray ? values(xar.x) : xar.x
+    x0 = compact(x[end:-1:end-p+1,:]')
     E = MvNormal(m,0)
     mu = arsim(Φ,Φ0,x0,E,n)
     se = sqrt.(fvar(Φ,Σ,n))
 
     # Prediction Intervals
-    a1 = xlevels[1]
-    a2 = xlevels[2]
+    a1 = levels[1]
+    a2 = levels[2]
 
     z1 = mapslices(x -> Distributions.quantile.(Normal.(0,x),
                                                a1 + (1-a1)/2),
@@ -47,7 +50,7 @@ function forecast(xar::AR, n::Integer; xlevels = (0.8,.95))
     lower2 = mu .- z2
     upper2 = mu .+ z2
     
-   FORECAST(xar, xlevels,
+   FORECAST(xar, levels,
             mu, hcat(upper1,upper2), hcat(lower1,lower2),
             "Forecasting "*xar.call)
 

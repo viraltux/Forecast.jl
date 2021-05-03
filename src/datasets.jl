@@ -8,7 +8,7 @@ Return dataset with atmospheric Carbon Dioxide Dry Air Mole Fractions from quasi
 K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dry Air Mole Fractions from continuous measurements at Mauna Loa, Hawaii, Barrow, Alaska, American Samoa and South Pole. 1973-2019, Version 2020-08 National Oceanic and Atmospheric Administration (NOAA), Global Monitoring Laboratory (GML), Boulder, Colorado, USA https://doi.org/10.15138/yaf1-bk21 FTP path: ftp://aftp.cmdl.noaa.gov/data/greenhouse_gases/co2/in-situ/surface/
 
 # Arguments
-- `full`: if `true` Returns full original dataset from 1973 to 2020 in a DataFrame, otherwise returns the subset used in "STL: A Seasonal-Trend Decomposition Procedure Based on Loess" from Cleveland et. al. Its default value is `false`.
+- `full`: if `true` Returns the full original dataset from 1973 to 2020 in a DataFrame, otherwise returns the subset used in "STL: A Seasonal-Trend Decomposition Procedure Based on Loess" from Cleveland et. al. Its default value is `false`.
 
 # Returns
  Dataframe or TimeArray containing the descrived dataset.
@@ -64,3 +64,68 @@ function co2(full = false)
     co2_stl_ts
     
 end
+
+
+"""
+Package: Forecast
+
+    seaborne()
+
+Cerdeiro, Komaromi, Liu and Saeed (2020). Estimates of world seaborne trade from AIS data collected by MarineTraffic; available at UN COMTRADE Monitor.
+
+This subset contains imports and export data for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02.
+
+num_pc = number of port calls
+mtc = metric tons of cargo
+dwt = deadweight tonnage
+suffix ma = 30-day moving averages
+
+# Arguments
+- `full`: if `true` Returns the full original dataset as a DataFrame, otherwise returns a TimeArray
+with the imports deadweight tonnage data.
+
+
+# Returns
+ Dataframe or TimeArray containing the descrived dataset.
+
+# Examples
+```julia-repl
+julia> seaborne()
+[ Info: Imports deadweight tonnage data from AIS
+2204×3 TimeArray{Int64, 2, Date, Matrix{Int64}} 2015-04-01 to 2021-04-12
+│            │ Germany │ France  │ UK      │
+├────────────┼─────────┼─────────┼─────────┤
+│ 2015-04-01 │ 173686  │ 309178  │ 873765  │
+│ 2015-04-02 │ 571960  │ 750539  │ 929067  │
+   [...]
+```
+"""
+function seaborne(full = false)
+
+    data = "data/seaborne.csv.gz"
+    path = joinpath(splitdir(@__DIR__)[1], data)
+    
+    sb_df = GZip.open(path, "r") do io
+        CSV.read(io,DataFrame)
+    end
+
+    if full
+        @info "Full dataset with estimates of world seaborne trade from AIS"
+        return sb_df
+    else
+        @info "Seaborne Deadweight Trade Imports from AIS"
+    end
+
+    # Group by Country and Flow to select Imports
+    gbt = groupby(sb_df, [:country_name, :flow])
+    cbt = hcat(gbt[1].dwt, gbt[3].dwt, gbt[5].dwt)
+
+    data = (datetime = Dates.Date(2015,4,1):Dates.Day(1):Dates.Date(2021,4,12),
+            Germany = gbt[1].dwt,
+            France = gbt[3].dwt,
+            UK = gbt[5].dwt)
+
+    TimeArray(data; timestamp = :datetime, meta = "Seaborn Deadweight Imports")
+
+end
+

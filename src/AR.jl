@@ -47,8 +47,12 @@ function Base.show(io::IO, xar::AR)
     pretty_table(xar_sum.quantiles, nosubheader = true, show_row_number=false)
     pretty_table(xar_sum.moments, nosubheader = true, show_row_number=false)
 
-    printstyled("Φ0 Constant Coefficient\n",bold=true,color=:underline)
-    display(xar.Φ0)
+    constant = length(xar.Φ) != length(diag(xar.PC))
+    
+    if constant
+        printstyled("Φ0 Constant Coefficient\n",bold=true,color=:underline)
+        display(xar.Φ0)
+    end
 
     printstyled("\nΦi Coefficients\n",bold=true,color=:underline)
     display(xar.Φ)
@@ -58,15 +62,22 @@ function Base.show(io::IO, xar::AR)
     nd = ndims(xar.Φ)
     sz = nd == 0 ? 1 : size(xar.Φ)
     for i in 1:(nd <= 1 ? 1 : sz[1])
-        for j in 0:(nd == 0 ? 1 : ( nd <= 2 ? sz[1] : sz[1]*sz[3]))
+        for j in (constant ? 0 : 1):(nd == 0 ? 1 : ( nd <= 2 ? sz[1] : sz[1]*sz[3]))
             push!(sΦi, "Φ["*string(i)*","*string(j)*"]:")
         end
     end
 
-    constant = length(xar.Φ) != length(xar.PC)
-    
-    se = vcat(constant ? [] : 0 , sqrt.(abs.(diag(xar.PC))))
-    mu = ndims(xar.Φ) == 0 ? xar.Φ : reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
+
+    se = sqrt.(abs.(diag(xar.PC)))
+
+    if ndims(xar.Φ) == 0
+        mu  = xar.Φ
+    elseif constant
+        mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
+    else
+        mu = reshape(reshape(xar.Φ,m,m*p)',m*(m*p),1)
+    end
+
     mu = abs.(mu)
     
     function sigf(x)
@@ -90,10 +101,19 @@ function Base.show(io::IO, xar::AR)
 
 end
 
-
-   # Coefficients:
-   #             Estimate Std. Error t value Pr(>|t|)    
-   # (Intercept)   0.4809     0.0288    16.7   <2e-16 ***
-   # ---
-   # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-  
+function arsize(Φ)
+    d = ndims(Φ)
+    sΦ = size(Φ)
+    if d == 0
+        m,p = 1,1
+    elseif d == 1
+        m,p = 1,sΦ[1]
+    elseif d == 2
+        m,p = sΦ[1],1
+    elseif d == 3
+        m,p = sΦ[1],sΦ[3]
+    else
+        @error "Φ should have less the 4 dimensions"
+    end
+    (m,p)
+end

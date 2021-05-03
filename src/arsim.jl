@@ -89,20 +89,3 @@ function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
 
     compact(x)
 end
-
-function arsize(Φ)
-    d = ndims(Φ)
-    sΦ = size(Φ)
-    if d == 0
-        m,p = 1,1
-    elseif d == 1
-        m,p = 1,sΦ[1]
-    elseif d == 2
-        m,p = sΦ[1],1
-    elseif d == 3
-        m,p = sΦ[1],sΦ[3]
-    else
-        @error "Φ should have less the 4 dimensions"
-    end
-    (m,p)
-end

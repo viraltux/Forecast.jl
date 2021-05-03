@@ -29,17 +29,19 @@ AR([...])
 function ar(ta::TimeArray, order::Integer, constant::Bool = true;
             method = "ols")
 
-    vx = values(x)
-    @assert sum((x -> x isa Number).(vx)) == size(vx,1) "All values in the time series must be numeric"
+    vx = values(ta)
+    @assert sum((x -> x isa Number).(vx)) == size(vx,1)*size(vx,2)
+        "All values in the time series must be numeric"
 
-    return ar_ols(vx, order, constant; method = method, varnames = string(colvarnames(ta)))
-    
+    ar_ts = ar_ols(vx, order, constant; varnames = string.(colnames(ta)))
+    ar_ts.x = ta
+    return ar_ts
 end
 
 function ar(x::AbstractArray, order::Integer, constant::Bool = true;
             method = "ols")
 
-    return ar_ols(x, order, true)
+    return ar_ols(x, order, constant)
     
 end
 

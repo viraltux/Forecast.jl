@@ -28,8 +28,8 @@ function Base.show(io::IO, f::FORECAST)
     printstyled("\nPrediction Intervals levels at: "*string(f.levels)*"\n",bold=true,color=:underline)
     printstyled("\nUpper:\n",color=:underline)
     pretty_table(f.upper, noheader = true, nosubheader = true, show_row_number=false,
-                 vlines =0:2:size(f.mean,2)+2)
+                 vlines =0:2:size(f.mean,2)+size(f.mean,2))
     printstyled("\nLower:\n",color=:underline)
     pretty_table(f.lower, noheader = true, nosubheader = true, show_row_number=false,
-                 vlines =0:2:size(f.mean,2)+2)
+                 vlines =0:2:size(f.mean,2)+size(f.mean,2))
 end
