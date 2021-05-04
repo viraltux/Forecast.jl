@@ -1,8 +1,6 @@
 @recipe function f(fc::FORECAST)
 
     # plot configuration
-
-    
     titlefont:= font(8, "Courier")
     xtickfont:= font(3, "Courier")
     ytickfont:= font(3, "Courier")

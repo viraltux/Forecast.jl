@@ -28,7 +28,6 @@ function drop(M::AbstractMatrix;
     M[dr,dc]
 end
 
-
 """
 Package: Forecast
 

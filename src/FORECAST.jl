@@ -4,12 +4,12 @@ Package: Forecast
 Store results from the function `forecast`
 
 # Arguments
-   model: Model object containing information about the fitted model.
-       x: Original time series.
-   level: The confidence values associated with the prediction intervals.
-    mean: Point forecasts.
-   lower: Lower limits for prediction intervals.
-   upper: Upper limits for prediction intervals.
+   model:  Model object containing information about the fitted model.
+   x:      Original time series.
+   levels: The confidence values associated with the prediction intervals.
+   mean:   Point forecasts.
+   lower:  Lower limits for prediction intervals.
+   upper:  Upper limits for prediction intervals.
 """
 mutable struct FORECAST
     model

@@ -1,23 +1,23 @@
 """
 Package: Forecast
 
-    predict(AR,n; ci = (0.8,.95))
+    forecast(xar, n; levels = (0.8,.95))
 
-Preedict a multivariate autoregressive series model.
+Forecast a univariate or multivariate autoregressive model.
     
-The predicted series follows the model:
+The forecasting follows the model:
 
 ```math
 Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 ```
 
 # Arguments
-`xar`           AR struct coming from an `ar` fitting.
-`n`             Number of elements to be predicted
-`level`            Confidence Interval for the prediction, its default value is (0.8, 0.95)
+`xar`           AR struct coming from the `ar` function.
+`n`             Number of time periods to be forecasted.
+`levels`        Prediction intervals  levels; its default value is (0.8, 0.95)
 
 # Returns
-A multivariate series simulating an AR model each column containing a dimension and ordered by time ascending rows.
+A FORECAST struct
 """
 function forecast(xar::AR, n::Integer; levels = (0.8,.95))
 

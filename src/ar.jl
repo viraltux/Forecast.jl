@@ -1,7 +1,9 @@
 """
 Package: Forecast
 
-    ar(x, order, constant = true; method = "ols")
+    ar(x::TimeArray, order, constant = true; method = "ols")
+    ar(x::DataFrame, order, constant = true; method = "ols")
+    ar(x::AbstractArray, order, constant = true; method = "ols", varnames = nothing)
 
 Fit a multivariate autoregressive series model.
     
@@ -16,14 +18,14 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 - `order`: Number of parameters Φ to be estimated.
 - `constant`: If `true` `ar` estimates Φ0 otherwise it is assume to be zero.
 - `method`: Method to fit the `ar` model. Currently only "ols".
-- `varnames`: Names of the dimenions (by default xi where `i` is an integer)
+- `varnames`: Names of the dimensions (by default xi where `i` is an integer)
 
 # Returns
 An AR object containing the model coefficients, the error sigma matrix, residuals and a collection of information criteria
 
 # Examples
 ```julia-repl
-julia> ar(rand(10),2)
+julia> ar(rand(100,2),2)
 AR([...])
 """
 function ar(ta::TimeArray, order::Integer, constant::Bool = true;
@@ -38,23 +40,27 @@ function ar(ta::TimeArray, order::Integer, constant::Bool = true;
     return ar_ts
 end
 
-function ar(x::AbstractArray, order::Integer, constant::Bool = true;
+function ar(df::DataFrame, order::Integer, constant::Bool = true;
             method = "ols")
 
-    return ar_ols(x, order, constant)
+    x = Array(df)
+    @assert sum((x -> x isa Number).(vx)) == size(vx,1)*size(vx,2)
+    "All values in the time series must be numeric"
+
+    return ar_ols(x, order, constant; varnames = names(x))
     
 end
 
+function ar(x::AbstractArray, order::Integer, constant::Bool = true;
+            method = "ols", varnames = nothing)
 
-function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true;
-                varnames = nothing)
+    return ar_ols(x, order, constant; varnames = varnames)
+    
+end
 
-    if isnothing(varnames)
-        varnames = String[]
-        for i in 1:size(x,2)
-            push!(varnames,"x"*string(i))
-        end
-    end
+function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true; varnames)
+
+    varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
 
     @assert 1 <= length(size(x)) <= 2
     n = length(x[:,1])

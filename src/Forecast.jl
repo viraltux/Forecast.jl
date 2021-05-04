@@ -63,6 +63,7 @@ Methods implemented:
     sma:        Simple moving average.
     splot:      Plot a seasonal plot for types Vector and TimeArray.
     stl:        Seasonal and Trend decomposition using loess.
+    summarize:  Statistical summary.
 """
 Forecast
 

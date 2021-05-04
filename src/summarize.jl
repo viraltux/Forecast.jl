@@ -45,7 +45,7 @@ function summarize(x::Number; varnames = nothing)
     summarize([x,x], varnames = varnames)
 end
 
-function summarize(x::AbstractArray; varnames = nothing)
+function summarize(x::AbstractArray; varnames)
 
     @assert ndims(x) <= 2 "Data should have two dimensions at most."
     x = compact(x)

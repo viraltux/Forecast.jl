@@ -75,10 +75,10 @@ Cerdeiro, Komaromi, Liu and Saeed (2020). Estimates of world seaborne trade from
 
 This subset contains imports and export data for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02.
 
-num_pc = number of port calls
-mtc = metric tons of cargo
-dwt = deadweight tonnage
-suffix ma = 30-day moving averages
+num_pc:     number of port calls
+mtc:        metric tons of cargo
+dwt:        deadweight tonnage
+suffix_ma:  30-day moving averages
 
 # Arguments
 - `full`: if `true` Returns the full original dataset as a DataFrame, otherwise returns a TimeArray
@@ -86,7 +86,7 @@ with the imports deadweight tonnage data.
 
 
 # Returns
- Dataframe or TimeArray containing the descrived dataset.
+ Dataframe or TimeArray containing the seaborne dataset.
 
 # Examples
 ```julia-repl
