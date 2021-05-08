@@ -1,7 +1,8 @@
 module Forecast
 
-using CSV, Distributions, ColorSchemes, DataFrames, GZip, LinearAlgebra, Plots,
-      PrettyTables, RecipesBase, Statistics, StatsBase, TimeSeries
+using CSV, Distributions, ColorSchemes, DataFrames, GZip, HypothesisTests,
+    LinearAlgebra, Plots, PrettyTables, RecipesBase,
+    Statistics, StatsBase, TimeSeries
 
 # types
 export AR, CCF, STL
@@ -10,7 +11,7 @@ export AR, CCF, STL
 export acf, ar, arsim, ccf, d, hma, loess, p, pacf, forecast, sma, stl, summarize
 
 # datasets
-export co2, seaborne
+export co2, seaborne, quakes
 
 # types
 include("AR.jl")

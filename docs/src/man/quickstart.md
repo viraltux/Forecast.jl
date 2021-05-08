@@ -103,13 +103,13 @@ plot(res,size=(800,500))
 
 ## Seasonal Plot on Seaborne dataset 
 
-To compare seasonal behaviour we can use splot to display it side by side, in thi case it seems on Thursdays there is on average an higher trade activity in Germany's ports.
+To compare seasonal behavior we can use splot to display it side by side, in this case it seems Thursdays is the day where there is a higher trade activity on average in the UK's ports.
 
 ```@example quickstart
 using Plots
 using Forecast
 sb = seaborne()
-splot(sb.Germany)
+splot(sb.UK, size=(800,500))
 ```
 
 ## Multivariate Autoregressive Model

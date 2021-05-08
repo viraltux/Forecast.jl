@@ -4,7 +4,7 @@ Package: Forecast
 Store results from the function `ar`
 
 # Arguments
-`names`           List of variable names
+`varnames`        List of variable names
 `Φ`               Collection of d by d matrices of coefficients
 `coefficients`    Copy of Φ
 `Φ0`              Constant
@@ -38,24 +38,27 @@ end
 function Base.show(io::IO, xar::AR)
 
     m,p = arsize(xar.Φ)
-
     printstyled("Multivariate Autoregressive Model\n",bold=true,color=:underline)
     print("\n    ",xar.call,"\n")
     
     printstyled("\nResiduals Summary\n",bold=true,color=:underline)
-    xar_sum = summarize(xar.residuals)
+    xar_sum = summarize(xar.residuals; varnames = xar.varnames)
     pretty_table(xar_sum.quantiles, nosubheader = true, show_row_number=false)
     pretty_table(xar_sum.moments, nosubheader = true, show_row_number=false)
 
     constant = length(xar.Φ) != length(diag(xar.PC))
     
+    printstyled("\nCoefficients\n\n",bold=true,color=:underline)
     if constant
-        printstyled("Φ0 Constant Coefficient\n",bold=true,color=:underline)
-        display(xar.Φ0)
+        Φ0 = (m,p) == 1 ? [xar.Φ0] : xar.Φ0
+        printstyled("Φ0\n",bold=true,color=:underline)
+        pretty_table(Φ0, tf = tf_matrix, noheader=true)
     end
 
-    printstyled("\nΦi Coefficients\n",bold=true,color=:underline)
-    display(xar.Φ)
+    for i in 1:p
+        printstyled("Φ",i,"\n",bold=true,color=:underline)
+        pretty_table(xar.Φ[:,:,i], tf = tf_matrix, noheader=true)
+    end
 
     printstyled("\nΦ[dim,pos] Coefficients' Std. Error\n",bold=true,color=:underline)
     sΦi = []
@@ -66,7 +69,6 @@ function Base.show(io::IO, xar::AR)
             push!(sΦi, "Φ["*string(i)*","*string(j)*"]:")
         end
     end
-
 
     se = sqrt.(abs.(diag(xar.PC)))
 
@@ -90,12 +92,13 @@ function Base.show(io::IO, xar::AR)
 
     sig = sigf.(cdf.(Normal.(mu,se),0))
 
-    pretty_table(hcat(sΦi,se,sig), vlines = :none, noheader = true, show_row_number=false)
+    pretty_table(hcat(sΦi,se,sig), vlines = :none, noheader = true, show_row_number=false, crop = :none)
     print("Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n")
     
     printstyled("\nΣ Noise Std. Deviation\n",bold=true,color=:underline)
-    display(xar.Σ)
-
+    Σ = m == 1 ? [xar.Σ] : xar.Σ
+    pretty_table(Σ, tf = tf_matrix, noheader=true)
+    
     printstyled("\nInformation Criteria\n",bold=true,color=:underline)
     pretty_table(DataFrame(xar.IC), nosubheader = true, show_row_number=false)
 

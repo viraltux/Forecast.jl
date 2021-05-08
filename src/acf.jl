@@ -14,7 +14,7 @@ The results are normalized to preserve homoscedasticity. The distribution used t
 - `x`: Vector or uni-dimensional TimeArray of data.
 - `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
 - `lag`: Maximum number of lags.
-- `levels`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
+- `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
 
 # Returns
 A CCF object.
@@ -29,16 +29,16 @@ plot(res)
 function acf(ta::TimeArray;
              type = "cor",
              lag = Integer(ceil(10*log10(length(x)))),
-             levels = (0.95,0.99))
+             alpha = (0.95,0.99))
 
-    ccf(values(ta), values(ta); type = type, lag = lag, levels = levels)
+    ccf(values(ta), values(ta); type = type, lag = lag, alpha = alpha)
 end
 
 function acf(x::AbstractVector;
              type = "cor",
              lag = Integer(ceil(10*log10(length(x)))),
-             levels = (0.95,0.99))
+             alpha = (0.95,0.99))
 
-    ccf(x,x; type = type, lag = lag, levels = levels)
+    ccf(x,x; type = type, lag = lag, alpha = alpha)
 end
 

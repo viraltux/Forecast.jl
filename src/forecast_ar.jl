@@ -14,12 +14,12 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 # Arguments
 `xar`           AR struct coming from the `ar` function.
 `n`             Number of time periods to be forecasted.
-`levels`        Prediction intervals  levels; its default value is (0.8, 0.95)
+`alpha`         Prediction intervals levels; its default value is (0.8, 0.95)
 
 # Returns
 A FORECAST struct
 """
-function forecast(xar::AR, n::Integer; levels = (0.8,.95))
+function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
 
     @assert n > 0 "n must be greater than 0"
     
@@ -34,8 +34,8 @@ function forecast(xar::AR, n::Integer; levels = (0.8,.95))
     se = sqrt.(fvar(Φ,Σ,n))
 
     # Prediction Intervals
-    a1 = levels[1]
-    a2 = levels[2]
+    a1 = alpha[1]
+    a2 = alpha[2]
 
     z1 = mapslices(x -> Distributions.quantile.(Normal.(0,x),
                                                a1 + (1-a1)/2),
@@ -50,7 +50,7 @@ function forecast(xar::AR, n::Integer; levels = (0.8,.95))
     lower2 = mu .- z2
     upper2 = mu .+ z2
     
-   FORECAST(xar, levels,
+   FORECAST(xar, alpha,
             mu, hcat(upper1,upper2), hcat(lower1,lower2),
             "Forecasting "*xar.call)
 

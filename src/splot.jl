@@ -19,7 +19,7 @@ Sesonal plot
 julia> splot(rand(120),"month")
 ```
 """
-splot
+splot()
 
 @recipe function f(sp::SPlot)
 

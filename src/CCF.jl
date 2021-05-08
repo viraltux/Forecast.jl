@@ -8,8 +8,8 @@ Store results from the functions `acf`, `ccf` and `pacf`
 `N::Integer`            Length of ccf
 `type::String`          Type of CCF
 `lag::Integer`          Maximum number of lags
-`levels::Tuple`         CI thresholds
-`ci::Tuple`             CI for the levels
+`alpha::Tupl e`         CI thresholds
+`ci::Tuple`             CI for the alpha
 `auto::Bool`            Auto-correlation
 `call::String`          Method called to generate ccf
 """
@@ -18,7 +18,7 @@ mutable struct CCF
     N::Integer
     type::String
     lag::Integer
-    levels::Tuple{Float64,Float64}
+    alpha::Tuple{Float64,Float64}
     ci::Tuple{Float64,Float64}
     auto::Bool
     call::String

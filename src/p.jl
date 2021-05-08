@@ -127,6 +127,7 @@ function p(dx::TimeArray,
     tsx = timestamp(dx)
     dt = tsx[2]-tsx[1]
 
+    #TODO it does not play well with yearly periods since step years since a difference of 365 it is not always kept
     tsx = tsx[1]:dt:tsx[1]+(size(pvx)[1]-1)*dt
 
     TimeArray(tsx,pvx)

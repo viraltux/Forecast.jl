@@ -13,6 +13,16 @@ using Forecast
     @test sta.quantiles isa DataFrame
     @test sta.moments isa DataFrame
     @test sta.format isa DataFrame
+
+    x = summarize(rand(100))
+    @test size(x.quantiles) == (1,8)
+    @test size(x.moments) == (1,5)
+    @test size(x.format) == (1,2)
+
+    x = summarize(rand(100,2))
+    @test size(x.quantiles) == (2,8)
+    @test size(x.moments) == (2,5)
+    @test size(x.format) == (2,2)
     
 end
 

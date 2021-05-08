@@ -17,13 +17,16 @@
     sx = ndims(x) <= 1 ? (length(x),1) : size(x)
     sm = ndims(fc.mean) <= 1 ? (length(fc.mean),1) : size(fc.mean)
 
-    legend := sx[2] <= 3 ? :outertop : :outerright
+    legend := sx[2] <= 4 ? :outertop : :outerright
     
-    ypad = 0.1
-    my = minimum([minimum(x),minimum(fc.lower)])
-    My = maximum([maximum(x),maximum(fc.upper)])
 
-    xlims := (max(1,sx[1]-3*size(fc.mean,1)),sx[1] + sm[1])
+    xr = (max(1,sx[1]-3*size(fc.mean,1)),sx[1] + sm[1])
+    xend = x[xr[1]:end,:]
+    xlims := xr
+
+    ypad = 0.1
+    my = minimum([minimum(xend),minimum(fc.lower)])
+    My = maximum([maximum(xend),maximum(fc.upper)])
     ylims := (my-ypad*abs(my),My+ypad*abs(My))
     
     @series begin

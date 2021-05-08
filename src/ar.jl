@@ -28,7 +28,7 @@ An AR object containing the model coefficients, the error sigma matrix, residual
 julia> ar(rand(100,2),2)
 AR([...])
 """
-function ar(ta::TimeArray, order::Integer, constant::Bool = true;
+function ar(ta::TimeArray, order::Integer = 1, constant::Bool = true; 
             method = "ols")
 
     vx = values(ta)
@@ -40,27 +40,26 @@ function ar(ta::TimeArray, order::Integer, constant::Bool = true;
     return ar_ts
 end
 
-function ar(df::DataFrame, order::Integer, constant::Bool = true;
+function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
             method = "ols")
 
-    x = Array(df)
-    @assert sum((x -> x isa Number).(vx)) == size(vx,1)*size(vx,2)
+    dfx = df[:,eltype.(eachcol(df)) .<: Real]
+    x = Array(dfx)
+    @assert sum((x -> x isa Number).(x)) == size(x,1)*size(x,2)
     "All values in the time series must be numeric"
 
-    return ar_ols(x, order, constant; varnames = names(x))
+    return ar_ols(x, order, constant; varnames = names(dfx))
     
 end
 
-function ar(x::AbstractArray, order::Integer, constant::Bool = true;
+function ar(x::AbstractArray, order::Integer = 1, constant::Bool = true;
             method = "ols", varnames = nothing)
 
     return ar_ols(x, order, constant; varnames = varnames)
     
 end
 
-function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true; varnames)
-
-    varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
+function ar_ols(x::AbstractArray, order::Integer, constant::Bool; varnames)
 
     @assert 1 <= length(size(x)) <= 2
     n = length(x[:,1])
@@ -69,6 +68,8 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true; varname
     m = length(size(x)) == 2 ? size(x)[2] : 1 # dimension
     p = order
 
+    varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
+    
     M = Array{Float64,3}(undef,(n-p, p+1, m))
     for i in 1:m
         for j in 1:n-p
@@ -109,10 +110,9 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool = true; varname
                ("BIC",  n*log(norm(Σ2)+m)+(m^2*p+m*(m+1)/2)*log(n)),
                ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
     
-    coefficients = Φ = compact(Φ)
-    ar_constant = Φ0  = compact(Φ0)
-    stdev = Σ = real(sqrt(compact(Σ2)))
-    residuals = compact(residuals)
+    coefficients = Φ
+    ar_constant = Φ0
+    stdev = Σ = compact(real(sqrt(Σ2)))
 
     call = "ar(X, order="*string(order)*
         ", constant="*string(constant)*")"

@@ -3,7 +3,7 @@ Package: Forecast
 
     pacf(x::{AbstractVector,TimeArray};
          type = "step-real",
-         lag = Integer(ceil(10*log10(length(x1)))),
+         lag = Integer(ceil(10*log10(length(x)))),
          alpha = (0.95,0.99))
 
 Compute the partial auto-correlation for an univariate series.
@@ -30,7 +30,7 @@ plot(res)
 """
 function pacf(ta::TimeArray;
               type = "stepwise-real",
-              lag = Integer(ceil(10*log10(length(x1)))),
+              lag = Integer(ceil(10*log10(length(ta)))),
               alpha = (0.95,0.99))
 
     pacf(values(ta); type = type, lag = lag, alpha = alpha)
@@ -63,7 +63,7 @@ function pacf(x::AbstractVector;
     call = "pacf(x"*
         "; type=\""*type*
         "\", lag="*string(lag)*
-        ", levels="*string(alpha)*")"
+        ", alpha="*string(alpha)*")"
 
     if (type == "stepwise") 
         pac = pacf_stepwise(x; lag=lag, alpha=alpha)
