@@ -1,8 +1,8 @@
 """
 Package: Forecast
 
-    ccf(x1::{AbstractVector,TimeArray},
-        x2::{AbstractVector,TimeArray};
+    ccf(x1::{AbstractVector,DataFrame},
+        x2::{AbstractVector,DataFrame};
         type = "cor",
         lag = Integer(ceil(10*log10(length(x1)))),
         alpha = (0.95,0.99))
@@ -14,8 +14,8 @@ The results are normalized to preserve homoscedasticity. The distribution used t
 If, for a given integer `k`, `x2` repeats `x1` values such that x1[t] = x2[t+k] for all `i` then high correlation value will be placed *at the right from the center* in the results. That is, this convention will be represented in the plots as `x1_t = x2_{t+k} -> _____0__k__` meaning x2 behavior can be predicted by x1 in k units.
 
 # Arguments
-- `x1`: Vector or uni-dimensional TimeArray of data.
-- `x2`: Vector or uni-dimensional TimeArray of data.
+- `x1`: Vector or uni-dimensional DataFrame of data.
+- `x2`: Vector or uni-dimensional DataFrame of data.
 - `type`: Valid values are "cor" for correlation (default) and "cov" for convariance.
 - `lag`: Maximum number of lags.
 - `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
@@ -31,13 +31,17 @@ res = ccf(x1, x2; type="cor");
 plot(res)
 ```
 """
-function ccf(ta1::TimeArray,
-             ta2::TimeArray;
+function ccf(df1::DataFrame,
+             df2::DataFrame;
              type = "cor",
              lag = Integer(ceil(10*log10(length(x1)))),
              alpha = (0.95,0.99))
 
-    ccf(values(ta1), values(ta2); type = type, lag = lag, alpha = alpha)
+    x1 = Array(df1[:,eltype.(eachcol(df1)) .<: Real])
+    x2 = Array(df1[:,eltype.(eachcol(df1)) .<: Real])
+
+    ccf(x1, x2; type = type, lag = lag, alpha = alpha)
+
 end
 
 function ccf(x1::AbstractVector,

@@ -1,7 +1,7 @@
 """
 Package: Forecast
 
-    pacf(x::{AbstractVector,TimeArray};
+    pacf(x::{AbstractVector,DataFrame};
          type = "step-real",
          lag = Integer(ceil(10*log10(length(x)))),
          alpha = (0.95,0.99))
@@ -13,7 +13,7 @@ There are two versions; the "step" version estimates the auto-regressive paramet
 The distribution used to estimate the confidence intervals is an approximation of a Fisher Transformation via a Normal Distribution. There is a plot recipe for the returned object.
 
 # Arguments
-- `x`: Vector or uni-dimensional TimeArray of data.
+- `x`: Vector or uni-dimensional DataFrame of data.
 - `type` = Valid values are "stepwise", "real" and "stepwise-real".
 - `lag`: Maximum number of lags.
 - `alpha`: A tuple with two thresholds (t1,t2) with t1 <= t2 to plot confidence intervals. The default values are 0.95 and 0.99.
@@ -28,12 +28,15 @@ res = pacf(x);
 plot(res)
 ```
 """
-function pacf(ta::TimeArray;
+function pacf(df::TimeArray;
               type = "stepwise-real",
               lag = Integer(ceil(10*log10(length(ta)))),
               alpha = (0.95,0.99))
 
-    pacf(values(ta); type = type, lag = lag, alpha = alpha)
+    x = Array(df[:,eltype.(eachcol(df)) .<: Real])
+    
+    pacf(x; type = type, lag = lag, alpha = alpha)
+    
 end
 
 function pacf(x::AbstractVector;
