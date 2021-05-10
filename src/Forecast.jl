@@ -1,8 +1,8 @@
 module Forecast
 
-using CSV, Distributions, ColorSchemes, DataFrames, GZip, HypothesisTests,
-    LinearAlgebra, Plots, PrettyTables, RecipesBase,
-    Statistics, StatsBase, TimeSeries
+using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
+    HypothesisTests, LinearAlgebra, Plots, PrettyTables, RecipesBase,
+    Statistics, StatsBase
 
 # types
 export AR, CCF, STL
