@@ -13,12 +13,12 @@
     yguidefont:= font(5, "Courier")
 
     # reference bar
-    a,b = extrema(skipmissing(values(fSTL.ta[:Seasonal].+
-                                     fSTL.ta[:Trend].+
-                                     fSTL.ta[:Remainder]))); hd = b-a
-    a,b = extrema(skipmissing(values(fSTL.ta[:Seasonal]))); hs = b-a
-    a,b = extrema(skipmissing(values(fSTL.ta[:Trend]))); ht = b-a
-    a,b = extrema(skipmissing(values(fSTL.ta[:Remainder]))); hr = b-a
+    a,b = extrema(skipmissing(values(fSTL.decomposition[!,:Seasonal].+
+                                     fSTL.decomposition[!,:Trend].+
+                                     fSTL.decomposition[!,:Remainder]))); hd = b-a
+    a,b = extrema(skipmissing(values(fSTL.decomposition[!,:Seasonal]))); hs = b-a
+    a,b = extrema(skipmissing(values(fSTL.decomposition[!,:Trend]))); ht = b-a
+    a,b = extrema(skipmissing(values(fSTL.decomposition[!,:Remainder]))); hr = b-a
     mh = min(hd,hs,ht,hr)
 
     inset_subplots := [(1, bbox(-0.012, 0, 0.01, 1.0, :left)),
@@ -31,7 +31,9 @@
         yguide := "Data"
         xaxis := nothing
         bottom_margin := -7Plots.mm    
-        fSTL.ta[:Seasonal] .+ fSTL.ta[:Trend] .+ fSTL.ta[:Remainder]
+        fSTL.decomposition[!,:Seasonal] .+
+            fSTL.decomposition[!,:Trend] .+
+            fSTL.decomposition[!,:Remainder]
     end
 
     @series begin
@@ -41,7 +43,7 @@
         ymirror:=true
         guide_position:=:left
         bottom_margin := -7Plots.mm    
-        fSTL.ta[:Trend]
+        fSTL.decomposition[!,:Trend]
     end
 
     @series begin
@@ -50,7 +52,7 @@
         xaxis := nothing
         seriestype := :sticks
         bottom_margin := -7Plots.mm    
-        fSTL.ta[:Seasonal]
+        fSTL.decomposition[!,:Seasonal]
     end
 
     @series begin
@@ -60,7 +62,15 @@
         #bottom_margin:=0Plots.mm    
         ymirror:=true
         guide_position:=:left
-        fSTL.ta[:Remainder]
+
+        tick_years = fSTL.decomposition[!,:Timestamp]
+        dd =   [365,30,7,1]
+        ddf =  ["yyyy","yyy-mm","yyyy-mm-dd","mm-dd"]
+        dm = findmin(abs.(length(tick_years) ./ dd .- 10))[2]
+        DateTick = Dates.format.(tick_years, ddf[dm])
+        xticks := (0:dd[dm]:length(tick_years)-1, DateTick[1:dd[dm]:length(tick_years)])
+        
+        fSTL.decomposition[!,:Remainder]
     end
 
     @series begin
