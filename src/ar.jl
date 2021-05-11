@@ -1,13 +1,12 @@
 """
 Package: Forecast
 
-    ar(x::TimeArray, order, constant = true; method = "ols")
     ar(x::DataFrame, order, constant = true; method = "ols")
     ar(x::AbstractArray, order, constant = true; method = "ols", varnames = nothing)
 
 Fit a multivariate autoregressive series model.
     
-Currently only the Ordinary Least Squared method is implemented and fits the following model:
+The fitting is done via Ordinary Least Squared and implements the following model:
 
 ```math
 Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Sigma)
@@ -17,7 +16,8 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 - `x`: Multivariate series each column containing a dimension and ordered by time ascending rows.
 - `order`: Number of parameters Φ to be estimated.
 - `constant`: If `true` `ar` estimates Φ0 otherwise it is assume to be zero.
-- `method`: Method to fit the `ar` model. Currently only "ols".
+- `dΦ0`: Tuple containing two Φ0 objects, the first one will act as an original reference to the second one and different values will be fixed in the fitting process to the values in the second Φ0.
+- `dΦ`:  Equivalent to dΦ0 but for Φ.
 - `varnames`: Names of the dimensions (by default xi where `i` is an integer)
 
 # Returns
@@ -28,42 +28,33 @@ An AR object containing the model coefficients, the error sigma matrix, residual
 julia> ar(rand(100,2),2)
 AR([...])
 """
-function ar(ta::TimeArray, order::Integer = 1, constant::Bool = true; 
-            method = "ols")
-
-    vx = values(ta)
-    @assert sum((x -> x isa Number).(vx)) == size(vx,1)*size(vx,2)
-        "All values in the time series must be numeric"
-
-    ar_ts = ar_ols(vx, order, constant; varnames = string.(colnames(ta)))
-    ar_ts.x = ta
-    return ar_ts
-end
-
 function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
-            method = "ols")
+            dΦ0 = nothing, dΦ = nothing)
 
-    dfx = df[:,eltype.(eachcol(df)) .<: Real]
-    x = Array(dfx)
-    @assert sum((x -> x isa Number).(x)) == size(x,1)*size(x,2)
-    "All values in the time series must be numeric"
+    dfx =df[:,eltype.(eachcol(df)) .<: Real]
+    xar = ar_ols(Array(x), order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = names(dfx))
+    xar.x = df
 
-    return ar_ols(x, order, constant; varnames = names(dfx))
+    return(xar)
     
 end
 
 function ar(x::AbstractArray, order::Integer = 1, constant::Bool = true;
-            method = "ols", varnames = nothing)
+            dΦ0 = nothing, dΦ = nothing, varnames = nothing)
 
-    return ar_ols(x, order, constant; varnames = varnames)
+    return ar_ols(x, order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = varnames)
     
 end
 
-function ar_ols(x::AbstractArray, order::Integer, constant::Bool; varnames)
+function ar_ols(x::AbstractArray, order::Integer, constant::Bool; 
+               dΦ0 = nothing, dΦ = nothing, varnames)
 
     @assert 1 <= length(size(x)) <= 2
     n = length(x[:,1])
     @assert 1 <= order < n-1
+
+    dΦ0 = isnothing(dΦ0) ? (1,1) : dΦ0
+    dΦ  = isnothing(dΦ)  ? (1,1) : dΦ
     
     m = length(size(x)) == 2 ? size(x)[2] : 1 # dimension
     p = order
@@ -81,25 +72,20 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool; varnames)
     X = reshape(M[:,2:end,:],(n-p,p*m))
     X = constant ? hcat(repeat([1.0],inner=n-p),X) : X
 
+    X,Y = fixΦ(X,Y,dΦ0,dΦ)
+
     W = (X'*X)\(X'*Y)
-
-    Φ0 = constant ? W[1,:] : repeat([0.0],inner=m)
-
-    Φ = Array{Float64,3}(undef,(m,m,p))
-    for (i,j,k) in zip(repeat(1:m,inner=p),repeat(1:p,m),1:p*m)
-        Φ[:,i,j] = W[constant ? k+1 : k,:]
-    end
 
     # Maximum Likelihood noise covariance
     k = p*m*m
     Σ2 = 1/(n-k)*(Y-X*W)'*(Y-X*W)
 
-    # ML parameters covariance
-    PC = kron(Σ2, (X'*X)^-1)
-
     # Fitted values
     fitted = X*W
     
+    # ML parameters covariance
+    PC = kron(Σ2, (X'*X)^-1)
+
     # Prediction error
     residuals = Y - fitted
 
@@ -110,6 +96,17 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool; varnames)
                ("BIC",  n*log(norm(Σ2)+m)+(m^2*p+m*(m+1)/2)*log(n)),
                ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
     
+    W = fixM(W,dΦ0,dΦ)
+
+    Φ0 = constant ? W[1,:] : repeat([0.0],inner=m)
+
+    Φ = Array{Float64,3}(undef,(m,m,p))
+    for (i,j,k) in zip(repeat(1:m,inner=p),repeat(1:p,m),1:p*m)
+        Φ[:,i,j] = W[constant ? k+1 : k,:]
+    end
+
+    PC = fixM(PC,dΦ0,dΦ,true)
+
     coefficients = Φ
     ar_constant = Φ0
     stdev = Σ = compact(real(sqrt(Σ2)))
@@ -125,3 +122,73 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool; varnames)
        IC,PC,call)
 
 end
+
+"""
+Package: Forecast
+
+    fixΦ(X,Y,dΦ0,dΦ)
+
+For a given X and Y OLS matrices returns the X and Y resulting from fixing parameters given dΦ0 and dΦ
+"""
+function fixΦ(X,Y,dΦ0,dΦ)
+
+    Φ0, fΦ0 = dΦ0
+    Φ, fΦ = dΦ
+    (Φ0 == fΦ0) & (Φ == fΦ) && return((X,Y))
+
+    rΦ = compact(reshape(Φ,:,1))
+    rfΦ = compact(reshape(fΦ,:,1))
+    
+    dc = findall(rΦ .!== rfΦ)
+
+    @assert length(rΦ) > length(dc) "No degrees of freedom"
+    
+    # Create new Y
+    for i in dc
+        Y = Y - rfΦ[i]*X[:,i]
+    end
+
+    # Create new X
+    X = drop(X,c=dc)
+
+    (X,Y)
+    
+end
+
+# dΦ0 could be part of dΦ, it simply would mean Φ0 is fixed to zero when no cosntant
+# is required.
+
+"""
+Package: Forecast
+
+    fixM(M,dΦ0,dΦ)
+
+For a given matrix M returns an expanded with zeroes version of M based on dΦ0 and dΦ
+"""
+function fixM(M,dΦ0,dΦ, zero = false)
+@bp
+    Φ0, fΦ0 = dΦ0
+    Φ, fΦ = dΦ
+    (Φ0 == fΦ0) & (Φ == fΦ) && return(M)
+
+    rΦ = compact(reshape(Φ,:,1))
+    rfΦ = compact(reshape(fΦ,:,1))
+    
+    dc = findall(rΦ .!== rfΦ)
+
+    @assert length(rΦ) > length(dc) "No degrees of freedom"
+
+    cM = copy(M)
+    cM = reshape(cM,size(cM,1),size(cM,2))
+    # Create new Y
+    for i in dc
+        cM = insert_cross(cM,i,zero ? 0 : rfΦ[i])
+    end
+
+    return(cM)
+    
+end
+
+
+
+
