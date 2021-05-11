@@ -79,7 +79,7 @@ dwt:        deadweight tonnage
 suffix_ma:  30-day moving averages
 
 # Returns
- Dataframe or TimeArray containing the seaborne dataset.
+ Dataframe containing the seaborne dataset.
 
 # Examples
 ```julia-repl
@@ -146,6 +146,6 @@ function quakes()
         CSV.read(io,DataFrame, dateformat = "yyyy", types = Dict(:year => Date))
     end
 
-    TimeArray(qk_df,timestamp = :year)
+    qk_df
     
 end
