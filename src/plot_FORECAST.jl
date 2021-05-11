@@ -8,7 +8,13 @@
     xguidefont:= font(5, "Courier")
     legendfont:= font(5, "Courier")
 
-    x = fc.model.x isa TimeArray ? values(fc.model.x) : fc.model.x
+    timestamp = nothing
+    if fc.model.x isa DataFrame
+        x = Array(fc.model.x[:,eltype.(eachcol(fc.model.x)) .<: Real])
+        timestamp = eltype(fc.model.x[:,1]) == Date ? fc.model.x[:,1] : nothing
+    else
+        x = fc.model.x
+    end
 
     yguide := fc.model.call
     xguide := "Time"
@@ -28,12 +34,30 @@
     my = minimum([minimum(xend),minimum(fc.lower)])
     My = maximum([maximum(xend),maximum(fc.upper)])
     ylims := (my-ypad*abs(my),My+ypad*abs(My))
+
+
+    if !isnothing(timestamp)
+        ts = fc.model.x[:,1]
+        dt = tick_years[2]-tick_years[1]
+        dtv = Dates.value(dt)
+        tick_date = ts[1]:dt:(ts[end] + size(fc.mean,1) * (ts[2]-ts[1]))
+
+        gap =   [10*365,5*365,365,30,7,1]
+        dformat =  ["yyyy","yyyy","yyyy","yyyy-mm","yy-mm-dd","mm-dd"]
+        fi = findmin(abs.(gap/dtv.-1))[2]
+        DateTick = Dates.format.(tick_date, dformat[fi])
+
+        gap = [1000,500,100,50,10,5,1]
+        dm = findmin(abs.(length(tick_date) ./ gap .- 10))[2]
+        xticks := (0:gap[dm]:length(tick_date)-1, DateTick[1:gap[dm]:length(tick_date)])
+    end
     
     @series begin
         label := permutedims(fc.model.varnames)
         color_palette := :tab10
         seriescolor := reshape(collect(1:sx[2]),1,sx[2])
         seriestype := :line
+
         x
     end
 
@@ -52,7 +76,9 @@
             upper1 = fc.upper[:,1:Int(end/2)]
 
             ribbon :=  (rmean - lower1, upper1 - rmean)
+
             sx[1]+1:sx[1]+sm[1], fc.mean
+            
         end
     end
 
@@ -70,6 +96,7 @@
         upper2 = fc.upper[:,Int(end/2)+1:end]
 
         ribbon :=  (rmean - lower2, upper2 - rmean)
+        
         sx[1]+1:sx[1]+sm[1], fc.mean
     end
 
@@ -81,8 +108,6 @@
         seriestype := :line
         linestyle := :dot
         seriesalpha := 1
-        
-        rmean = fc.mean
 
         sx[1]+1:sx[1]+sm[1], fc.mean
     end
