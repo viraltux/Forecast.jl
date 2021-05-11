@@ -45,3 +45,49 @@ function compact(x)
 end
 
 
+"""
+Package: Forecast
+
+    insert_column(M, at, value = 0.0)
+
+Insert a column with specific value at a given position, values are pushed to the right
+"""
+function insert_column(M::Matrix, at, value = 0.0)::Matrix
+    nr,nc = size(M)
+    !(1 <= at <= nc+1) && return(M)
+
+    at == nc+1 && return hcat(M,repeat([value],nr))
+    M = hcat(M[:,1:at], M[:,at:nc])
+    M[:,at] .= value
+    M
+end
+
+"""
+Package: Forecast
+
+    insert_row(M, at, value = 0.0)
+
+Insert a row with specific value at a given position, values are pushed down
+"""
+function insert_row(M::Matrix, at, value = 0.0)::Matrix
+    nr,nc = size(M)
+    !(1 <= at <= nr+1) && return(M)
+
+    at == nr+1 && return vcat(M,repeat([value],1,nc))
+    M = vcat(M[1:at,:], M[at:nr,:])
+    M[at,:] .= value
+    M
+end
+
+"""
+Package: Forecast
+
+    insert_row(M, at, value = 0.0)
+
+Insert a row and a column with specific value at a given cross position, 
+values are pushed right and down.
+"""
+function insert_cross(M::Matrix, at, value = 0.0)::Matrix
+    insert_row(insert_column(M,at,value),at,value)
+end
+
