@@ -46,14 +46,10 @@ function Base.show(io::IO, xar::AR)
     pretty_table(xar_sum.quantiles, nosubheader = true, show_row_number=false)
     pretty_table(xar_sum.moments, nosubheader = true, show_row_number=false)
 
-    constant = length(xar.Φ) != length(diag(xar.PC))
-    
     printstyled("\nCoefficients\n\n",bold=true,color=:underline)
-    if constant
-        Φ0 = (m,p) == 1 ? [xar.Φ0] : xar.Φ0
-        printstyled("Φ0\n",bold=true,color=:underline)
-        pretty_table(Φ0, tf = tf_matrix, noheader=true)
-    end
+    Φ0 = xar.Φ0
+    printstyled("Φ0\n",bold=true,color=:underline)
+    pretty_table(Φ0, tf = tf_matrix, noheader=true)
 
     for i in 1:p
         printstyled("Φ",i,"\n",bold=true,color=:underline)
@@ -63,27 +59,15 @@ function Base.show(io::IO, xar::AR)
     printstyled("\nΦ[dim,pos] Coefficients' Std. Error\n",bold=true,color=:underline)
     sΦi = []
     nd = ndims(xar.Φ)
-    sz = nd == 0 ? 1 : size(xar.Φ)
+    sz = size(xar.Φ)
     for i in 1:(nd <= 1 ? 1 : sz[1])
-        for j in (constant ? 0 : 1):(nd == 0 ? 1 : ( nd <= 2 ? sz[1] : sz[1]*sz[3]))
+        for j in (0):(nd == 0 ? 1 : ( nd <= 2 ? sz[1] : sz[1]*sz[3]))
             push!(sΦi, "Φ["*string(i)*","*string(j)*"]:")
         end
     end
 
     se = sqrt.(abs.(diag(xar.PC)))
-
-    if ndims(xar.Φ) == 0
-        mu  = xar.Φ
-    else
-        mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
-    end
-    
-    # elseif constant
-    #     mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
-    # else
-    #     mu = reshape(reshape(xar.Φ,m,m*p)',m*(m*p),1)
-    # end
-
+    mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
     mu = abs.(mu)
     
     function sigf(x)

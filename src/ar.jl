@@ -101,7 +101,7 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
                ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
 
     @bp
-    W = fixM(W,dΦ0,dΦ)
+    W = fixM(W,dΦ0,dΦ,true,false)
 
     Φ0 = constant ? W[1,:] : repeat([0.0],inner=m)
 
@@ -176,7 +176,7 @@ Package: Forecast
 
 For a given matrix M returns an expanded with zeroes version of M based on dΦ0 and dΦ
 """
-function fixM(M,dΦ0,dΦ)
+function fixM(M,dΦ0,dΦ,row=true,col=true)
 
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
@@ -198,7 +198,13 @@ function fixM(M,dΦ0,dΦ)
     cM = reshape(cM,size(cM,1),size(cM,2))
     # Create new Y
     for i in dc
-        cM = size(cM,2) == 1 ? insert_row(cM,i,rfΦ[i]) : insert_cross(cM,i,0.0)
+        if !row & col
+            cM = insert_col(cM,i,rfΦ[i])
+        elseif row & !col
+            cM = insert_row(cM,i,rfΦ[i])
+        else            
+            cM = insert_cross(cM,i,0)
+        end
     end
 
     return(cM)
