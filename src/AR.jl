@@ -74,20 +74,26 @@ function Base.show(io::IO, xar::AR)
 
     if ndims(xar.Φ) == 0
         mu  = xar.Φ
-    elseif constant
-        mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
     else
-        mu = reshape(reshape(xar.Φ,m,m*p)',m*(m*p),1)
+        mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
     end
+    
+    # elseif constant
+    #     mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
+    # else
+    #     mu = reshape(reshape(xar.Φ,m,m*p)',m*(m*p),1)
+    # end
 
     mu = abs.(mu)
     
     function sigf(x)
-        if x < 0.001 return  "***" end
-        if x < 0.01  return  "** " end
-        if x < 0.05  return  "*  " end
-        if x < 0.1   return  ".  " end
-        if x < 1     return  "   " end
+        if x == 0.0  return  "fixed" end
+        if x < 0.001 return  "***"   end
+        if x < 0.01  return  "** "   end
+        if x < 0.05  return  "*  "   end
+        if x < 0.1   return  ".  "   end
+        if x < 1     return  "   "   end
+        if x == 1    return  "fixed" end
     end
 
     sig = sigf.(cdf.(Normal.(mu,se),0))

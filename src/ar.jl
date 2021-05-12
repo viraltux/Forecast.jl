@@ -49,15 +49,18 @@ end
 function ar_ols(x::AbstractArray, order::Integer, constant::Bool; 
                dΦ0 = nothing, dΦ = nothing, varnames)
 
+
     @assert 1 <= length(size(x)) <= 2
     n = length(x[:,1])
     @assert 1 <= order < n-1
 
-    dΦ0 = isnothing(dΦ0) ? (1,1) : dΦ0
-    dΦ  = isnothing(dΦ)  ? (1,1) : dΦ
-    
     m = length(size(x)) == 2 ? size(x)[2] : 1 # dimension
     p = order
+
+    
+    dΦ0 = constant ? dΦ0 : (repeat([1.0],m),repeat([0.0],m))
+    dΦ0 = isnothing(dΦ0) ? (1,1) : dΦ0
+    dΦ  = isnothing(dΦ)  ? (1,1) : dΦ
 
     varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
     
@@ -70,7 +73,8 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
 
     Y = M[:,1,:]
     X = reshape(M[:,2:end,:],(n-p,p*m))
-    X = constant ? hcat(repeat([1.0],inner=n-p),X) : X
+    #X = constant ? hcat(repeat([1.0],inner=n-p),X) : X
+    X = hcat(repeat([1.0],inner=n-p),X)
 
     X,Y = fixΦ(X,Y,dΦ0,dΦ)
 
@@ -95,17 +99,19 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
                ("AICC", lΣ2 + 2*(p*m^2+1)/(n-(p*m^2+2))),
                ("BIC",  n*log(norm(Σ2)+m)+(m^2*p+m*(m+1)/2)*log(n)),
                ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
-    
+
+    @bp
     W = fixM(W,dΦ0,dΦ)
 
     Φ0 = constant ? W[1,:] : repeat([0.0],inner=m)
 
     Φ = Array{Float64,3}(undef,(m,m,p))
     for (i,j,k) in zip(repeat(1:m,inner=p),repeat(1:p,m),1:p*m)
-        Φ[:,i,j] = W[constant ? k+1 : k,:]
+        # Φ[:,i,j] = W[constant ? k+1 : k,:]
+        Φ[:,i,j] = W[k+1,:]
     end
 
-    PC = fixM(PC,dΦ0,dΦ,true)
+    PC = fixM(PC,dΦ0,dΦ)
 
     coefficients = Φ
     ar_constant = Φ0
@@ -136,9 +142,14 @@ function fixΦ(X,Y,dΦ0,dΦ)
     Φ, fΦ = dΦ
     (Φ0 == fΦ0) & (Φ == fΦ) && return((X,Y))
 
-    rΦ = compact(reshape(Φ,:,1))
-    rfΦ = compact(reshape(fΦ,:,1))
-    
+    rΦ0 = Φ0 isa Number ? Φ0 : reshape(Φ0,:,1)
+    rfΦ0 = fΦ0 isa Number ?  fΦ0 : reshape(fΦ0,:,1)
+    rΦ = Φ isa Number ? Φ : reshape(Φ,:,1)
+    rfΦ = fΦ isa Number ?  fΦ : reshape(fΦ,:,1)
+
+    rΦ = compact([rΦ0; rΦ])
+    rfΦ = compact([rfΦ0; rfΦ])
+
     dc = findall(rΦ .!== rfΦ)
 
     @assert length(rΦ) > length(dc) "No degrees of freedom"
@@ -165,14 +176,19 @@ Package: Forecast
 
 For a given matrix M returns an expanded with zeroes version of M based on dΦ0 and dΦ
 """
-function fixM(M,dΦ0,dΦ, zero = false)
-@bp
+function fixM(M,dΦ0,dΦ)
+
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
     (Φ0 == fΦ0) & (Φ == fΦ) && return(M)
 
-    rΦ = compact(reshape(Φ,:,1))
-    rfΦ = compact(reshape(fΦ,:,1))
+    rΦ0 = Φ0 isa Number ? Φ0 : reshape(Φ0,:,1)
+    rfΦ0 = fΦ0 isa Number ?  fΦ0 : reshape(fΦ0,:,1)
+    rΦ = Φ isa Number ? Φ : reshape(Φ,:,1)
+    rfΦ = fΦ isa Number ?  fΦ : reshape(fΦ,:,1)
+
+    rΦ = compact([rΦ0; rΦ])
+    rfΦ = compact([rfΦ0; rfΦ])
     
     dc = findall(rΦ .!== rfΦ)
 
@@ -182,13 +198,12 @@ function fixM(M,dΦ0,dΦ, zero = false)
     cM = reshape(cM,size(cM,1),size(cM,2))
     # Create new Y
     for i in dc
-        cM = insert_cross(cM,i,zero ? 0 : rfΦ[i])
+        cM = size(cM,2) == 1 ? insert_row(cM,i,rfΦ[i]) : insert_cross(cM,i,0.0)
     end
 
     return(cM)
     
 end
-
 
 
 
