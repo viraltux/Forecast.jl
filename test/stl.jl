@@ -7,6 +7,6 @@ using TimeSeries
     
     x = stl(rand(100),10)
     @test x isa STL
-    @test x.ta isa TimeArray
+    @test x.decomposition isa DataFrame
     @test x.call isa String
 end

@@ -14,9 +14,9 @@ Store results from the function `ar`
 `x`               Original dataset
 `fitted`          Fitted values
 `residuals`       Prediction Error
-`IC::Dict`        Collection of Information Criteria
-`PC`              Parameters Variance/Covariance
-`xt`              Initial values x_t, x_{t-1} ... x_{t-order+1}
+`ic::Dict`        Collection of Information Criteria
+`Φse`             Parameters Standard Error
+`pse`             Copy of ΦΣ
 `call::String`    Method called to generate AR
 """
 mutable struct AR
@@ -30,8 +30,9 @@ mutable struct AR
     x
     fitted
     residuals
-    IC::Dict
-    PC
+    ic::Dict
+    Φse
+    pse
     call::String
 end
 
@@ -66,7 +67,7 @@ function Base.show(io::IO, xar::AR)
         end
     end
 
-    se = sqrt.(abs.(diag(xar.PC)))
+    se = xar.Φse
     mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
     mu = abs.(mu)
     
@@ -90,7 +91,7 @@ function Base.show(io::IO, xar::AR)
     pretty_table(Σ, tf = tf_matrix, noheader=true)
     
     printstyled("\nInformation Criteria\n",bold=true,color=:underline)
-    pretty_table(DataFrame(xar.IC), nosubheader = true, show_row_number=false)
+    pretty_table(DataFrame(xar.ic), nosubheader = true, show_row_number=false)
 
 end
 

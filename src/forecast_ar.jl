@@ -27,7 +27,8 @@ function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
 
     m,p = arsize(Φ)
 
-    x = xar.x isa TimeArray ? values(xar.x) : xar.x
+    x = xar.x isa DataFrame ? Array(xar.x[:,eltype.(eachcol(xar.x)) .<: Real]) : xar.x
+    
     x0 = compact(x[end:-1:end-p+1,:]')
     E = MvNormal(m,0)
     mu = arsim(Φ,Φ0,x0,E,n)

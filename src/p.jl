@@ -1,7 +1,7 @@
 """
 Package: Forecast
 
-    function p(dx::{AbstractVector,AbstractArray,TimeArray},
+    function p(dx::{AbstractVector,AbstractArray},
                orderlag::{AbstractVector,AbstractArray} = [[0]])
 
 Return reverse lagged differences of a given order for Vector, Array and TimeSeries.
@@ -18,17 +18,16 @@ Lagged differences Vector or Array of a given order.
 julia> x = repeat(1:12,3);
 julia> dx = d(x,12,12);
 julia> orderlag = vcat([collect(1:12)],repeat([0],11));
-julia> p(dx,orderlag) ≈ x
+pjulia> p(dx,orderlag) ≈ x
 true
 julia> p(d(x),[[1]]) ≈ x
 true
 
-julia> tx = hcat(co2(), co2(), co2());
-julia> vtx = values(tx);
-julia> tx = TimeArray(timestamp(tx),replace(vtx, missing => 0.0));
-julia> values(p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] )) ≈ values(tx)
+julia> tx = hcat(co2().co2, co2().co2, co2().co2)
+julia> for col in eachcol(tx) replace!(col, missing => 0.0) end
+julia> p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] ) ≈ tx
 true
-julia> values(p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27] )) ≈ values(tx)
+julia> p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27]) ≈ tx
 true
 ```
 """
@@ -69,7 +68,7 @@ function p(dx::AbstractVector,
     end
 
     function px1L(v)
-        dxm = Array{Any,2}(missing, lag, Integer(ceil((N+lag)/lag))+1 )
+        dxm = Array{Union{Missing,Real},2}(missing, lag, Integer(ceil((N+lag)/lag))+1 )
         for i in 1:lag
             cs = cumsum(vcat(orderlag[1][i],circshift(v,-i+1)[1:lag:end]))
             dxm[i,1:length(cs)] = cs
@@ -80,9 +79,9 @@ function p(dx::AbstractVector,
     pxOL = (px1L ∘ pxO1)(dx)
 
     if (a-1 > 0) | (b-N > 0)
-        return(vcat(Array{Any}(missing,a-1),
+        return(vcat(Array{Union{Missing,Real}}(missing,a-1),
                     pxOL,
-                    Array{Any}(missing,b-N)))
+                    Array{Union{Missing,Real}}(missing,b-N)))
     else
         return(pxOL)
     end
@@ -98,7 +97,7 @@ function p(dx::AbstractArray,
         orderlag[1,:] .= [[0]]
     end
     
-    format_ol = "orderlag format per column is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n] in a type order x column Array{Any,2}"
+    format_ol = "orderlag format per column is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n] in a type order x column Array{Union{Missing,Real},2}"
     @assert orderlag[1] isa Array format_ol
     @assert orderlag isa Array format_ol
 
@@ -118,17 +117,52 @@ function p(dx::AbstractArray,
     
 end
 
-function p(dx::TimeArray,
+function p(dfx::DataFrame,
            orderlag::AbstractArray = [[0]])
 
-    vx = values(dx)
-    pvx = p(vx, orderlag)
+    x = dfx[:,eltype.(eachcol(dfx)) .<: Union{Missing,Real}]
+    pnames = "p[" * string(order) * "," * string(lag) * "]_" .* names(x)
+    x = Array(x)
+    
+    px = p(x, orderlag)
+    ts = eltype(dfx[:,1]) == Date ? dfx[:,1] : nothing
+    dts = ts[2] -ts[1]
+    extra = size(px,1) - length(ts)
+    ts = ts[1]:dts:ts[end] + extra*dts
+    
+    pdfx = DataFrame(reshape(px,size(px,1),size(px,2)),pnames)
+    
+    if !isnothing(ts)
+        pdfx = hcat(ts[1:nrow(pdfx)], pdfx)
+        rename!(pdfx, names(pdfx)[1] .=> [:Timestamp])
+    end
+       
+    return pdfx
 
-    tsx = timestamp(dx)
-    dt = tsx[2]-tsx[1]
-
-    #TODO it does not play well with yearly periods since step years since a difference of 365 it is not always kept
-    tsx = tsx[1]:dt:tsx[1]+(size(pvx)[1]-1)*dt
-
-    TimeArray(tsx,pvx)
 end
+
+function p(fc::FORECAST,
+           orderlag::AbstractArray = [[0]])
+
+    n = size(fc.model.x,1)
+    m = size(fc.model.x,2)
+    
+    fx  =  [fc.mean fc.lower fc.upper]
+    x   =  repeat(fc.model.x,1,size(fx,2))
+    xfx =  [x ; fx]
+    
+    pxfx = p(xfx, orderlag)
+
+    pfc = deepcopy(fc)
+    pfc.model.x = pxfx[1:n,1]
+    pfc.mean    = pxfx[n+1:end,1]
+    pfc.lower   = pxfx[n+1:end,m+1:3*m]
+    pfc.upper   = pxfx[n+1:end,3*m+1:end]
+    pfc.call = "Integrated with orderlag" * string(orderlag) * " on " * fc.call
+
+    return(pfc)
+    
+end
+
+
+

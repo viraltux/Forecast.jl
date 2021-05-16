@@ -1,7 +1,7 @@
 """
 Package: Forecast
 
-    function d(x::{AbstractVector,AbstractArray,TimeArray},
+    function d(x::{AbstractVector,AbstractArray,DataFrame},
                order::Int=1,
                lag::Int=1;
                center::Bool=false)
@@ -172,36 +172,25 @@ function d(x::AbstractArray,
 
 end
 
-function d(ta::TimeArray,
-           order::Int=1,
-           lag::Int=1;
-           center::Bool=false)
-
-    vx = values(ta)
-    replace!(vx, NaN => missing)
-
-    dvx = d(vx, order, lag; center=center)
-
-    tsx = timestamp(ta)[1:size(dvx)[1]]
-    dta = TimeArray(tsx,dvx)
-    TimeSeries.rename!(dta,Symbol.("d[" * string(order) * "," * string(lag) * "]_"
-                                   .* string.(colnames(ta))))
-    dta
-
-end
-
-
 function d(dfx::DataFrame,
            order::Int=1,
            lag::Int=1;
            center::Bool=false)
 
-    x = dfx[:,eltype.(eachcol(dfx)) .<: Real]
-    ax = Array(x)
-    dax = d(ax, order, lag; center=center)
-
+    x = dfx[:,eltype.(eachcol(dfx)) .<: Union{Missing,Real}]
     dnames = "d[" * string(order) * "," * string(lag) * "]_" .* names(x)
-    DataFrame(reshape(dax,size(dax,1),size(dax,2)),dnames)
+    x = Array(x)
+    
+    dx = d(x, order, lag; center=center)
+    timestamp = eltype(dfx[:,1]) == Date ? dfx[:,1] : nothing
 
+    ddfx = DataFrame(reshape(dx,size(dx,1),size(dx,2)),dnames)
+    
+    if !isnothing(timestamp)
+        ddfx = hcat(timestamp[1:nrow(ddfx)], ddfx)
+        rename!(ddfx, names(ddfx)[1] .=> [:Timestamp])
+    end
+       
+    return ddfx
 end
 

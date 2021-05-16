@@ -2,7 +2,6 @@ using Test
 using Forecast
 
 import DataFrames: DataFrame
-import TimeSeries: TimeArray
 
 @testset "p" begin
 
@@ -11,7 +10,7 @@ import TimeSeries: TimeArray
     @test p(d(x)) == x0
     @test p(d(x),[[x[1]]]) == x
     @test p(d(hcat(x,x,x))) == hcat(x0,x0,x0)
-    @test p(d(hcat(x,x,x)), [ [[x[1]]] [[x[1]]] [[x[1]]] ]  ) == hcat(x,x,x)
+    @test p(d(hcat(x,x,x)), [ [[x[1]]] [[x[1]]] [[x[1]]] ] ) == hcat(x,x,x)
 
     x = rand(100)
     @test p(d(x),[[x[1]]]) ≈ x
@@ -23,14 +22,14 @@ import TimeSeries: TimeArray
     @test p(dx,orderlag) ≈ x
     @test p(d(x),[[1]]) ≈ x
 
-    tx = hcat(co2(), co2(), co2())
-    vtx = values(tx)
-    tx = TimeArray(timestamp(tx),replace(vtx, missing => 0.0))
-    @test values(p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] )) ≈ values(tx)
-    @test values(p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27] )) ≈ values(tx)
+    tx = hcat(co2().co2, co2().co2, co2().co2)
+    for col in eachcol(tx) replace!(col, missing => 0.0) end
+    @test p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] ) ≈ tx
+    @test p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27]) ≈ tx
 
     # estimation of π
     x = 0:0.001:1
     y = sqrt.(1 .- x.^2)
     isapprox(4*p(y)[end]/1000 , π, atol = 0.01)
+
 end

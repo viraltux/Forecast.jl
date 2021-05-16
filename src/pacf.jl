@@ -28,7 +28,7 @@ res = pacf(x);
 plot(res)
 ```
 """
-function pacf(df::TimeArray;
+function pacf(df::DataFrame,
               type = "stepwise-real",
               lag = Integer(ceil(10*log10(length(ta)))),
               alpha = (0.95,0.99))

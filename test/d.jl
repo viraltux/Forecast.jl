@@ -2,7 +2,6 @@ using Test
 using Forecast
 
 import DataFrames: DataFrame
-import TimeSeries: TimeArray
 
 @testset "d" begin
 
@@ -27,10 +26,5 @@ import TimeSeries: TimeArray
     mdx = ismissing.(dx)
     @test mdx == [0 0; 0 0; 0 0; 0 0; 0 0; 0 0; 0 0]
     @test dx == [0 0; 0 0; 0 0; 0 0; 0 0; 0 0; 0 0]
-
-    x = TimeArray(Date(1970, 1, 1):Day(1):Date(1970, 1, 7), [1 11; 2 22; 3 33; 4 44; missing missing; missing missing; 5 55])
-    dx = values(d(x))
-    @test dx[1:3,:] == [1 11; 1 11; 1 11]
-    @test ismissing.(dx[4:6,:]) == [1 1; 1 1; 1 1]
 
 end

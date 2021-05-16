@@ -8,9 +8,9 @@ Return statistical summary for x
 The values returned are dividen in three sections, the first one shows Minimum, 1st Quantile, Median, Mean, 3rd Quantile, Maxixum and the p-value for the Jarque-Bera Normality Test. The second one show the first four moment; Mean, Variance, Skewness and Kurtosis, an finally a summary with the different types contained in the Array.
 
 # Arguments
-- `x`: Array, TimeArray or DataFrame of data.
+- `x`: Array or DataFrame of data.
 - `varnames`: Names for the columns to be summarized, it defaults to automatic naming
-            or the existing names in TimeArray or DataFrame.
+            or the existing names in when a DataFrame.
 
 # Returns
 A SUMMARIZE struct
@@ -18,13 +18,13 @@ A SUMMARIZE struct
 # Examples
 ```julia-repl
 julia> summarize(rand(100,3); varnames = ["a","b","c"])
-┌──────────┬────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────────┐
-│ Variable │        Min │       1Q │   Median │     Mean │       3Q │      Max │ H0 Normality │
-├──────────┼────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼──────────────┤
-│        a │ 0.00520465 │ 0.205712 │ 0.462199 │ 0.465784 │   0.6913 │  0.97946 │    0.0593599 │
-│        b │ 0.00218787 │ 0.247344 │ 0.485465 │ 0.498587 │ 0.723371 │ 0.985226 │    0.0562301 │
-│        c │  0.0244256 │ 0.247598 │ 0.530821 │ 0.498689 │ 0.722731 │ 0.967952 │    0.0356495 │
-└──────────┴────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴──────────────┘
+┌──────────┬────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬───────────┐
+│ Variable │        Min │       1Q │   Median │     Mean │       3Q │      Max │ H0 Normal │
+├──────────┼────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼───────────┤
+│        a │ 0.00520465 │ 0.205712 │ 0.462199 │ 0.465784 │   0.6913 │  0.97946 │ 0.0593599 │
+│        b │ 0.00218787 │ 0.247344 │ 0.485465 │ 0.498587 │ 0.723371 │ 0.985226 │ 0.0562301 │
+│        c │  0.0244256 │ 0.247598 │ 0.530821 │ 0.498689 │ 0.722731 │ 0.967952 │ 0.0356495 │
+└──────────┴────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴───────────┘
 ┌──────────┬──────────┬───────────┬───────────┬───────────┐
 │ Variable │     Mean │  Variance │  Skewness │  Kurtosis │
 ├──────────┼──────────┼───────────┼───────────┼───────────┤
@@ -41,13 +41,6 @@ julia> summarize(rand(100,3); varnames = ["a","b","c"])
 └──────────┴─────────┘
 ```
 """
-function summarize(x::TimeArray; names = nothing)
-    ta = x
-    x = values(ta)
-    varnames = string.(colnames(ta))
-    summarize(x, varnames = varnames)
-end
-
 function summarize(x::DataFrame; varnames = nothing)
     summarize(convert(Array,x), varnames = names(x))
 end
@@ -70,7 +63,7 @@ function summarize(x::AbstractArray; varnames = nothing)
     varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
 
     # Quantiles and Mean
-    sk = ["Variable", "Min","1Q","Median","Mean","3Q","Max","H0 Normality"]
+    sk = ["Variable", "Min","1Q","Median","Mean","3Q","Max","H0 Normal"]
     sv = zeros(m,7)
     s = Array{Any,2}(undef,m,7)
 

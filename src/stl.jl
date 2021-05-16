@@ -65,8 +65,6 @@ function stl(Yv::DataFrame,np::Integer;
              cth = 0.01,
              timestamp = nothing,
              verbose=false)
-
-
     
     x = Vector(Yv[:,eltype.(eachcol(Yv)) .<: Union{Missing,Real}][:,1])
     timestamp = eltype(Yv[:,1]) == Date ? Yv[:,1] : timestamp

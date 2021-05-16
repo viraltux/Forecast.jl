@@ -49,74 +49,90 @@ end
 function ar_ols(x::AbstractArray, order::Integer, constant::Bool; 
                dΦ0 = nothing, dΦ = nothing, varnames)
 
+    @assert 1 <= ndims(x) <= 2
+    @assert 1 <= order < size(x,1)-1
 
-    @assert 1 <= length(size(x)) <= 2
-    n = length(x[:,1])
-    @assert 1 <= order < n-1
+    #x = x[end:-1:1,:]
 
-    m = length(size(x)) == 2 ? size(x)[2] : 1 # dimension
+    n = size(x,1)
+    m = size(x,2)
     p = order
 
-    
-    dΦ0 = constant ? dΦ0 : (repeat([1.0],m),repeat([0.0],m))
-    dΦ0 = isnothing(dΦ0) ? (1,1) : dΦ0
-    dΦ  = isnothing(dΦ)  ? (1,1) : dΦ
+    r0 = repeat([0.0],m)
+    r1 = repeat([1.0],m)
+    dΦ0 = isnothing(dΦ0) ? (r1,r1) : dΦ0
+    dΦ0 = constant ? dΦ0 : (r1,r0)
+    r11 = reshape(repeat([1.0],p*m*m),m,m,p)
+    dΦ  = isnothing(dΦ)  ? (r11,r11) : dΦ
 
     varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
-    
-    M = Array{Float64,3}(undef,(n-p, p+1, m))
-    for i in 1:m
-        for j in 1:n-p
-            M[j,:,i] = x[j+p:-1:j,i]
-        end
+
+    # n = 100; m = 2; p = 1
+    # x = hcat(1:100,-1:-1:-100) # 1 100 -100 99 -99
+    # x = x + rand(100,2)/1000
+    # # #x = hcat(1:100)
+
+    x = x[end:-1:1,:]
+    nx = x
+    for i in 1:p
+        nx = hcat(x,nx[vcat(2:end,1),:])
     end
+    nx = nx[1:end-p,:]
 
-    Y = M[:,1,:]
-    X = reshape(M[:,2:end,:],(n-p,p*m))
-    #X = constant ? hcat(repeat([1.0],inner=n-p),X) : X
-    X = hcat(repeat([1.0],inner=n-p),X)
+    Y = nx[:,1:m]
+    X = nx[:,m+1:end]
+    X = hcat(repeat([1.0],size(X,1)),X)
+    #W=(X'*X)\(X'*Y)
+    
+    # What is M?
+    # M = Array{Float64,3}(undef,(n-p, p+1, m))
+    # for i in 1:m
+    #     for j in 1:n-p
+    #         M[j,:,i] = x[j:j+p,i]
+    #     end
+    # end
+    # Y = M[:,1,:]
+    # X = reshape(M[:,2:end,:],(n-p,p*m))
+    # X = hcat(repeat([1.0],inner=n-p),X)
 
-    X,Y = fixΦ(X,Y,dΦ0,dΦ)
-
-    W = (X'*X)\(X'*Y)
-
-    # Maximum Likelihood noise covariance
-    k = p*m*m
-    Σ2 = 1/(n-k)*(Y-X*W)'*(Y-X*W)
+    # Fixing parameters
+    W = Array{Float64,2}(undef,(p*m+1,m))
+    for i in 1:m
+        Xi,Yi = fixΦ(X,Y,i,dΦ0,dΦ)
+        dW = (Xi'*Xi)\(Xi'*Yi)
+        W[:,i] = fixW(dW,i,dΦ0,dΦ)
+    end
 
     # Fitted values
     fitted = X*W
     
-    # ML parameters covariance
-    PC = kron(Σ2, (X'*X)^-1)
-
     # Prediction error
     residuals = Y - fitted
 
+    # Maximum Likelihood noise covariance
+    k = p*m*m + m # +m for Φ0
+    Σ2 = 1/(n-k)*residuals'*residuals
+ 
+    # ML parameters std. error.
+    Φse = sqrt.(abs.(diag(kron(Σ2, (X'*X)^-1))))
+    Φse = fixΦse(Φse,dΦ0,dΦ)
+
     # Information Criteria
     lΣ2   = log(norm(Σ2))
-    IC = Dict([("AIC",  lΣ2 + 2*p*m^2/n),
+    ic = Dict([("AIC",  lΣ2 + 2*p*m^2/n),
                ("AICC", lΣ2 + 2*(p*m^2+1)/(n-(p*m^2+2))),
                ("BIC",  n*log(norm(Σ2)+m)+(m^2*p+m*(m+1)/2)*log(n)),
                ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
 
-    @bp
-    W = fixM(W,dΦ0,dΦ,true,false)
-
-    Φ0 = constant ? W[1,:] : repeat([0.0],inner=m)
-
-    Φ = Array{Float64,3}(undef,(m,m,p))
-    for (i,j,k) in zip(repeat(1:m,inner=p),repeat(1:p,m),1:p*m)
-        # Φ[:,i,j] = W[constant ? k+1 : k,:]
-        Φ[:,i,j] = W[k+1,:]
-    end
-
-    PC = fixM(PC,dΦ0,dΦ)
+    Φ0 = W[1,:]
+    Φ = W[2:end,:]
+    Φ = reshape(Φ',m,m,p)
 
     coefficients = Φ
     ar_constant = Φ0
     stdev = Σ = compact(real(sqrt(Σ2)))
-
+    pse = Φse
+    
     call = "ar(X, order="*string(order)*
         ", constant="*string(constant)*")"
     
@@ -125,7 +141,7 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
        Φ0,ar_constant,
        Σ,stdev, 
        x,fitted,residuals,
-       IC,PC,call)
+       ic,Φse,pse,call)
 
 end
 
@@ -136,80 +152,97 @@ Package: Forecast
 
 For a given X and Y OLS matrices returns the X and Y resulting from fixing parameters given dΦ0 and dΦ
 """
-function fixΦ(X,Y,dΦ0,dΦ)
+function fixΦ(X,Y,i,dΦ0,dΦ)
 
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
-    (Φ0 == fΦ0) & (Φ == fΦ) && return((X,Y))
+    (Φ0 == fΦ0) & (Φ == fΦ) && return((X,Y[:,i]))
 
-    rΦ0 = Φ0 isa Number ? Φ0 : reshape(Φ0,:,1)
-    rfΦ0 = fΦ0 isa Number ?  fΦ0 : reshape(fΦ0,:,1)
-    rΦ = Φ isa Number ? Φ : reshape(Φ,:,1)
-    rfΦ = fΦ isa Number ?  fΦ : reshape(fΦ,:,1)
+    
+    rΦ0 = reshape(Φ0,:,1)
+    rΦ  = reshape(Φ,size(Φ,1),:)
+    rΦ  = hcat(rΦ0,rΦ)
 
-    rΦ = compact([rΦ0; rΦ])
-    rfΦ = compact([rfΦ0; rfΦ])
-
-    dc = findall(rΦ .!== rfΦ)
+    rfΦ0 = reshape(fΦ0,:,1)
+    rfΦ = reshape(fΦ,size(fΦ,1),:)
+    rfΦ = hcat(rfΦ0,rfΦ)
+    
+    dc = findall(rΦ[i,:] .!== rfΦ[i,:])
 
     @assert length(rΦ) > length(dc) "No degrees of freedom"
     
-    # Create new Y
-    for i in dc
-        Y = Y - rfΦ[i]*X[:,i]
+    # Create new Yi
+    Yi = Y[:,i]
+    for c in dc
+        Yi = Yi .- rfΦ[i,c]*X[:,c]
     end
-
+    
     # Create new X
-    X = drop(X,c=dc)
+    Xi = drop(X,c=dc)
 
-    (X,Y)
+    (Xi,Yi)
     
 end
 
-# dΦ0 could be part of dΦ, it simply would mean Φ0 is fixed to zero when no cosntant
-# is required.
 
 """
 Package: Forecast
 
-    fixM(M,dΦ0,dΦ)
+    fixW(W,dΦ0,dΦ)
 
-For a given matrix M returns an expanded with zeroes version of M based on dΦ0 and dΦ
+For a given Weight matrix returns a version with fixed values xbased on dΦ0 and dΦ
 """
-function fixM(M,dΦ0,dΦ,row=true,col=true)
-
+function fixW(dWi,i,dΦ0,dΦ)
+    
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
-    (Φ0 == fΦ0) & (Φ == fΦ) && return(M)
+    (Φ0 == fΦ0) & (Φ == fΦ) && return(dWi)
 
-    rΦ0 = Φ0 isa Number ? Φ0 : reshape(Φ0,:,1)
-    rfΦ0 = fΦ0 isa Number ?  fΦ0 : reshape(fΦ0,:,1)
-    rΦ = Φ isa Number ? Φ : reshape(Φ,:,1)
-    rfΦ = fΦ isa Number ?  fΦ : reshape(fΦ,:,1)
+    rΦ0 = reshape(Φ0,:,1)
+    rΦ  = reshape(Φ,size(Φ,1),:)
+    rΦ  = hcat(rΦ0,rΦ)
 
-    rΦ = compact([rΦ0; rΦ])
-    rfΦ = compact([rfΦ0; rfΦ])
+    rfΦ0 = reshape(fΦ0,:,1)
+    rfΦ = reshape(fΦ,size(fΦ,1),:)
+    rfΦ = hcat(rfΦ0,rfΦ)
     
-    dc = findall(rΦ .!== rfΦ)
+    dc = findall(rΦ[i,:] .!== rfΦ[i,:])
 
-    @assert length(rΦ) > length(dc) "No degrees of freedom"
-
-    cM = copy(M)
-    cM = reshape(cM,size(cM,1),size(cM,2))
-    # Create new Y
-    for i in dc
-        if !row & col
-            cM = insert_col(cM,i,rfΦ[i])
-        elseif row & !col
-            cM = insert_row(cM,i,rfΦ[i])
-        else            
-            cM = insert_cross(cM,i,0)
-        end
+    for c in dc
+        insert!(dWi,c,rfΦ[i,c])
     end
 
-    return(cM)
+    dWi
     
 end
 
+"""
+Package: Forecast
 
+    fixΦse(M,dΦ0,dΦ)
 
+For a given SE matrix returns an version with zeroes based on dΦ0 and dΦ
+"""
+function fixΦse(Φse,dΦ0,dΦ)
+    
+    Φ0, fΦ0 = dΦ0
+    Φ, fΦ = dΦ
+    (Φ0 == fΦ0) & (Φ == fΦ) && return(Φse)
+
+    m,p = arsize(Φ)
+    
+    rΦ  = reshape(hcat(Φ0 ,reshape(Φ ,m,m*p))',m*(m*p+1),1)
+    rfΦ = reshape(hcat(fΦ0,reshape(fΦ,m,m*p))',m*(m*p+1),1)
+
+    dc = findall(rΦ .!== rfΦ)
+    
+    fΦse = Vector{Float64}(undef, length(Φse))
+    fΦse[:] = Φse
+    for ci in dc
+        c = Tuple(ci)
+        fΦse[c[1]] = 0.0
+    end
+
+    fΦse
+
+end

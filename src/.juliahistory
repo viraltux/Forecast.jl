@@ -1,0 +1,500 @@
+@time xv .- 5.0
+@time xv .- 5.0
+@time xv .- 5.0
+xv = rand(100)
+@time xv .- 5.0
+using BenchmarkTools
+@btime xv .- 5.0
+@btime xv .- 5.0
+@btime xv .- 5.0
+xv = rand(10)
+@btime xv .- 5.0
+@time xv .- 5.0
+w = true? 0 : 1
+w = (true ? 0 : 1)
+w = (true ? 5 : 1)
+w
+Float64[]
++ 
+A = rand(3,3)
+A'
+A
+A*3
+A.*3
+A
+A*3*2
+A[:,1]*6
+A
+w = [1,2,3]
+A*w
+A
+A*w
+A.w
+A
+A .* w
+w
+x [1,10,100]
+x =  [1,10,100]
+A
+A.*w
+w
+w =  [1,10,100]
+A.*w
+A*w
+A*w'
+A
+w
+A*w
+w*A
+w*A'
+w'*A
+A
+A.*w
+map( x -> A*x, w)
+A. * w
+A .* w
+w
+w*w
+w
+1/w
+1./w
+w
+1 ./ w
+  0.5368634958226347
+vs
+vs.-model2
+vs
+model2
+vs
+model2
+vs .- model2
+describe(vs .- model2)
+using Stats
+using BasicStats
+using Statistics
+describe(vs .- model2)
+using StatsBase
+describe(vs .- model2)
+Maximum:        0.011006
+A
+A | A
+A || A
+A & A
+zeros(10)
+               _
+  0.41597329210291506
+xv
+enumerate(xv)
+for i,xi in enumerate(xv)
+for i,xi in enumerate(xv)
+?Loess.loess
+k
+xv
+xv^2
+xv^-1
+@time xv^(-1)
+@time xv.^(-1)
+@time xv.^(-1)
+@time xv.^(-1)
+@time xv.^(-1)
+@time 1 ./xv
+@time 1 ./xv
+@time 1 ./xv
+@time 1 ./xv
+A
+rand(2,4)
+A = rand(2,4)
+length(A)
+nrow(A)
+dim(A)
+size(A)
+size(A)[1]
+x
+hcat(x,1)
+hcat.(x,1)
+.hcat(x,1)
+hcatg(x,1)
+hcat(x,.1)
+xv
+dim(xv)
+size(xv)
+exit()
+A
+A = rand(4,6)
+A[[1,2],:]
+a = 6
+b = a
+a = 5
+b
+xv
+xv = collect(1:100)
+xy = rand(100)
+d=2
+k=repeat([1.0],inner=length(xv))
+q=Int64(round(3/4*length(xv)))
+q
+yv
+xv
+yv = rand(100)
+A
+b
+n
+d
+A[:,d]
+x
+x
+x = 5
+q = 5
+x = 2
+x = 50
+x
+w
+ghat(4,A=A,b=b,ik=ik,q=q)
+ghat(4;A=A,b=b,ik=ik,q=q)
+A
+xv
+yv
+ghat(5.0;A=A,b=b,ik=ik,q=q)
+xv
+xv = collect(1.:100)
+A
+a = 5
+function f(x)
+a = 3
+4
+end
+f(5)
+a
+A
+b
+DA
+A
+A[:,d]
+x
+x = 6
+x = 6.0
+[5.,1.]'*[-0.24786120941731213; 0.44785885928402674]
+x
+y
+xv
+yv
+A
+ghat(5.0;A=A,b=b,ik=ik,q=q)
+ghat(1.0;A=A,b=b,ik=ik,q=q)
+ghat(xi[1];A=A,b=b,ik=ik,q=q)
+ghat(xv[1];A=A,b=b,ik=ik,q=q)
+ghat(xv[2];A=A,b=b,ik=ik,q=q)
+ghat(xv[3];A=A,b=b,ik=ik,q=q)
+ghat(xv[100];A=A,b=b,ik=ik,q=q)
+ghat(xv[101];A=A,b=b,ik=ik,q=q)
+loess(xv,yv)
+
+
+xv
+yv
+loess(xv,yv)
+    for (i,xi) in enumerate(xv)
+println(i)
+end
+    for (i,xi) in enumerate(xv)
+print(xi)
+end
+res
+res[4]
+res[4]=6
+res
+for (i,xi) in enumerate(xv)
+print(i)
+end
+loess(xv,yv)
+               k=repeat([1.0],inner=length(xv))
+               q=Int64(round(3/4*length(xv)))
+A
+d
+b
+A
+b
+d
+loess(xv,yv)
+loess(xv,yv)
+xv
+yv
+loess(xy,yv)
+loess(xv,yv)
+ 0.0
+[1,2]'*[1,2]
+typeof([1,2]'*[1,2])
+typeof([1.0,2]'*[1,2])
+loess(xv,yv)
+loess(xv,yv)
+A
+b
+xi
+xi = 1.0
+ik
+q
+        res[i] = ghat(xi;A=A,b=b,ik=ik,q=q)
+ghat(xi;A=A,b=b,ik=ik,q=q)
+xi
+ghat(xi;A=A,b=b,ik=ik,q=q)
+ghat(xi;A=A,b=b,ik=ik,q=q)
+ghat(xi;A=A,b=b,ik=ik,q=q)[1]
+typeof(ghat(xi;A=A,b=b,ik=ik,q=q)[1])
+loess(xv,yv)
+A
+A*3
+x = sort(rand(100))
+x
+x/x
+x\x
+x
+x\x
+sortperm(x)
+sortperm(vcat(3.6,x))
+sortperm(vcat(3.6,x))
+sortperm(vcat(0.5,x))
+x = rand(10)
+sortperm(vcat(3.6,x))
+sortperm(vcat(3.6,sort(x)))
+sortperm(vcat(3.6,sort(x)))
+vcat(3.6,sort(x))
+sortperm(vcat(0.5,sort(x)))
+vcat(0.5,sort(x))
+5/2
+5%2
+round(5/2)
+floor(5/2)
+Int64(5/2)
+convert(5/2,Int64)
+convert(Int64,6/4)
+xv
+xv[2.]
+xv[2]
+div(5,2)
+true ? 4 : 4
+?return
+findi(3,collect(1:10))
+using Plots
+?ismissing
+isnumber?
+isa(Float,3.0)
+isa(Float64,3.0)
+isa(3.0,Float64)
+isa(3.0,Numeric)
+isa(3.0,Integer)
+?Integer
+?Real
+isa(3.0,Real)
+isa(3.0,Number)
+x
+x = random(100)
+x = rand(100)
+x1 = sma(x,10)
+x1 = sma(x,10)
+findfirst(x <- isa(x,Number),x)
+x
+findfirst(x <- isa(x,Number),x)
+findfirst(isa(x,Number))
+findfirst(isa(x,Number))
+x
+isa(x,Number)
+findfirst(isa.(x,Number))
+findfirst(isa(x,Number))
+findfirst(isa(x,Number),x)
+findfirst(x <- isa(x,Number),x)
+findfirst(x <- isa(x,Number),x)
+findfirst(x -> isa(x,Number),x)
+findfirst(x -> isa(x,Number),x)
+plot(x)
+x = rand(x)
+x = rand(100)
+rand([1,2,3])
+    ##    findfirst(ismissing,x)
+           ## findfirst(x <- isa(x,Number),x)
+x
+theme(:lime)
+plot(x)
+plot!(sma(x,10))
+plot!(sma(sma(x,10),10))
+    findfirst(ismissing, x)
+findfirst(ismissing, x)
+x
+findfirst(!ismissing, x)
+x
+y = x
+x = sma(x,10)
+sma(sma(sma(x,10),10),10)
+  missing
+x
+findfirst(!ismissing, x)
+findlast(!ismissing, x)
+plot!(sma(sma(sma(sma(y,10),10),10),10))
+plot!(sma(sma(sma(sma(sma(y,10),10),10),10)))
+plot!(sma(sma(sma(sma(sma(y,10),10),10),10))
+)
+sma(sma(y,10),10)
+sma(sma(sma(sma(sma(y,10),10),10),10),10)
+sma(sma(sma(y,10),10),10)) missing
+sma(sma(sma(y,10),10),10))
+sma(sma(sma(y,10),10),10)
+  missing
+exit()
+x = rand(100)
+sma(x,10)
+using Statistics:mean
+sma(x,10)
+sum
+quit()
+exit()
+x
+x = rand(100)
+sma(x,10)
+x
+sum(x)
+sum(x)/length(x)
+x
+hcat(x,sma(x,10))
+hcat(x,sma(x,10))
+coalesce(4,missing)
+ 0.933338   0.727857
+ 0.962964   0.498164
+z
+z = rand(4,10)
+mapslices(sum,z,dims=1)
+mapslices(sum,z,dims=2)
+coalesce([1,missing])
+coalesce(1,missing)
+?coalesce
+coalesce([1,2,missing]
+)
+coalesce([1,2,missing])
+coalesce([1,2,missing]...)
+ 0.4102181932792437
+z
+ 0.383973    missing
+sma(z2,10)
+z2
+sma(z2,10)
+z2
+z2[:,1]
+sma(z2,10)
+z
+ 0.508545  0.631194   0.508545   0.537491
+if true
+print(4)
+end
+if true
+    print(4)
+end
+ 0.5538382135549117
+end
+x
+sma(x,10)
+sma(x,10;extended=true)
+sma(x,10;extended=true)
+sma(x,10)
+sma(x,10;extended=true)
+sma(x,10,extended=true)
+sma(x,10)
+hcat(sma(x,10,extended=true),sma(x,10,extended=false))
+completecases(sma(x,10))
+skipmissing(x)
+collect(skipmissing(x))
+sma(x,10)
+sma(x,10,extended=true)
+sma(x,10)
+sma(x,10,extended=true)
+x
+x[1:last]
+last(x)
+sma(x,10)
+sma(x,10,extended=true)
+sma(x,10)
+sma(x,10,extended=true)
+hcat(sma(x,10,extended=true),sma(x,10,extended=false))
+n
+n = 10
+b
+b = n-1
+b = n-a
+hcat(sma(x,10,extended=true),sma(x,10,extended=false))
+hcat(sma(x,10,extended=true),sma(x,10,extended=false))
+plot(x)
+using Plots
+plot(x)
+theme(:lime)
+plot(x)
+plot!(sma(x,10))
+plot!(sma(x,10,extened=true))
+plot!(sma(x,10,extended=true))
+plot!(sma(x,20,extended=true))
+plot!(sma(x,50,extended=true))
+plot!(sma(x,70,extended=true))
+plot!(sma(x,51,extended=true))
+plot!(sma(x,60,extended=true))
+plot!(sma(x,70,extended=true))
+[1,2]
+[1:2,3:4]
+x[1:2,3:4]
+x[(1:2,3:4)]
+x[(1:2,10:12)]
+x[[1:2,10:12]]
+x[1:2]
+x[1:2,6]
+x[1:2;6]
+x[(1:2;6)]
+x[(1:2,6)]
+x[{1:2,6}]
+x[vcat(1:2,6)]
+x[hcat(1:2,6)]
+sma
+)
+mean(x)
+using Statistics
+mean(x)
+mean(sma(x,10))
+mean(skipmissing(sma(x,10)))
+mean(skipmissing(sma(x,10)))
+x 
+x + 4
+x .+ 4
+mean(x)
+mean(sma(x,10))
+mean(skipmissing(sma(x,10)))
+mean(skipmissing(sma(x,10,normalizey=true)))
+mean(x)
+mean(sma(x,10,normalizey=true))
+mean(skipmissing(sma(x,10,normalizey=true)))
+mean(skipmissing(sma(x,10,normalizey=false)))
+mean(skipmissing(sma(x,10,normalizey=false)))
+x  = [1,2,3]
+res = [.1,.2,.3]
+N = 3
+res
+mean(x)
+mean(res)
+plot(x)
+plot(res)
+plot(x)
+plot!(res)
+mean(x)
+x
+mean(x)
+mean(sma(x,10))
+mean(skipmissing(sma(x,10)))
+mean(skipmissing(sma(x,10,normalizey=true)))
+a = mean(skipmissing(sma(x,10)))
+a = mean(x)
+b = mean(skipmissing(sma(x,10)))
+a-b
+ma10 = skipmissing(sma(x,10))
+ma10 = collect(skipmissing(sma(x,10)))
+ x = collect(1:10)
+ x = collect(1:100)
+mean(1:10)
+mean(2:12)
+mean(1:10)
+mean(2:11)
+msa(x,10)
+sma(x,10)
+exit()

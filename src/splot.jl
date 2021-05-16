@@ -32,7 +32,7 @@ splot()
     x = sp.args[1]
 
     # Time Series 
-    if isa(x, TimeArray)
+    if isa(x, DataFrame)
         t = timestamp(x)
         x = values(x)[:,1]
 
