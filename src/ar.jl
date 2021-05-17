@@ -131,6 +131,11 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
     coefficients = Φ
     ar_constant = Φ0
     stdev = Σ = compact(real(sqrt(Σ2)))
+
+    rΦse =  reshape(Φse,:,m)'
+    Φ0se = rΦse[:,1]
+    Φse = reshape(rΦse[:,2:end],m,m,:)
+    p0se = Φ0se
     pse = Φse
     
     call = "ar(X, order="*string(order)*
@@ -141,7 +146,7 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
        Φ0,ar_constant,
        Σ,stdev, 
        x,fitted,residuals,
-       ic,Φse,pse,call)
+       ic,Φse,pse,Φ0se,p0se,call)
 
 end
 

@@ -6,17 +6,19 @@ Store results from the function `ar`
 # Arguments
 `varnames`        List of variable names
 `Φ`               Collection of d by d matrices of coefficients
-`coefficients`    Copy of Φ
+`coefficients`    Alias for Φ
 `Φ0`              Constant
-`constant`        Copy of Φ0
+`constant`        Alias for Φ0
 `Σ`               Noise sigma variance/covariance Matrix
-`stdev`           Copy of Σ
+`stdev`           Alias for Σ
 `x`               Original dataset
 `fitted`          Fitted values
 `residuals`       Prediction Error
 `ic::Dict`        Collection of Information Criteria
 `Φse`             Parameters Standard Error
-`pse`             Copy of ΦΣ
+`pse`             Alias for Φse
+`Φ0se`            Cosntant Standard Error
+`p0se`            Alias for Φ0se
 `call::String`    Method called to generate AR
 """
 mutable struct AR
@@ -33,6 +35,8 @@ mutable struct AR
     ic::Dict
     Φse
     pse
+    Φ0se
+    p0se
     call::String
 end
 
@@ -49,43 +53,27 @@ function Base.show(io::IO, xar::AR)
 
     printstyled("\nCoefficients\n\n",bold=true,color=:underline)
     Φ0 = xar.Φ0
+    Φ0se = xar.Φ0se
     printstyled("Φ0\n",bold=true,color=:underline)
-    pretty_table(Φ0, tf = tf_matrix, noheader=true)
+    pretty_table(string.(round.(Φ0,digits=3)) .* sigf.(Φ0,Φ0se), tf = tf_matrix, noheader=true)
 
     for i in 1:p
         printstyled("Φ",i,"\n",bold=true,color=:underline)
-        pretty_table(xar.Φ[:,:,i], tf = tf_matrix, noheader=true)
+        Φi = xar.Φ[:,:,i]
+        Φsei = xar.Φse[:,:,i]
+        pretty_table(string.(round.(Φi,digits = 3)) .* sigf.(Φi,Φsei), tf = tf_matrix, noheader=true)
+    end
+    print("Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘^’ 0.1 ‘ ’ 1\n")
+
+
+    printstyled("\nCoefficients' Std. Error\n",bold=true,color=:underline)
+    printstyled("\nΦ0se\n",bold=true,color=:underline)
+    pretty_table(xar.Φ0se, tf = tf_matrix, noheader=true)
+    for i in 1:p
+        printstyled("Φ",i,"se\n",bold=true,color=:underline)
+        pretty_table(xar.Φse[:,:,i], tf = tf_matrix, noheader=true)    
     end
 
-    printstyled("\nΦ[dim,pos] Coefficients' Std. Error\n",bold=true,color=:underline)
-    sΦi = []
-    nd = ndims(xar.Φ)
-    sz = size(xar.Φ)
-    for i in 1:(nd <= 1 ? 1 : sz[1])
-        for j in (0):(nd == 0 ? 1 : ( nd <= 2 ? sz[1] : sz[1]*sz[3]))
-            push!(sΦi, "Φ["*string(i)*","*string(j)*"]:")
-        end
-    end
-
-    se = xar.Φse
-    mu = reshape(hcat(xar.Φ0,reshape(xar.Φ,m,m*p))',m*(m*p+1),1)
-    mu = abs.(mu)
-    
-    function sigf(x)
-        if x == 0.0  return  "fixed" end
-        if x < 0.001 return  "***"   end
-        if x < 0.01  return  "** "   end
-        if x < 0.05  return  "*  "   end
-        if x < 0.1   return  ".  "   end
-        if x < 1     return  "   "   end
-        if x == 1    return  "fixed" end
-    end
-
-    sig = sigf.(cdf.(Normal.(mu,se),0))
-
-    pretty_table(hcat(sΦi,se,sig), vlines = :none, noheader = true, show_row_number=false, crop = :none)
-    print("Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n")
-    
     printstyled("\nΣ Noise Std. Deviation\n",bold=true,color=:underline)
     Σ = m == 1 ? [xar.Σ] : xar.Σ
     pretty_table(Σ, tf = tf_matrix, noheader=true)
@@ -110,4 +98,16 @@ function arsize(Φ)
         @error "Φ should have less the 4 dimensions"
     end
     (m,p)
+end
+
+function sigf(mu,se)
+    if se == 0.0  return  "fixed" end
+    
+    pv = cdf(Normal(abs(mu),se),0)
+    if pv < 0.001 return  " ***"   end 
+    if pv < 0.01  return  " ** "   end 
+    if pv < 0.05  return  " *  "   end 
+    if pv < 0.1   return  " ^  "   end 
+    if pv <= 1    return  "    "   end 
+    
 end
