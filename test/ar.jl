@@ -112,7 +112,7 @@ import Distributions: MvLogNormal, MvNormal
 
     Φ,Φ0,x0,Σ,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
                            [.015 -.04 .06; .03 .03 .06; .01 .04 -.1]],3,3,2),
-    [.0, .0, .0],[.11 .12; .2 .13; .14 .6],[1 0.1 0.1; 0.1 1 0.1; 0.1 0.1 1],n
+    [.0, .0, .0],[.11 .12; .2 .13; .14 .6],[1 0.1 0.1; 0.1 1 0.1; 0.1 0.1 1],2*n
     xar = ar(arsim(Φ,Φ0,x0,Σ,n),2,false)
     @test isapprox(xar.Φ,Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
@@ -154,8 +154,8 @@ import Distributions: MvLogNormal, MvNormal
     fxar = ar(x,10; dΦ=(xar.Φ,fΦ), dΦ0 = (xar.Φ0, [10.0]))
     @test fxar.Φ[1,1,3] == 6.0
     @test fxar.Φ0 == [10.0]
-    @test fxar.Φse[0+1] == 0.0
-    @test fxar.Φse[3+1] == 0.0
+    @test fxar.Φ0se[1] == 0.0
+    @test fxar.Φse[3] == 0.0
     
     Φ,n = .5,n
     x = arsim(Φ,n)
