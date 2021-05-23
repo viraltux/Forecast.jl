@@ -33,7 +33,8 @@
     ts = vcat(fc.model.x[:,1],fc.mean[:,1])
     xr1 = max(1,sx-3*size(fc.mean,1))
     xr2 = sx+sm
-    xr = eltype(ts) in [Date, DateTime, Time] ?  (ts[xr1], ts[xr2]) : (xr1, xr2)
+    xr = eltype(ts) in [Date, DateTime, Time] ?
+        (ts[xr1], ts[xr2]) : (Dates.value(ts[xr1]), Dates.value(ts[xr2]))
     xlims := isnothing(xlims) ? xr : xlims
     xend = Array(fc.model.x[xr1:end,2:end])
     my = minimum([minimum(xend),minimum(Array(fc.lower[:,2:end]))])
