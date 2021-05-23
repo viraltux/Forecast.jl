@@ -25,11 +25,15 @@ function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
     
     Φ,Φ0,Σ = xar.Φ,xar.Φ0,xar.Σ
 
-    m,p = arsize(Φ)
+    m,np = arsize(Φ)
 
-    x = xar.x isa DataFrame ? Array(xar.x[:,eltype.(eachcol(xar.x)) .<: Real]) : xar.x
-    
-    x0 = compact(x[end:-1:end-p+1,:]')
+    dfts = tots(xar.x)
+    names_x = names(dfts)[2:end]
+    x = Array(dfts[:,2:end])
+    ts = dfts[:,1]
+    name_ts = names(dfts)[1]
+
+    x0 = compact(x[end:-1:end-np+1,:]')
     E = MvNormal(m,0)
     mu = arsim(Φ,Φ0,x0,E,n)
     se = sqrt.(fvar(Φ,Σ,n))
@@ -50,11 +54,31 @@ function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
     z2 = compact(z2)
     lower2 = mu .- z2
     upper2 = mu .+ z2
-    
-   FORECAST(xar, alpha,
-            mu, hcat(upper1,upper2), hcat(lower1,lower2),
-            "Forecasting "*xar.call)
 
+    # mu
+    mu_names = ["Mean_" * n  for n in names_x]
+    mu_df = hcat(DataFrame(nΔt(ts,n),[name_ts]),
+                 DataFrame(reshape(mu,:,size(mu,2)),mu_names))
+
+    # upper
+    u1_names = ["Upper1_" * n  for n in names_x]
+    upper1_df = DataFrame(reshape(upper1,:,size(upper1,2)),u1_names)
+    u2_names = ["Upper2_" * n  for n in names_x]
+    upper2_df = DataFrame(reshape(upper2,:,size(upper2,2)),u2_names)
+    upper_df = hcat(mu_df[:,1:1], upper1_df, upper2_df)
+    
+    # lower
+    l1_names = ["Lower1_" * n  for n in names_x]
+    lower1_df = DataFrame(reshape(lower1,:,size(lower1,2)),l1_names)
+    l2_names = ["Lower2_" * n  for n in names_x]
+    lower2_df = DataFrame(reshape(lower2,:,size(lower2,2)),l2_names)
+    lower_df = hcat(mu_df[:,1:1],lower1_df, lower2_df)
+
+    return FORECAST(xar, alpha,
+                    mu_df,
+                    upper_df,
+                    lower_df,
+                    "Forecasting " * xar.call)
 end
 
 """

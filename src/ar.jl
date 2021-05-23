@@ -32,7 +32,7 @@ function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
             dΦ0 = nothing, dΦ = nothing)
 
     dfx =df[:,eltype.(eachcol(df)) .<: Real]
-    xar = ar_ols(Array(x), order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = names(dfx))
+    xar = ar_ols(Array(dfx), order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = names(dfx))
     xar.x = df
 
     return(xar)

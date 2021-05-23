@@ -117,52 +117,74 @@ function p(dx::AbstractArray,
     
 end
 
-function p(dfx::DataFrame,
+function p(df::DataFrame,
            orderlag::AbstractArray = [[0]])
 
-    x = dfx[:,eltype.(eachcol(dfx)) .<: Union{Missing,Real}]
-    pnames = "p[" * string(order) * "," * string(lag) * "]_" .* names(x)
-    x = Array(x)
+    df = tots(df)
+    ts = df[:,1]
+    dfx = df[:,2:end]
+    pnames = "p[" * string(orderlag) * "]_" .* names(dfx)
     
-    px = p(x, orderlag)
-    ts = eltype(dfx[:,1]) == Date ? dfx[:,1] : nothing
-    dts = ts[2] -ts[1]
-    extra = size(px,1) - length(ts)
-    ts = ts[1]:dts:ts[end] + extra*dts
+    px = p(Array(dfx), orderlag)
+
+    dfpx = DataFrame(reshape(px,size(px,1),size(px,2)),pnames)
+    pdfts = DataFrame(vcat(nΔt(ts,-(size(px,1)-size(df,1))), ts), [names(df)[1]])
     
-    pdfx = DataFrame(reshape(px,size(px,1),size(px,2)),pnames)
-    
-    if !isnothing(ts)
-        pdfx = hcat(ts[1:nrow(pdfx)], pdfx)
-        rename!(pdfx, names(pdfx)[1] .=> [:Timestamp])
-    end
-       
-    return pdfx
+    return hcat(pdfts,dfpx)
 
 end
 
 function p(fc::FORECAST,
            orderlag::AbstractArray = [[0]])
 
-    n = size(fc.model.x,1)
-    m = size(fc.model.x,2)
+    ts_x = tots(fc.model.x)
+    names_x = names(ts_x)
     
-    fx  =  [fc.mean fc.lower fc.upper]
-    x   =  repeat(fc.model.x,1,size(fx,2))
-    xfx =  [x ; fx]
-    
-    pxfx = p(xfx, orderlag)
+    ts_mean = tots(fc.mean)
+    ts_lower = tots(fc.lower)
+    ts_upper = tots(fc.upper)
+    names_mean = names(ts_mean)
+    names_lower = names(ts_lower)
+    names_upper = names(ts_upper)
+
+    xts = ts_x[:,1]
+    x = Array(ts_x[:,2:end])
+
+    fmean = Array(ts_mean[:,2:end])
+    flower = Array(ts_lower[:,2:end])
+    fupper = Array(ts_upper[:,2:end])
+
+    n = size(x,1)
+    m = size(x,2)
+
+    pfxmean = p(vcat(x,fmean), orderlag)
+    pfx = convert(Matrix{Float64}, reshape(pfxmean,:,size(x,2))[1:end-size(fmean,1),:])
+    pfmean = convert(Matrix{Float64}, reshape(pfxmean,:,size(x,2))[end-size(fmean,1)+1:end,:])
+
+    fts_x = vcat(nΔt(xts,-(size(pfxmean,1)-size(x,1)-size(fmean,1))),xts)
+
+    fts_mean = nΔt(xts,size(pfmean,1))
 
     pfc = deepcopy(fc)
-    pfc.model.x = pxfx[1:n,1]
-    pfc.mean    = pxfx[n+1:end,1]
-    pfc.lower   = pxfx[n+1:end,m+1:3*m]
-    pfc.upper   = pxfx[n+1:end,3*m+1:end]
-    pfc.call = "Integrated with orderlag" * string(orderlag) * " on " * fc.call
+    pfc.model.x = hcat(DataFrame(fts_x,[names_x[1]]),
+                       DataFrame(pfx,names_x[2:end]))
+    pfc.mean    = hcat(DataFrame(fts_mean[:,1:1],[names_mean[1]]),
+                       DataFrame(pfmean,names_mean[2:end]))
+
+    if size(fmean,2) > 1
+        z = fupper .- repeat(fmean,1,size(fmean,2))
+        pfmean = repeat(pfmean,1,size(pfmean,2))
+    else
+        z = fupper .- fmean
+    end
+    
+    pfc.upper = hcat(DataFrame(fts_mean[:,1:1],[names_upper[1]]),
+                     DataFrame(pfmean .+ z,names_upper[2:end]))
+    pfc.lower = hcat(DataFrame(fts_mean[:,1:1],[names_lower[1]]),
+                     DataFrame(pfmean .- z,names_lower[2:end]))
+    
+    pfc.call = fc.call * "\nIntegrated with orderlag\n" * string(orderlag)
 
     return(pfc)
     
 end
-
-
-

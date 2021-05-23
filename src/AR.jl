@@ -99,17 +99,17 @@ function arsize(Φ)
     d = ndims(Φ)
     sΦ = size(Φ)
     if d == 0
-        m,o = 1,1
+        m,np = 1,1
     elseif d == 1
-        m,o = 1,sΦ[1]
+        m,np = 1,sΦ[1]
     elseif d == 2
-        m,o = sΦ[1],1
+        m,np = sΦ[1],1
     elseif d == 3
-        m,o = sΦ[1],sΦ[3]
+        m,np = sΦ[1],sΦ[3]
     else
         @error "Φ should have less the 4 dimensions"
     end
-    (m,o)
+    (m,np)
 end
 
 function sigf(pv)

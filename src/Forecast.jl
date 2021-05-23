@@ -36,10 +36,12 @@ include("sma.jl")
 include("stl.jl")
 include("summarize.jl") 
 include("utils.jl")
+include("utils_datetime.jl")
 
 # plot recipes
 ##  type
 include("plot_CCF.jl")
+include("plot_DataFrame.jl")
 include("plot_FORECAST.jl")
 include("plot_STL.jl")
 

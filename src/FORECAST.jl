@@ -20,16 +20,22 @@ mutable struct FORECAST
     call
 end
 
-function Base.show(io::IO, f::FORECAST)
+function Base.show(io::IO, fc::FORECAST)
+    ts = eltype(fc.mean[:,1]) in [Date, DateTime, Time,
+                                  Year, Month, Quarter, Week, Day,
+                                  Hour, Second, Millisecond,
+                                  Microsecond, Nanosecond]
     printstyled("Forecast Information\n",bold=true,color=:underline)
-    print("\n    ",f.call, "\n")
+    print("\n    ",fc.call, "\n")
     printstyled("\nMean Forecasting\n",bold=true,color=:underline)
-    pretty_table(f.mean, noheader = true, nosubheader = true, show_row_number=false)
-    printstyled("\nPrediction Intervals alpha at: "*string(f.alpha)*"\n",bold=true,color=:underline)
+    pretty_table(fc.mean, noheader = false, nosubheader = true, show_row_number=false)
+    printstyled("\nPrediction Intervals alpha at: "*string(fc.alpha)*"\n",bold=true,color=:underline)
     printstyled("\nUpper:\n",color=:underline)
-    pretty_table(f.upper, noheader = true, nosubheader = true, show_row_number=false,
-                 vlines =0:2:size(f.mean,2)+size(f.mean,2))
+    pretty_table(fc.upper, noheader = false, nosubheader = true, show_row_number=false,
+                 vlines = [0,1:size(fc.mean,2)-1:size(fc.upper,2)...])
     printstyled("\nLower:\n",color=:underline)
-    pretty_table(f.lower, noheader = true, nosubheader = true, show_row_number=false,
-                 vlines =0:2:size(f.mean,2)+size(f.mean,2))
+    pretty_table(fc.lower, noheader = false, nosubheader = true, show_row_number=false,
+                 vlines = [0,1:size(fc.mean,2)-1:size(fc.lower,2)...])
 end
+
+

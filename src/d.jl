@@ -172,25 +172,22 @@ function d(x::AbstractArray,
 
 end
 
-function d(dfx::DataFrame,
+function d(df::DataFrame,
            order::Int=1,
            lag::Int=1;
            center::Bool=false)
 
-    x = dfx[:,eltype.(eachcol(dfx)) .<: Union{Missing,Real}]
-    dnames = "d[" * string(order) * "," * string(lag) * "]_" .* names(x)
-    x = Array(x)
+    df = tots(df)
+    dfts = df[:,1:1]
+    dfx = df[:,2:end]
+    dnames = "d[" * string(order) * "," * string(lag) * "]_" .* names(dfx)
     
-    dx = d(x, order, lag; center=center)
-    timestamp = eltype(dfx[:,1]) == Date ? dfx[:,1] : nothing
+    dx = d(Array(dfx), order, lag; center=center)
 
-    ddfx = DataFrame(reshape(dx,size(dx,1),size(dx,2)),dnames)
+    dfdx = DataFrame(reshape(dx,size(dx,1),size(dx,2)),dnames)
+    ddfts = df[end-size(dx,1)+1:end,1:1]
     
-    if !isnothing(timestamp)
-        ddfx = hcat(timestamp[1:nrow(ddfx)], ddfx)
-        rename!(ddfx, names(ddfx)[1] .=> [:Timestamp])
-    end
-       
-    return ddfx
+    return hcat(ddfts,dfdx)
+
 end
 

@@ -34,16 +34,20 @@ Package: Forecast
     compact(x)
 
 Standarize input by dropping empty dimensions and returning either a Number or an Array.
+In the case of a DataFrame it removes all non Real columns except if there are columns 
+with Date type in which case keeps the first one found and places it as the first column.
 """
-function compact(x)
-    if x isa Number return x end
+function compact(x::Number)
+    x
+end
+
+function compact(x::AbstractArray)
     x = Array(x)
     sx = size(x)
     x = reshape(x,sx)
     x = dropdims(x, dims = tuple(findall(size(x) .== 1)...))
     ndims(x) == 0 ? x[1] : x 
 end
-
 
 """
 Package: Forecast
