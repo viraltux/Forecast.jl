@@ -27,27 +27,28 @@
     markersize := markersize
     markerstrokewidth := markerstrokewidth 
 
-
     # Making the forecast to occupy the last 1/4 of xlims
     sx = size(fc.model.x,1)
     sm = size(fc.mean,1)
-    xr = (max(1,sx-3*size(fc.mean,1)), sx + sm)
-    xend = Array(tots(fc.model.x)[xr[1]:end,2:end])
+    ts = vcat(fc.model.x[:,1],fc.mean[:,1])
+    xr1 = max(1,sx-3*size(fc.mean,1))
+    xr2 = sx+sm
+    xr = eltype(ts) in [Date, DateTime, Time] ?  (ts[xr1], ts[xr2]) : (xr1, xr2)
     xlims := isnothing(xlims) ? xr : xlims
+    xend = Array(fc.model.x[xr1:end,2:end])
     my = minimum([minimum(xend),minimum(Array(fc.lower[:,2:end]))])
     My = maximum([maximum(xend),maximum(Array(fc.upper[:,2:end]))])
     ypad = 0.1 * maximum([abs(My),abs(my)])
     ylims := isnothing(ylims) ? (my-ypad,My+ypad) : ylims
 
-    
-    xts = tots(fc.model.x)
+    xts = fc.model.x
     names_x = names(xts)[2:end]
     x = Array(xts[:,2:end])
     ts = xts[:,1]
     name_ts = names(xts)[1]
 
     legend := isnothing(legend) ? (size(x,2) <= 4 ? :outertop : :outerright) : legend
-    
+
     @series begin
         label := permutedims(fc.model.varnames)
         color_palette := :tab10

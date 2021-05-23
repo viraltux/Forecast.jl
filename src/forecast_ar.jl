@@ -27,7 +27,7 @@ function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
 
     m,np = arsize(Φ)
 
-    dfts = tots(xar.x)
+    dfts = xar.x = tots(xar.x)
     names_x = names(dfts)[2:end]
     x = Array(dfts[:,2:end])
     ts = dfts[:,1]
