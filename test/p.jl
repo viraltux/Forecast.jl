@@ -16,6 +16,17 @@ import DataFrames: DataFrame
     @test p(d(x),[ x[1] ]) ≈ x
     @test p(d(hcat(x,x,x)), [ x[1] x[1] x[1] ] ) ≈ hcat(x,x,x)
 
+    x = [repeat(1:10,10) repeat(1:10,10)]
+    dx = d(x,3)
+    x0 = [[1,1,0] [1,1,0]]
+    @test p(dx, x0) == x
+
+    la = 7
+    x = [repeat(1:la,14) repeat(1:la,14)]
+    dx = d(x,1,la)
+    x0 = reshape(repeat(1:la,inner=2),1,2,la)
+    @test p(dx, x0) == x
+    
     x = repeat(1:2,30)
     dx = d(x,2,2)
     x0 = zeros(2,1,2) # order 2, 1 variable, lag 1
