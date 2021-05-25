@@ -1,55 +1,54 @@
 """
 Package: Forecast
 
-    function p(dx::{AbstractVector,AbstractArray},
-               orderlag::{AbstractVector,AbstractArray} = [[0]])
+    function p(dx, x0)
+               
 
-Return reverse lagged differences of a given order for Vector, Array and TimeSeries.
+Return reverse lagged differences of a given order for Vector, Array and DataFrame.
 
 # Arguments
-- `dx`:       Vector or Array of data.
-- `orderlag`: Initial values of the inverted series. The format per column for the order and lag values is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]. the default values is an initial constant of zero for an inversion of order one and lag one.
+- `dx`: Array or DataFrame of data.
+- `x0`: Initial constants the reverse difference. The default value represents an integration of order one and lag one with initial values at zero. The format for the initial values is Array{Real,3}(order, variable, lag)"
 
 # Returns
 Lagged differences Vector or Array of a given order.
 
 # Examples
 ```julia-repl
-julia> x = repeat(1:12,3);
-julia> dx = d(x,12,12);
-julia> orderlag = vcat([collect(1:12)],repeat([0],11));
-pjulia> p(dx,orderlag) ≈ x
-true
-julia> p(d(x),[[1]]) ≈ x
+
+# Order two with Lag two
+julia> x = repeat(1:2,30);
+julia> dx = d(x,2,2);
+julia> x0 = zeros(2,1,2); # order 2, 1 variable, lag 1
+julia> x0[1,:,:] = collect(1:2);
+julia> p(dx,orla) ≈ x
 true
 
-julia> tx = hcat(co2().co2, co2().co2, co2().co2)
-julia> for col in eachcol(tx) replace!(col, missing => 0.0) end
-julia> p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] ) ≈ tx
-true
-julia> p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27]) ≈ tx
+# Calculation of π
+julia> x = 0:0.001:1;
+julia> y = sqrt.(1 .- x.^2);
+julia> isapprox(4*p(y)[end]/1000 , π, atol = 0.01)
 true
 ```
 """
-function p(dx::AbstractVector,
-           orderlag::AbstractVector = [[0]])
+function p(dx::AbstractArray,
+           x0 = reshape(repeat([0],size(dx,2)),1,:,1))
 
-    format_ol = "orderlag format is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]"
-    @assert orderlag[1] isa Array format_ol
-    @assert orderlag isa Array format_ol
+    format_ol = "x0 format is Array{Real,3}(order, variable, lag)"
+    @assert ndims(x0) <= 3 format_ol
+
+    ndims(x0) == 0 && (x0 = reshape([x0],1,1,1))
+    ndims(x0) == 1 && (x0 = reshape(x0,:,1,1))
+    ndims(x0) == 2 && (x0 = reshape(x0,:,size(x0,2),1))
+
+    or = size(x0,1)
+    la = size(x0,3)
+    n = size(dx,1)
+    nv = size(dx,2)
+
+    @assert nv == size(x0,2) format_ol
+    @assert 0 <= la & la <= (n-1)
     
-    order = length(orderlag)
-    lag = length(orderlag[1])
-    N = length(dx)
-
-    if (lag == 0)
-        return x
-    end
-    
-    a = findfirst(!ismissing,dx)
-    b = findlast(!ismissing,dx)
-    dx = dx[a:b]
-
     if !isnothing(findfirst(ismissing, dx))
         @error "Missing values allowed at the start and end of `dx` but not within."
         if !isnothing(findfirst(isnan, dx))
@@ -57,63 +56,16 @@ function p(dx::AbstractVector,
         end
     end
 
-    N = length(dx)
-    @assert 0 <= lag & lag <= (N-1)
-
-    function pxO1(v)
-        for i in 2:order
-            v = cumsum(vcat(orderlag[i],v))                    
+    px = similar(dx, nv == 1 ? (n+or*la,) : (n+or*la,nv))
+    px[1:size(dx,1),:] = dx
+    for i in or:-1:1
+        for j in 1:la
+            idx = n+j-1+(or-i)
+            px[j:la:idx+la,:] = cumsum(vcat(x0[i:i,:,j], px[j:la:idx,:]), dims=1)
         end
-        v
     end
 
-    function px1L(v)
-        dxm = Array{Union{Missing,Real},2}(missing, lag, Integer(ceil((N+lag)/lag))+1 )
-        for i in 1:lag
-            cs = cumsum(vcat(orderlag[1][i],circshift(v,-i+1)[1:lag:end]))
-            dxm[i,1:length(cs)] = cs
-        end
-        return vcat(vec(dxm))[1:N+lag+order-1]
-    end
-    
-    pxOL = (px1L ∘ pxO1)(dx)
-
-    if (a-1 > 0) | (b-N > 0)
-        return(vcat(Array{Union{Missing,Real}}(missing,a-1),
-                    pxOL,
-                    Array{Union{Missing,Real}}(missing,b-N)))
-    else
-        return(pxOL)
-    end
-    
-end
-
-function p(dx::AbstractArray,
-           orderlag::AbstractArray = [[0]])
-
-    nc = size(dx)[2]
-    if orderlag == [[0]]
-        orderlag = hcat(Array{Any,2}(missing, 1, nc))
-        orderlag[1,:] .= [[0]]
-    end
-    
-    format_ol = "orderlag format per column is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n] in a type order x column Array{Union{Missing,Real},2}"
-    @assert orderlag[1] isa Array format_ol
-    @assert orderlag isa Array format_ol
-
-    lag = length(orderlag[1,:][1])
-
-    if (lag == 0)
-        return dx
-    end
-
-    pdx(idx) = p(dx[:,idx], orderlag[:,idx])
-
-    px = pdx(1)
-    for i in 2:nc
-        px = hcat(px, pdx(i))
-    end
-    px
+    return px
     
 end
 

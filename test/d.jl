@@ -23,8 +23,6 @@ import DataFrames: DataFrame
 
     x = reshape(collect(1:20),10,2)
     dx = d(x,2,2)
-    mdx = ismissing.(dx)
-    @test mdx == [0 0; 0 0; 0 0; 0 0; 0 0; 0 0; 0 0]
-    @test dx == [0 0; 0 0; 0 0; 0 0; 0 0; 0 0; 0 0]
+    @test dx == repeat([0],6,2)
 
 end
