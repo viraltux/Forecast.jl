@@ -30,7 +30,7 @@
         subplot := 1
         yguide := "Data"
         xaxis := nothing
-        bottom_margin := -7Plots.mm    
+        bottom_margin := -5Plots.mm    
         fSTL.decomposition[!,:Seasonal] .+
             fSTL.decomposition[!,:Trend] .+
             fSTL.decomposition[!,:Remainder]
@@ -42,7 +42,7 @@
         xaxis := nothing
         ymirror:=true
         guide_position:=:left
-        bottom_margin := -7Plots.mm    
+        bottom_margin := -5Plots.mm    
         fSTL.decomposition[!,:Trend]
     end
 
@@ -51,7 +51,7 @@
         yguide := "Seasonal"
         xaxis := nothing
         seriestype := :sticks
-        bottom_margin := -7Plots.mm    
+        bottom_margin := -5Plots.mm    
         fSTL.decomposition[!,:Seasonal]
     end
 
@@ -63,14 +63,7 @@
         ymirror:=true
         guide_position:=:left
 
-        tick_years = fSTL.decomposition[!,:Timestamp]
-        dd =   [365,30,7,1]
-        ddf =  ["yyyy","yyy-mm","yyyy-mm-dd","mm-dd"]
-        dm = findmin(abs.(length(tick_years) ./ dd .- 10))[2]
-        DateTick = Dates.format.(tick_years, ddf[dm])
-        xticks := (0:dd[dm]:length(tick_years)-1, DateTick[1:dd[dm]:length(tick_years)])
-        
-        fSTL.decomposition[!,:Remainder]
+        fSTL.decomposition[!,:Timestamp], fSTL.decomposition[!,:Remainder]
     end
 
     @series begin

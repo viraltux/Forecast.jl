@@ -41,8 +41,8 @@ julia> summarize(rand(100,3); varnames = ["a","b","c"])
 └──────────┴─────────┘
 ```
 """
-function summarize(x::DataFrame; varnames = nothing)
-    summarize(convert(Array,x), varnames = names(x))
+function summarize(x::DataFrame)
+    summarize(Array(tots(x)[:,2:end]), varnames = names(x)[2:end])
 end
 
 function summarize(x::Vector; varnames = nothing)

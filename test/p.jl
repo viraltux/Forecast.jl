@@ -21,8 +21,9 @@ import DataFrames: DataFrame
     x0 = [[1,1,0] [1,1,0]]
     @test p(dx, x0) == x
 
-    la = 7
-    x = [repeat(1:la,14) repeat(1:la,14)]
+    la = 11
+    x = [repeat(1:la,14) repeat(1:la,14)
+         1 1]
     dx = d(x,1,la)
     x0 = reshape(repeat(1:la,inner=2),1,2,la)
     @test p(dx, x0) == x
@@ -31,7 +32,7 @@ import DataFrames: DataFrame
     dx = d(x,2,2)
     x0 = zeros(2,1,2) # order 2, 1 variable, lag 1
     x0[1,:,:] = collect(1:2)
-    @test p(dx,orla) ≈ x
+    @test p(dx,x0) ≈ x
 
     tx = hcat(co2().co2, co2().co2, co2().co2)
     for col in eachcol(tx) replace!(col, missing => 0.0) end
@@ -41,7 +42,7 @@ import DataFrames: DataFrame
 
     # calculation of π
     x = 0:0.001:1
-    y = sqrt.(1 .- x.^2)
+    y = sqrt.(1 .- x.^2);
     isapprox(4*p(y)[end]/1000 , π, atol = 0.01)
 
 end

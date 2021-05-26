@@ -1,8 +1,11 @@
 """
 Package: Forecast
 
-    ar(x::DataFrame, order, constant = true; method = "ols")
-    ar(x::AbstractArray, order, constant = true; method = "ols", varnames = nothing)
+    ar(x::DataFrame, order, constant = true;             
+                     dΦ0 = nothing, dΦ = nothing)
+
+    ar(x::AbstractArray, order, constant = true; 
+                         dΦ0 = nothing, dΦ = nothing, varnames = nothing)
 
 Fit a multivariate autoregressive series model.
     

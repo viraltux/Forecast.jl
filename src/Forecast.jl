@@ -11,7 +11,7 @@ export AR, CCF, STL
 export acf, ar, arsim, ccf, d, hma, loess, p, pacf, forecast, sma, stl, summarize
 
 # datasets
-export co2, seaborne, quakes
+export air, co2, seaborne, quakes
 
 # types
 include("AR.jl")

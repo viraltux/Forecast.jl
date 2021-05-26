@@ -149,3 +149,43 @@ function quakes()
     qk_df
     
 end
+
+"""
+Package: Forecast
+
+    air()
+
+ Return the classic Box & Jenkins airline data. Monthly totals of international airline passengers from 1949 to 1960.
+
+Box, G. E. P., Jenkins, G. M. and Reinsel, G. C. (1976) _Time Series Analysis, Forecasting and Control._ Third Edition. Holden-Day. Series G.
+
+# Returns
+Dataframe containing the descrived dataset.
+
+# Examples
+```julia-repl
+julia> air()
+71×2 DataFrame
+ Row │ year        quakes 
+     │ Date        Int64  
+─────┼────────────────────
+   1 │ 1950-01-01     138
+   2 │ 1951-01-01     151
+   3 │ 1952-01-01     181
+   [...]
+```
+"""
+function air()
+
+    data = "data/air.csv.gz"
+    path = joinpath(splitdir(@__DIR__)[1], data)
+    
+    df = GZip.open(path, "r") do io
+        CSV.read(io,DataFrame)
+    end
+
+    t =  DataFrame([Date.(df.year,df.month)],[:Date])
+    x = DataFrame([df.passengers],[:Passengers])
+
+    [t x]
+end

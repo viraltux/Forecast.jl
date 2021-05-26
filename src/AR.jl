@@ -18,7 +18,7 @@ Store results from the function `ar`
 `stats::Dict`     Collection of Statistics
 `Φse`             Parameters Standard Error
 `pse`             Alias for Φse
-`Φ0se`            Cosntant Standard Error
+`Φ0se`            Constant Standard Error
 `p0se`            Alias for Φ0se
 `Φpv`             p-value for Parameters
 `ppv`             Alias for Φpv

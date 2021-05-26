@@ -6,3 +6,4 @@ docs/Manifest.toml
 docs/build
 .vscode/*
 .#*
+.juliahistory
