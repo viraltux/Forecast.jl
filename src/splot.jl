@@ -9,7 +9,7 @@ Plot a seasonal plot of x considering the parameter `labels`
 
 # Arguments
 - `x`: regular timed observations
-- `labels`: This parameter accepts Integer, String and Vector values. When an Integer the labels are 1:labels, when a Vector the labels are specified within and when a String it accepts values "month", "day" and "quarter" expecting the first value of x to fall in "Jan", "Mon" or "Q1" unless x is a TimeArray in which case observations are automatically ordered either by "month", "day" or "quarter" and labels may be use to rename the default values.
+- `labels`: This parameter accepts Integer, String and Vector values. When an Integer the labels are 1:labels, when a Vector the labels are specified within and when a String it accepts values "month", "day" and "quarter" expecting the first value of x to fall in "Jan", "Mon" or "Q1" unless x is a DataFrame in which case it is treated as a Time Series where the first Date typed column and value columns ares considered, observations are then automatically ordered either by "month", "day" or "quarter" and labels may be use to rename the default values.
 
 # Returns
 Sesonal plot
@@ -17,6 +17,8 @@ Sesonal plot
 # Examples
 ```julia-repl
 julia> splot(rand(120),"month")
+julia> splot(rand(120),"quarter")
+julia> splot(rand(120),"day")
 ```
 """
 splot()
@@ -31,39 +33,39 @@ splot()
 
     x = sp.args[1]
 
-    # Time Series 
+    # DataFrame
     if isa(x, DataFrame)
-        t = timestamp(x)
-        x = values(x)[:,1]
+        x = tots(x)
+        t = x[:,1]
+        x = x[:,2]
 
-        d = t[2]-t[1]
-
-        if d == Day(1)
+        dt = Δt(t)
+        
+        if dt == Day(1)
             labels = (na == 2) ? sp.args[2] : day_labels
             season = 7
-            p = dayofweek(t[1]) - 1
-        elseif (Day(1) < d) & (d <= Day(31))
+            rp = dayofweek(t[1]) - 1
+        elseif dt == Month(1)
             labels = (na == 2) ? sp.args[2] : month_labels
             season = 12
-            p = month(t[1]) - 1
+            rp = month(t[1]) - 1
         else
             labels = (na == 2) ? sp.args[2] : quarter_labels
             season = 4
-            p = quarterofyear(t[1]) - 1
+            rp = quarterofyear(t[1]) - 1
         end
 
         # Shift values to assign correct labels
-        x = vcat(repeat([missing],p),x)
-
+        x = vcat(repeat([missing],rp),x)
     end
 
     # Numerical Series
-    if (na == 1) & !isa(sp.args[1], TimeArray)
+    if (na == 1) & !isa(sp.args[1], DataFrame)
         labels = 1:12
         season = 12
     end
 
-    if (na == 2) & !isa(sp.args[1], TimeArray)
+    if (na == 2) & !isa(sp.args[1], DataFrame)
 
         if isa(sp.args[2], String)
             if sp.args[2] == "month"

@@ -48,7 +48,7 @@
     ts = xts[:,1]
     name_ts = names(xts)[1]
 
-    legend := isnothing(legend) ? (size(x,2) <= 4 ? :outertop : :outerright) : legend
+    legend := isnothing(legend) ? (size(x,2) <= 4 ? :top : :outerright) : legend
 
     @series begin
         label := permutedims(fc.model.varnames)
