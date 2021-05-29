@@ -75,13 +75,13 @@ function Base.show(io::IO, xar::AR)
     end
     print("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘^’ 0.1 ‘ ’ 1  and ‘+’ if fixed\n")
 
-    printstyled("\nCoefficients' Std. Error\n",bold=true,color=:underline)
-    printstyled("\nΦ0se\n",bold=true,color=:underline)
-    pretty_table(xar.Φ0se, tf = tf_matrix, noheader=true)
-    for i in 1:p
-        printstyled("Φ",i,"se\n",bold=true,color=:underline)
-        pretty_table(xar.Φse[:,:,i], tf = tf_matrix, noheader=true)    
-    end
+    # printstyled("\nCoefficients' Std. Error\n",bold=true,color=:underline)
+    # printstyled("\nΦ0se\n",bold=true,color=:underline)
+    # pretty_table(xar.Φ0se, tf = tf_matrix, noheader=true)
+    # for i in 1:p
+    #     printstyled("Φ",i,"se\n",bold=true,color=:underline)
+    #     pretty_table(xar.Φse[:,:,i], tf = tf_matrix, noheader=true)    
+    # end
 
     printstyled("\nΣ Noise Std. Deviation\n",bold=true,color=:underline)
     Σ = m == 1 ? [xar.Σ] : xar.Σ

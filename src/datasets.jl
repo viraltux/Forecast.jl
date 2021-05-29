@@ -122,7 +122,7 @@ Package: Forecast
 
     quakes()
 
-Return the number of earthquakes per year on earth with a magnitude higher or equal to six from 1950 to 2020.
+Return the number of earthquakes per year on earth with a magnitude higher or equal to six from 1950 to 2020. The data has been collected from https://earthquake.usgs.gov/ and aggregated.
 
 # Examples
 ```julia-repl

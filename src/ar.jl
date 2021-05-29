@@ -1,10 +1,10 @@
 """
 Package: Forecast
 
-    ar(x::DataFrame, order, constant = true;             
+    ar(x::DataFrame, or, constant = true;             
                      dΦ0 = nothing, dΦ = nothing)
 
-    ar(x::AbstractArray, order, constant = true; 
+    ar(x::AbstractArray, or, constant = true; 
                          dΦ0 = nothing, dΦ = nothing, varnames = nothing)
 
 Fit a multivariate autoregressive series model.
@@ -17,7 +17,7 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 
 # Arguments
 - `x`: Multivariate series each column containing a dimension and ordered by time ascending rows.
-- `order`: Number of parameters Φ to be estimated.
+- `or`: Number of parameters Φ to be estimated.
 - `constant`: If `true` `ar` estimates Φ0 otherwise it is assume to be zero.
 - `dΦ0`: Tuple containing two Φ0 objects, the first one will act as an original reference to the second one and different values will be fixed in the fitting process to the values in the second Φ0.
 - `dΦ`:  Equivalent to dΦ0 but for Φ.
@@ -49,41 +49,40 @@ function ar(x::AbstractArray, order::Integer = 1, constant::Bool = true;
     
 end
 
-function ar_ols(x::AbstractArray, order::Integer, constant::Bool; 
-               dΦ0 = nothing, dΦ = nothing, varnames)
+function ar_ols(x::AbstractArray, or::Integer, constant::Bool; 
+               dΦ0 = nothing, dΦ = nothing, varnames = nothing)
 
     @assert 1 <= ndims(x) <= 2
-    @assert 1 <= order < size(x,1)-1
+    @assert 1 <= or < size(x,1)-1
 
     #x = x[end:-1:1,:]
 
     n = size(x,1)
     m = size(x,2)
-    o = order
-    p = m*m*o + m
+    np = m*m*or + m
 
     r0 = repeat([0.0],m)
     r1 = repeat([1.0],m)
     dΦ0 = isnothing(dΦ0) ? (r1,r1) : dΦ0
     dΦ0 = constant ? dΦ0 : (r1,r0)
-    r11 = reshape(repeat([1.0],o*m*m),m,m,o)
+    r11 = reshape(repeat([1.0],or*m*m),m,m,or)
     dΦ  = isnothing(dΦ)  ? (r11,r11) : dΦ
 
     varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
 
     x = x[end:-1:1,:]
     nx = x
-    for i in 1:o
+    for i in 1:or
         nx = hcat(x,nx[vcat(2:end,1),:])
     end
-    nx = nx[1:end-o,:]
+    nx = nx[1:end-or,:]
 
     Y = nx[:,1:m]
     X = nx[:,m+1:end]
     X = hcat(repeat([1.0],size(X,1)),X)
 
     # Fixing parameters
-    W = Array{Float64,2}(undef,(o*m+1,m))
+    W = Array{Float64,2}(undef,(or*m+1,m))
     for i in 1:m
         Xi,Yi = fixΦ(X,Y,i,dΦ0,dΦ)
         dW = (Xi'*Xi)\(Xi'*Yi)
@@ -98,13 +97,13 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
 
     Φ0 = W[1,:]
     Φ = W[2:end,:]
-    Φ = reshape(Φ',m,m,o)
+    Φ = reshape(Φ',m,m,or)
 
     #fix p
-    p = fixp(dΦ0,dΦ)
+    np = fixnp(dΦ0,dΦ)
 
     # Maximum Likelihood noise covariance
-    k = p*m*m 
+    k = np*m*m 
     Σ2 = 1/(n-k)*e'*e
 
     # ML parameters std. error.
@@ -119,17 +118,16 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
     
     # Information Criteria
     lΣ2   = log(norm(Σ2))
-    ic = Dict([("AIC",  lΣ2 + 2*p*m^2/n),
-               ("AICC", lΣ2 + 2*(p*m^2+1)/(n-(p*m^2+2))),
-               ("BIC",  n*log(norm(Σ2)+m)+(m^2*p+m*(m+1)/2)*log(n)),
-               ("H&Q",  lΣ2 + 2*log(log(n))*p*m^2/n)])
+    ic = Dict([("AIC",  lΣ2 + 2*np*m^2/n),
+               ("AICC", lΣ2 + 2*(np*m^2+1)/(n-(np*m^2+2))),
+               ("BIC",  n*log(norm(Σ2)+m)+(m^2*np+m*(m+1)/2)*log(n)),
+               ("H&Q",  lΣ2 + 2*log(log(n))*np*m^2/n)])
 
     # Statistics
     SStot = sum((Y .- mean(Y,dims=1)).^2,dims=1)
     SSres = sum(e .^ 2,dims=1)
     R2 = compact(1 .- (SSres ./ SStot))
     
-
     pvf(mu,se) = se == 0 ? 1.0 : cdf(Normal(abs(mu),se),0) #1 to make log(1) = 0
     Φpv = pvf.(Φ,Φse) 
     Φ0pv = pvf.(Φ0,Φ0se)
@@ -140,22 +138,23 @@ function ar_ols(x::AbstractArray, order::Integer, constant::Bool;
     
     stats = Dict([(" var",    varnames),
                   ("R2",    R2),
-                  ("R2adj", 1 .- (1 .- R2) * (n-1)/(n-(p-1)/m-1)),
-                  ("Fisher's p-test", 1 .- cdf(Chisq(2*p/m),-2*slpv))])
+                  ("R2adj", 1 .- (1 .- R2) * (n-1)/(n-(np-1)/m-1)),
+                  ("Fisher's p-test", 1 .- cdf(Chisq(2*np/m),-2*slpv))])
     
     coefficients = Φ
     ar_constant = Φ0
     stdev = Σ = compact(real(sqrt(Σ2)))
 
     
-    call = "ar(X, order="*string(order)*
+    call = "ar(X, order="*string(or)*
         ", constant="*string(constant)*")"
     
     AR(varnames,
        Φ,coefficients,
        Φ0,ar_constant,
        Σ,stdev, 
-       x,fitted,e,
+       x[end:-1:1,:],
+       fitted,e,
        ic,stats,
        Φse,pse,Φ0se,p0se,
        Φpv,ppv,Φ0pv,p0pv,
@@ -238,11 +237,11 @@ end
 """
 Package: Forecast
 
-    fixp(dΦ0,dΦ)
+    fixnp(dΦ0,dΦ)
 
 return the number of free parameters
 """
-function fixp(dΦ0,dΦ)
+function fixnp(dΦ0,dΦ)
     
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
@@ -275,10 +274,10 @@ function fixΦse(Φse,dΦ0,dΦ)
     Φ, fΦ = dΦ
     (Φ0 == fΦ0) & (Φ == fΦ) && return(Φse)
 
-    m,p = arsize(Φ)
+    m,np = arsize(Φ)
     
-    rΦ  = reshape(hcat(Φ0 ,reshape(Φ ,m,m*p))',m*(m*p+1),1)
-    rfΦ = reshape(hcat(fΦ0,reshape(fΦ,m,m*p))',m*(m*p+1),1)
+    rΦ  = reshape(hcat(Φ0 ,reshape(Φ ,m,m*np))',m*(m*np+1),1)
+    rfΦ = reshape(hcat(fΦ0,reshape(fΦ,m,m*np))',m*(m*np+1),1)
 
     dc = findall(rΦ .!== rfΦ)
     

@@ -37,7 +37,7 @@ x = LinRange(0,pi,n)
 y = sin.(x) .+ rand(n)
 scatter(x, y, xlims=(-1/2,pi+1/2), ma=.5, label = "Data", color = :grey,size=(800,500))
 plot!(axb,loess(x,y,predict=axb), linewidth = 4, label = "LOESS", color = :blue)
-plot!(x,sma(y,100), linewidth = 2, label= "MA 100", color = :orange)
+plot!(x,sma(y,100), linewidth = 2, label= "Moving Avg 100", color = :orange)
 ```
 
 ## STL on CO2 dataset
@@ -101,18 +101,17 @@ res = pacf(x)
 plot(res,size=(800,500))
 ```
 
-## Seasonal Plot on Seaborne dataset 
+## Seasonal Plot on Air Passengers dataset 
 
-To compare seasonal behavior we can use splot to display it side by side, in this case it seems Thursdays is the day where there is a higher trade activity on average in the UK's ports.
+To compare seasonal behavior we can use splot to display it side by side, in this case it seems the months of July and August are the ones with a higher number of airflight passengers.
 
 ```@example quickstart
 using Plots
 using Forecast
-sb = seaborne()
-splot(sb.UK, size=(800,500))
+splot(air(), size=(800,500))
 ```
 
-## Multivariate Autoregressive Model
+## Autoregressive Models
 
 Random Walk simulated, fitted and forecast plotted.
 ```@example quickstart
@@ -142,14 +141,4 @@ x0 = [.1, .1]
 ar_model = ar(arsim(Φ,Φ0,x0,Σ,100),1)
 fc = forecast(ar_model,50)
 plot(fc, size=(800,500))
-```
-
-Output from fitting a three dimensional seaborne trade dataset with two parameters.
-```@example quickstart
-using Plots
-using Forecast
-
-sb = seaborne()
-ar_model = ar(sb,2)
-show(ar_model)
 ```

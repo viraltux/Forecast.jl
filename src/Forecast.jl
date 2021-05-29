@@ -8,10 +8,10 @@ using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
 export AR, CCF, STL
 
 # methods
-export acf, ar, arsim, ccf, d, hma, loess, p, pacf, forecast, sma, stl, summarize
+export acf, ar, arsim, ccf, d, hma, loess, p, pacf, forecast, sma, stl, transform, summarize
 
 # datasets
-export air, co2, seaborne, quakes
+export air, co2, quakes, seaborne
 
 # types
 include("AR.jl")

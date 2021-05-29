@@ -9,6 +9,11 @@ makedocs(
     pages = [
         "index.md",
         "man/quickstart.md",
+        "Forecast Examples" =>[
+            "man/examples/quakes.md",
+            "man/examples/airpassengers.md",
+            "man/examples/seaborne.md",
+        ],
         "man/methods.md",
         "man/datasets.md",
         "man/docstrings.md",		

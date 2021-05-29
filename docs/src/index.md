@@ -27,16 +27,3 @@ Julia package containing utilities intended for Time Series analysis.
     splot:      Plot a seasonal plot for types Vector and TimeArray.
     stl:        Seasonal and Trend decomposition using loess.
     summarize:  Statistical summary.
-	
-
-## Manual Outline
-
-```@contents
-Pages = [
-    "man/quickstart.md",
-    "man/methods.md",
-    "man/datasets.md",
-    "man/docstrings.md",		
-]
-Depth = 1
-```

@@ -69,3 +69,56 @@ function rename!(fc::FORECAST,new_names)
         fc.model.varnames=new_names
     end
 end
+
+"""
+Transform a FORECAST object value with given function
+"""
+function transform(fc::FORECAST, f::Function)
+
+    ts_x = tots(fc.model.x)
+    names_x = names(ts_x)
+    names_x[2:end] = "$(string(f))_" .* names_x[2:end]
+
+    ts_mean = tots(fc.mean)
+    ts_lower = tots(fc.lower)
+    ts_upper = tots(fc.upper)
+    names_mean = names(ts_mean)
+    names_mean[2:end] = "$(string(f))_" .* names_mean[2:end]
+    names_lower = names(ts_lower)
+    names_lower[2:end] = "$(string(f))_" .* names_lower[2:end]
+    names_upper = names(ts_upper)
+    names_upper[2:end] = "$(string(f))_" .* names_upper[2:end]
+
+    xts = ts_x[:,1]
+    x = f.(Array(ts_x[:,2:end]))
+
+    fmean = f.(Array(ts_mean[:,2:end]))
+    flower = f.(Array(ts_lower[:,2:end]))
+    fupper = f.(Array(ts_upper[:,2:end]))
+
+    n = size(x,1)
+    m = size(x,2)
+
+    pfc = deepcopy(fc)
+    pfc.model.varnames = names_x[2:end]
+
+    pfc.model.x = hcat(ts_x[:,1:1], DataFrame(x,names_x[2:end]))
+    pfc.mean    = hcat(ts_mean[:,1:1], DataFrame(fmean,names_mean[2:end]))
+                        
+
+    if size(fmean,2) > 1
+        z = fupper .- repeat(fmean,1,2)
+        fmean = repeat(pfmean,1,2)
+    else
+        z = fupper .- fmean
+    end
+    
+    pfc.upper = hcat(ts_mean[:,1:1],
+                     DataFrame(fmean .+ z,names_upper[2:end]))
+    pfc.lower = hcat(ts_mean[:,1:1],
+                     DataFrame(fmean .- z,names_lower[2:end]))
+    
+    pfc.call = fc.call * "\nData transformed with function: $(f)"
+
+    return(pfc)
+end
