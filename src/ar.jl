@@ -2,10 +2,10 @@
 Package: Forecast
 
     ar(x::DataFrame, or, constant = true;             
-                     dΦ0 = nothing, dΦ = nothing)
+                     alpha = 1.0, dΦ0 = nothing, dΦ = nothing)
 
     ar(x::AbstractArray, or, constant = true; 
-                         dΦ0 = nothing, dΦ = nothing, varnames = nothing)
+                         alpha = false, dΦ0 = nothing, dΦ = nothing, varnames = nothing)
 
 Fit a multivariate autoregressive series model.
     
@@ -19,6 +19,7 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + \\mathcal{N}(\\vec{0},\\Si
 - `x`: Multivariate series each column containing a dimension and ordered by time ascending rows.
 - `or`: Number of parameters Φ to be estimated.
 - `constant`: If `true` `ar` estimates Φ0 otherwise it is assume to be zero.
+- `alpha`: fixes to zero all coefficients which significance is below its value. It defaults to one.
 - `dΦ0`: Tuple containing two Φ0 objects, the first one will act as an original reference to the second one and different values will be fixed in the fitting process to the values in the second Φ0.
 - `dΦ`:  Equivalent to dΦ0 but for Φ.
 - `varnames`: Names of the dimensions (by default xi where `i` is an integer)
@@ -32,30 +33,48 @@ julia> ar(rand(100,2),2)
 AR([...])
 """
 function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
-            dΦ0 = nothing, dΦ = nothing)
+            alpha = 1.0, dΦ0 = nothing, dΦ = nothing)
 
     dfx =df[:,eltype.(eachcol(df)) .<: Real]
-    xar = ar_ols(Array(dfx), order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = names(dfx))
+    xar = ar(Array(dfx), order, constant; alpha, dΦ0, dΦ, varnames = names(dfx))
     xar.x = df
 
-    return(xar)
+    return xar
     
 end
 
 function ar(x::AbstractArray, order::Integer = 1, constant::Bool = true;
-            dΦ0 = nothing, dΦ = nothing, varnames = nothing)
+            alpha = 1.0, dΦ0 = nothing, dΦ = nothing, varnames = nothing)
+
+    @assert 0.0 < alpha <= 1.0
+    
+    xar = ar_ols(x, order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = varnames)
+
+    alpha == 1.0 && return xar
+    
+    m,np = arsize(xar.Φ)
+    dΦs = (reshape(xar.Φpv,m,m,np) .<= alpha)
+    dΦ0s = (reshape(xar.Φ0pv,m) .<= alpha)
+
+    all(dΦs) && all(dΦ0s) && return xar
+
+    if isnothing(dΦ)
+        dΦ = (xar.Φ, xar.Φ .* dΦs)
+        dΦ0 = (xar.Φ0, xar.Φ0 .* dΦ0s)
+    else
+        dΦ = (dΦ[1], dΦ[2] .* dΦs)
+        dΦ0 = (dΦ0[1], dΦ0[2] .* dΦ0s)
+    end
 
     return ar_ols(x, order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = varnames)
     
 end
 
 function ar_ols(x::AbstractArray, or::Integer, constant::Bool; 
-               dΦ0 = nothing, dΦ = nothing, varnames = nothing)
+                dΦ0 = nothing, dΦ = nothing, varnames = nothing)
 
     @assert 1 <= ndims(x) <= 2
     @assert 1 <= or < size(x,1)-1
-
-    #x = x[end:-1:1,:]
 
     n = size(x,1)
     m = size(x,2)
@@ -115,7 +134,7 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     Φse = reshape(rΦse[:,2:end],m,m,:)
     p0se = Φ0se
     pse = Φse
-    
+
     # Information Criteria
     lΣ2   = log(norm(Σ2))
     ic = Dict([("AIC",  lΣ2 + 2*np*m^2/n),
@@ -135,11 +154,11 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     ppv = Φpv
     #pv = vcat(reshape(Φ0pv,:,1),reshape(Φpv,:,1))
     slpv = compact(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
-    
-    stats = Dict([(" var",    varnames),
+
+    stats = Dict([("variable", varnames),
                   ("R2",    R2),
                   ("R2adj", 1 .- (1 .- R2) * (n-1)/(n-(np-1)/m-1)),
-                  ("Fisher's p-test", 1 .- cdf(Chisq(2*np/m),-2*slpv))])
+                  ("Fisher's p-test", 1 .- cdf(Chisq(2*np/m),-2*slpv))])    
     
     coefficients = Φ
     ar_constant = Φ0
@@ -149,6 +168,7 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     call = "ar(X, order="*string(or)*
         ", constant="*string(constant)*")"
     
+
     AR(varnames,
        Φ,coefficients,
        Φ0,ar_constant,
