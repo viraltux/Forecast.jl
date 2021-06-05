@@ -1,11 +1,7 @@
 """
 Package: Forecast
 
-    arsim(Φ,n)
-    arsim(Φ,Φ0,n)
-    arsim(Φ,Φ0,x0,n)
-    arsim(Φ,Φ0,x0,Σ,n)
-    arsim(Φ,Φ0,x0,E,n)
+    arsim(Φ,Φ0,x0,n; Σ,E)
     arsim(AR,n)
 
 Simulate a multivariate autoregressive series model.
@@ -20,73 +16,87 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 - `Φ`:            Array with dimensions (m,m,p) for the parameters in the AR model.
 - `Φ0`:           Vector size `m` for the constant in the AR model. Default value is 0.
 - `x0`:           Array with dimensions (m,p) for the initial value in the AR model. Default value is a random value from zero to one.
-- `Σ`:            Variance/Covariance matrix for the AR model with a MvNormal distribution for the noise. Default value is an identity Matrix.
 - `n`:            Number of simulations.
+- `Σ`:            Variance/Covariance matrix for the AR model with a MvNormal distribution for the noise. Default value is an identity Matrix.
 - `E`:            Distribution for the error.
-- `AR`:           AR struct coming from an `ar` fitting.
+- `AR`:           AR struct coming from an `ar` model.
 
 # Returns
 A multivariate series simulating an AR model each column containing a dimension and ordered by time ascending rows.
 
 # Examples
 ```julia-repl
-julia> arsim(1,10)
+julia> arsim(1,1,1,10)
 10-element Vector{Float64,1}:
 [...]
 """
-function arsim(Φ,n::Integer)
-    arsim(Φ,nothing,nothing,MvNormal(0,0),n)
+function arsim(xar::AR,n::Integer)
+    Φ = compact(xar.Φ)
+    Φ0 = compact(xar.Φ0)
+    x0 = compact(zeros(size(Φ,2),size(Φ,3)))
+    Σ = compact(xar.Σ)
+    arsim(Φ,Φ0,x0,n;Σ)
 end
 
-function arsim(Φ,Φ0,n::Integer)
-    arsim(Φ,Φ0,nothing,MvNormal(0,0),n)
-end
+function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
+               Σ::Real = 1.0, E::Distribution = MvNormal(1,1))
 
-function arsim(Φ,Φ0,x0,n::Integer)
-    arsim(Φ,Φ0,x0,MvNormal(0,0),n)
-end
-
-function arsim(Φ,Φ0,x0,Σ::Number,n::Integer)
-    arsim(Φ,Φ0,x0,MvNormal(1,Σ),n)
-end
-
-function arsim(Φ,Φ0,x0,Σ::Vector,n::Integer)
-    arsim(Φ,Φ0,x0,MvNormal(collect(Diagonal(Σ))),n)
-end
-
-function arsim(Φ,Φ0,x0,Σ::Matrix,n::Integer)
-    arsim(Φ,Φ0,x0,MvNormal(Σ),n)
-end
-
-function arsim(ar_str::AR,n::Integer)
-    Φ = ar_str.Φ
-    Φ0 = ar_str.Φ0
-    Σ = ar_str.Σ
-    arsim(Φ,Φ0,nothing,Σ,n)
-end
-
-function arsim(Φ,Φ0,x0,E::Distribution,n::Integer)
-    Φ = compact(Φ)
-
-    m,np = arsize(Φ)
-    
-    Φ0 = isnothing(Φ0) ? compact(zeros(m)) : compact(Φ0)
-    x0 = isnothing(x0) ? compact(rand(m*np)) : compact(x0)
-    E = size(E)[1] == 0 ? MvNormal(m,1) : E
-    
+    E =  Σ != 1.0 ? MvNormal(1,Σ) : E
     e = rand(E,n)
-    x = compact(Array{Float64}(undef,n,m))
+    x = Array{Float64}(undef,n)
     
-    # reshape and format for matrix operation
-    Φ = Φ  isa Number ? reshape([Φ],1,1) : reshape(Φ,m,m*np)
-    Φ0 = Φ0 isa Number ? [Φ0] : Φ0
-    x0 = x0 isa Number ? [x0] : reshape(x0,m*np,1)
-    x = x isa Number ? [x] : x
+    for i in 1:n
+        x[i] = x0 = Φ * x0 + Φ0 + e[i]
+    end
+    
+    return x
+
+end
+
+function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
+               Σ::Real = 1.0, E::Distribution = MvNormal(1,1))
+
+    @assert length(Φ) == length(x0)
+
+    np = length(Φ)
+
+    E =  Σ != 1.0 ? MvNormal(1,Σ) : E
+    e = rand(E,n)
+    x = Array{Float64}(undef,n)
 
     for i in 1:n
-        x[i,:] = Φ * x0 + Φ0  + e[:,i]
+        x[i] = sum(Φ .* x0) + Φ0 + e[i]
+        x0 = vcat(x[i],x0)[1:np]
+    end
+    
+    return x
+    
+end
+
+function arsim(Φ::Array, Φ0::Vector, x0::Array, n::Integer;
+               Σ::Matrix = collect(I(length(Φ0))),
+               E::Distribution = MvNormal(length(Φ0),1))
+
+    m = size(Φ,1)
+    np = size(Φ,3)
+
+    @assert length(Φ0) == m
+    @assert size(x0,1) == m
+    @assert size(x0,2) == np
+
+    E =  Σ != collect(I(length(Φ0))) ? MvNormal(Σ) : E
+    e = rand(E,n)
+
+    x = Array{Float64}(undef,n,m)
+
+    x0 = reshape(x0,m*np)
+    Φ = reshape(Φ,m,m*np)
+    
+    for i in 1:n
+        x[i,:] = Φ * x0 + Φ0 + e[:,i]
         x0 = vcat(x[i,:],x0)[1:m*np]
     end
-
-    x
+    
+    return x
+    
 end
