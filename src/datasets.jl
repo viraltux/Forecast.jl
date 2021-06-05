@@ -69,7 +69,7 @@ Package: Forecast
 
     seaborne(full = false)
 
-Cerdeiro, Komaromi, Liu and Saeed (2020). Estimates of world seaborne trade from AIS data collected by MarineTraffic; available at UN COMTRADE Monitor.
+Return estimates of world seaborne trade from AIS data collected by Marine Traffic.
 
 By default a DataFrame containing deadweight imports for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02 is returned, otherwise a DataFrame is returned for the same countries with import and exports for the below fields:
 
@@ -78,6 +78,8 @@ mtc:        metric tons of cargo
 dwt:        deadweight tonnage
 suffix_ma:  30-day moving averages
 
+Data available at UN COMTRADE Monitor.Cerdeiro, Komaromi, Liu and Saeed (2020). 
+
 # Returns
  Dataframe containing the seaborne dataset.
 
@@ -85,13 +87,13 @@ suffix_ma:  30-day moving averages
 ```julia-repl
 julia> seaborne()
 [ Info: Seaborne deadweight trade imports from AIS
-2204×3 DataFrame
-  Row │ France   Germany  UK      
-      │ Int64    Int64    Int64   
-──────┼───────────────────────────
-    1 │  309178   173686   873765
-    2 │  750539   571960   929067
-    3 │  438759   238403   718514
+2199×4 DataFrame
+  Row │ Date        France   Germany  UK     
+      │ Date        Int64    Int64    Int64  
+──────┼──────────────────────────────────────
+    1 │ 2015-04-01   507946   878377  599573
+    2 │ 2015-04-02   332043  1501614  772714
+    3 │ 2015-04-03   810077   941663  262994
    [...]
 ```
 """
@@ -113,7 +115,8 @@ function seaborne(full = false)
 
     # Group by Country and Flow to select Imports
     gbt = groupby(sb_df, [:country_name, :flow])
-    DataFrame(Dict(:Germany => gbt[1].dwt, :France => gbt[3].dwt, :UK => gbt[5].dwt))
+    DataFrame(Dict(:Date => gbt[1].date ,
+                   :UK => gbt[1].dwt, :Germany => gbt[3].dwt, :France => gbt[5].dwt))
 end
 
 
@@ -155,7 +158,7 @@ Package: Forecast
 
     air()
 
- Return the classic Box & Jenkins airline data. Monthly totals of international airline passengers from 1949 to 1960.
+Return the classic Box & Jenkins airline data. Monthly totals of international airline passengers from 1949 to 1960.
 
 Box, G. E. P., Jenkins, G. M. and Reinsel, G. C. (1976) _Time Series Analysis, Forecasting and Control._ Third Edition. Holden-Day. Series G.
 
@@ -188,4 +191,95 @@ function air()
     x = DataFrame([df.passengers],[:Passengers])
 
     [t x]
+end
+
+
+"""
+Package: Forecast
+
+    london()
+
+Return ten years of monthly data about weather and crime in Greater London from 2008 to 2018.
+
+# Weather Variables
+
+MaxTemp:  Mean daily maximum temperature in C°
+MinTemp:  Mean daily minimum temperature in C°
+AirFrost: Days of air frost
+Rain:     Total rainfall in mm
+Sun:      Total sunshine durationin hours
+
+# Crime Variables and its aggregated categories
+
+┌─────────────────────────────┬────────────────────────────────────────┐
+│                       Crime │                               Category │
+├─────────────────────────────┼────────────────────────────────────────┤
+│                    Burglary │            Burglary in Other Buildings │
+│                             │                 Burglary in a Dwelling │
+│                      Damage │            Criminal Damage To Dwelling │
+│                             │       Criminal Damage To Motor Vehicle │
+│                             │      Criminal Damage To Other Building │
+│                             │                  Other Criminal Damage │
+│                       Drugs │                       Drug Trafficking │
+│                             │                            Other Drugs │
+│                             │                    Possession Of Drugs │
+│                       Fraud │                     Counted per Victim │
+│                             │                  Other Fraud & Forgery │
+│                       Other │                         Going Equipped │
+│                             │                       Other Notifiable │
+│                     Robbery │                      Business Property │
+│                             │                      Personal Property │
+│                      Sexual │                           Other Sexual │
+│                             │                                   Rape │
+│                       Theft │                  Handling Stolen Goods │
+│                             │ Motor Vehicle Interference & Tampering │
+│                             │                            Other Theft │
+│                             │                     Other Theft Person │
+│                             │               Theft From Motor Vehicle │
+│                             │                       Theft From Shops │
+│                             │          Theft/Taking Of Motor Vehicle │
+│                             │            Theft/Taking of Pedal Cycle │
+│                    Violence │                    Assault with Injury │
+│                             │                         Common Assault │
+│                             │                   Grievous Bodily Harm │
+│                             │                             Harassment │
+│                             │                                 Murder │
+│                             │                       Offensive Weapon │
+│                             │                         Other violence │
+│                             │                           Wounding/GBH │
+└─────────────────────────────┴────────────────────────────────────────┘
+
+Data has been collected and joined from london.gov.uk and metoffice.gov.uk (Heathrow Station).
+
+# Returns
+Dataframe containing the descrived dataset.
+
+# Examples
+```julia-repl
+julia> london()
+132×15 DataFrame
+ Row │ Date        MaxTemp  MinTemp  AirFrost  
+     │ Date        Float64  Float64  Int64     
+─────┼─────────────────────────────────────────[...]
+   1 │ 2008-01-01     10.4      4.7         0  
+   2 │ 2008-02-01     11.0      2.0         7  
+   3 │ 2008-03-01     10.6      3.7         2
+   [...]
+```
+"""
+function london()
+
+    data = "data/london.csv.gz"
+    path = joinpath(splitdir(@__DIR__)[1], data)
+    
+    df = GZip.open(path, "r") do io
+        CSV.read(io,DataFrame)
+    end
+
+    df = GZip.open(path, "r") do io
+        CSV.read(io, DataFrame, dateformat = "yyyy-mm-dd", types = Dict(:Date => Date))
+    end
+
+    df
+    
 end
