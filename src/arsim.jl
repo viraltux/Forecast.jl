@@ -39,30 +39,66 @@ function arsim(xar::AR,n::Integer)
 end
 
 function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
-               Σ::Real = 1.0, E::Distribution = MvNormal(1,1))
+               Σ::Real = 1.0, E::Distribution = MvNormal(1,1),
+               fix = nothing)
+
+    x = Array{Float64}(undef,n)
+
+    if Σ == 0.0 && isnothing(fix)
+        for i in 1:n
+            x[i] = x0 = Φ * x0 + Φ0
+        end
+        return x
+    end
+
+    if Σ == 0.0 && !isnothing(fix)
+        @assert size(x) == size(fix)
+        for i in 1:n
+            x[i] = x0 = ismissing(fix[i]) ? Φ * x0 + Φ0 : fix[i]
+        end
+        return x
+    end
 
     E =  Σ != 1.0 ? MvNormal(1,Σ) : E
     e = rand(E,n)
-    x = Array{Float64}(undef,n)
-    
+
     for i in 1:n
         x[i] = x0 = Φ * x0 + Φ0 + e[i]
     end
-    
+
     return x
 
 end
 
 function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
-               Σ::Real = 1.0, E::Distribution = MvNormal(1,1))
-
-    @assert length(Φ) == length(x0)
+               Σ::Real = 1.0, E::Distribution = MvNormal(1,1),
+               fix = nothing)
 
     np = length(Φ)
 
+    @assert length(Φ) == length(x0)
+
+    x = Array{Float64}(undef,n)
+    
+    if Σ == 0.0 && isnothing(fix)
+        for i in 1:n
+            x[i] = sum(Φ .* x0) + Φ0
+            x0 = vcat(x[i],x0)[1:np]
+        end
+        return x
+    end
+
+    if Σ == 0.0 && !isnothing(fix)
+        @assert size(x) == size(fix)
+        for i in 1:n
+            x[i] = ismissing(fix[i]) ? sum(Φ .* x0) + Φ0 : fix[i]
+            x0 = vcat(x[i],x0)[1:np]
+        end
+        return x
+    end
+
     E =  Σ != 1.0 ? MvNormal(1,Σ) : E
     e = rand(E,n)
-    x = Array{Float64}(undef,n)
 
     for i in 1:n
         x[i] = sum(Φ .* x0) + Φ0 + e[i]
@@ -75,7 +111,8 @@ end
 
 function arsim(Φ::Array, Φ0::Vector, x0::Array, n::Integer;
                Σ::Matrix = collect(I(length(Φ0))),
-               E::Distribution = MvNormal(length(Φ0),1))
+               E::Distribution = MvNormal(length(Φ0),1),
+               fix = nothing)
 
     m = size(Φ,1)
     np = size(Φ,3)
@@ -84,17 +121,38 @@ function arsim(Φ::Array, Φ0::Vector, x0::Array, n::Integer;
     @assert size(x0,1) == m
     @assert size(x0,2) == np
 
-    E =  Σ != collect(I(length(Φ0))) ? MvNormal(Σ) : E
-    e = rand(E,n)
+    mnp = m*np
+    x0 = reshape(x0,mnp)
+    Φ = reshape(Φ,m,mnp)
 
     x = Array{Float64}(undef,n,m)
 
-    x0 = reshape(x0,m*np)
-    Φ = reshape(Φ,m,m*np)
+    if Σ == zeros(m,m) && isnothing(fix)
+        for i in 1:n
+            x[i,:] = Φ * x0 + Φ0
+            x0 = vcat(x[i,:],x0)[1:mnp]
+        end
+        
+        return x
+    end
+
+    if Σ == zeros(m,m) && !isnothing(fix)
+        @assert size(x) == size(fix)
+        for i in 1:n
+            x[i,:] =  Φ * x0 + Φ0
+            fixi = findall((!ismissing).(fix[i,:]))
+            x[i,fixi] = fix[i,fixi]
+            x0 = vcat(x[i,:],x0)[1:mnp]
+        end
+        return x
+    end
     
+    E =  Σ != collect(I(length(Φ0))) ? MvNormal(Σ) : E
+    e = rand(E,n)
+
     for i in 1:n
         x[i,:] = Φ * x0 + Φ0 + e[:,i]
-        x0 = vcat(x[i,:],x0)[1:m*np]
+        x0 = vcat(x[i,:],x0)[1:mnp]
     end
     
     return x

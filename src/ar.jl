@@ -35,8 +35,7 @@ AR([...])
 function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
             alpha = 1.0, dΦ0 = nothing, dΦ = nothing)
 
-    dfx =df[:,eltype.(eachcol(df)) .<: Real]
-    xar = ar(Array(dfx), order, constant; alpha, dΦ0, dΦ, varnames = names(dfx))
+    xar = ar(Array(df[2:end]), order, constant; alpha, dΦ0, dΦ, varnames = names(df)[2:end])
     xar.x = df
 
     return xar
@@ -162,12 +161,10 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     
     coefficients = Φ
     ar_constant = Φ0
-    stdev = Σ = compact(real(sqrt(Σ2)))
-
+    stdev = Σ = real(sqrt(Σ2))
     
     call = "ar(X, order="*string(or)*
         ", constant="*string(constant)*")"
-    
 
     AR(varnames,
        Φ,coefficients,

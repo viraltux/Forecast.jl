@@ -10,6 +10,7 @@ Store results from the function `forecast`
    mean:   Point forecasts.
    lower:  Lower limits for prediction intervals.
    upper:  Upper limits for prediction intervals.
+   se:     Standard Error.
 """
 mutable struct FORECAST
     model
@@ -17,6 +18,7 @@ mutable struct FORECAST
     mean
     upper
     lower
+    se
     call
 end
 
@@ -26,7 +28,7 @@ function Base.show(io::IO, fc::FORECAST)
                                   Hour, Second, Millisecond,
                                   Microsecond, Nanosecond]
     printstyled("Forecast Information\n",bold=true,color=:underline)
-    print("\n    ",fc.call, "\n")
+    print("\n",fc.call, "\n")
     printstyled("\nMean Forecasting\n",bold=true,color=:underline)
     pretty_table(fc.mean, noheader = false, nosubheader = true, show_row_number=false)
     printstyled("\nPrediction Intervals alpha at: "*string(fc.alpha)*"\n",bold=true,color=:underline)
@@ -38,7 +40,9 @@ function Base.show(io::IO, fc::FORECAST)
                  vlines = [0,1,div(size(fc.lower,2),2)+1,size(fc.lower,2)])
 end
 
-
+"""
+Rename data in FORECAST object
+"""
 function rename!(fc::FORECAST,new_names)
     n_mean = names(fc.mean)
     n_mean[2:end] = new_names

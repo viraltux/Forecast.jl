@@ -84,8 +84,7 @@ function Base.show(io::IO, xar::AR)
     # end
 
     printstyled("\nΣ Noise Std. Deviation\n",bold=true,color=:underline)
-    Σ = m == 1 ? [xar.Σ] : xar.Σ
-    pretty_table(Σ, tf = tf_matrix, noheader=true)
+    pretty_table(xar.Σ, tf = tf_matrix, noheader=true)
     
     printstyled("\nInformation Criteria\n",bold=true,color=:underline)
     pretty_table(DataFrame(xar.ic), nosubheader = true, show_row_number=false)
@@ -95,6 +94,7 @@ function Base.show(io::IO, xar::AR)
 
 end
 
+# Return ( num_variables, num_parameters)
 function arsize(Φ)
     d = ndims(Φ)
     sΦ = size(Φ)

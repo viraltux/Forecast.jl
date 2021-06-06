@@ -22,8 +22,9 @@ import Forecast: fvar
     
     # ar(Φ,n)
     Φ,n = .5,n
-    xar = ar(arsim(Φ,n),1)
+    Φ,Φ0,x0,n = .1,.2,.3,10
+    xar = ar(arsim(Φ,Φ0,x0,n),1)
     fxar = forecast(xar,10)
-    @test length(fxar.mean) == 10
+    @test size(fxar.mean,1) == 10
 
 end

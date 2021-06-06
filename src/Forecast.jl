@@ -1,14 +1,16 @@
 module Forecast
 
 using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
-    HypothesisTests, LinearAlgebra, Plots, PrettyTables, RecipesBase,
-    Statistics, StatsBase
+    HypothesisTests, LinearAlgebra, Plots, PrettyTables, RecipesBase, Statistics, StatsBase
+
+import DataFrames: rename!
 
 # types
 export AR, CCF, STL
 
 # methods
-export acf, ar, arsim, ccf, d, hma, loess, p, pacf, forecast, sma, stl, transform, summarize
+export acf, ar, arsim, boxcox, ccf, d, hma, loess, p, pacf, forecast, rename!,
+       sma, stl, transform, summarize
 
 # datasets
 export air, co2, quakes, seaborne

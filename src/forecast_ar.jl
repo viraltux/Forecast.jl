@@ -19,12 +19,15 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 # Returns
 A FORECAST struct
 """
-function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
+function forecast(xar::AR, n::Integer;
+                  alpha = (0.8,.95),
+                  fix = nothing)
 
     @assert n > 0 "n must be greater than 0"
 
-    Φ,Φ0,Σ = xar.Φ,xar.Φ0,xar.Σ
-
+    Φ,Φ0,Σ = compact(xar.Φ),compact(xar.Φ0),compact(xar.Σ)
+    fix = isnothing(fix) ? fix : Array(fix[:,2:end])
+    
     m,np = arsize(Φ)
     
     dfts = xar.x = tots(xar.x)
@@ -34,10 +37,10 @@ function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
     name_ts = names(dfts)[1]
 
     x0 = compact(x[end:-1:end-np+1,:]')
-    E = MvNormal(m,0)
-    mu = arsim(Φ,Φ0,x0,E,n)
+    Σ0 = compact(zeros(m,m))
+    mu = arsim(Φ,Φ0,x0,n; Σ=Σ0, fix)
     se = sqrt.(fvar(Φ,Σ,max(n,np)))[1:n,:]
-
+    
     # Prediction Intervals
     a1 = alpha[1]
     a2 = alpha[2]
@@ -74,10 +77,16 @@ function forecast(xar::AR, n::Integer; alpha = (0.8,.95))
     lower2_df = DataFrame(reshape(lower2,:,size(lower2,2)),l2_names)
     lower_df = hcat(mu_df[:,1:1],lower1_df, lower2_df)
 
+    # se
+    se_names = ["se_" * n  for n in names_x]
+    se_df = DataFrame(reshape(se,:,size(se,2)),se_names)
+    se_df = hcat(mu_df[:,1:1],se_df)
+    
     return FORECAST(xar, alpha,
                     mu_df,
                     upper_df,
                     lower_df,
+                    se_df,
                     "Forecasting " * xar.call)
 end
 

@@ -3,7 +3,7 @@ using Forecast
 using Plots; gr()
 Plots.reset_defaults()
 ```
-# Quakes
+# Quakes (Univariate)
 
 ## Introduction
 In this example we will predict the of number of earthquakes per year with a magnitude higher or equal to six. The data for the analysis has been collected from [USGS](https://earthquake.usgs.gov/) and aggregated from 1950 to 2020.
@@ -17,8 +17,8 @@ First let's use a few utilities contained in the Forecast package to have a firs
 ### Numerical Summary
 ```@example examples
 qk = quakes()
-sq = summarize(qk)
-show(sq) # hide
+sqk = summarize(qk)
+show(sqk) # hide
 ```
 Data's behavior seems to follow a Normal distribution with no strong indications of seasonal patterns in its plot.
 
@@ -36,9 +36,14 @@ show(ar_qk) # hide
 We an AR model of order one we have highly significant coefficients and increasing its order does not provide important changes in the Information Criteria, however, the residuals show a barely significant normality behavior and we may consider to transform our data to improve on that. 
 Given tha large noise in the model, tranformations to improve results will not be dramatic and therefore we will continue with a simple AR model of order one for our forecasting.
 
+
 ## Forecasting Earthquakes
 ```@example examples
 fc_qk = forecast(ar_qk,10);
 plot(fc_qk)
 ```
 The plot shows us the forecast for the next ten years and, as we see, the large noise in the model does not allow us to be very accurate in our forecasting, but at least we can confidently say that there is a resonable chance to have a larger number of big earthquakes in 2021 and 2022 than the number we had in 2020.
+
+```@example examples
+show(fc_qk) # hide
+```

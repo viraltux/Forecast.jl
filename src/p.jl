@@ -8,7 +8,7 @@ Return reverse lagged differences of a given order for Vector, Array and DataFra
 
 # Arguments
 - `dx`: Array or DataFrame of data.
-- `x0`: Initial constants the reverse difference. The default value represents an integration of order one and lag one with initial values at zero. The format for the initial values is Array{Real,3}(lag, variable, order)"
+- `x0`: Initial constants the reverse difference. The default value represents an integration of order one and lag one with initial values at zero. The format for the initial values is Array{Real,3}(order, variable, lag)"
 
 # Returns
 Lagged differences Vector or Array of a given order.

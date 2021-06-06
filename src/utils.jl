@@ -42,10 +42,7 @@ function compact(x::Number)
 end
 
 function compact(x::AbstractArray)
-    x = Array(x)
-    sx = size(x)
-    x = reshape(x,sx)
-    x = dropdims(x, dims = tuple(findall(size(x) .== 1)...))
+    x = Array(dropdims(x, dims = tuple(findall(size(x) .== 1)...)))
     ndims(x) == 0 ? x[1] : x 
 end
 
