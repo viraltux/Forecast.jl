@@ -25,7 +25,7 @@ function forecast(xar::AR, n::Integer;
 
     @assert n > 0 "n must be greater than 0"
 
-    Φ,Φ0,Σ = compact(xar.Φ),compact(xar.Φ0),compact(xar.Σ)
+    Φ,Φ0,Σ2 = compact(xar.Φ),compact(xar.Φ0),compact(xar.Σ2)
     fix = isnothing(fix) ? fix : Array(fix[:,2:end])
     
     m,np = arsize(Φ)
@@ -39,7 +39,7 @@ function forecast(xar::AR, n::Integer;
     x0 = compact(x[end:-1:end-np+1,:]')
     Σ0 = compact(zeros(m,m))
     mu = arsim(Φ,Φ0,x0,n; Σ=Σ0, fix)
-    se = sqrt.(fvar(Φ,Σ,max(n,np)))[1:n,:]
+    se = sqrt.(fvar(Φ,Σ2,max(n,np)))[1:n,:]
     
     # Prediction Intervals
     a1 = alpha[1]
@@ -93,13 +93,13 @@ end
 """
 Forecast recurrence variance for a linear combination
 """
-function fvar(Φ,Σ,n)
+function fvar(Φ,Σ2,n)
     Φ = compact(Φ)
 
     m,np = arsize(Φ)
 
     v = zeros(n,m)
-    v[1,:] = m <= 1 ? [Σ^2] : diag(Σ^2)
+    v[1,:] = m <= 1 ? [Σ2] : diag(Σ2)
     # reshape and format for matrix operation
     Φ = Φ isa Number ?  reshape([Φ],1,1) : reshape(Φ,m,m*np)
     

@@ -201,16 +201,18 @@ Package: Forecast
 
 Return ten years of monthly data about weather and crime in Greater London from 2008 to 2018.
 
+Data has been collected and joined from london.gov.uk and metoffice.gov.uk (Heathrow Station).
+
 # Weather Variables
 
-MaxTemp:  Mean daily maximum temperature in C°
-MinTemp:  Mean daily minimum temperature in C°
-AirFrost: Days of air frost
-Rain:     Total rainfall in mm
-Sun:      Total sunshine durationin hours
+- `MaxTemp`:  Mean daily maximum temperature in C°
+- `MinTemp`:  Mean daily minimum temperature in C°
+- `AirFrost`: Days of air frost
+- `Rain`:     Total rainfall in mm
+- `Sun`:      Total sunshine durationin hours
 
 # Crime Variables and its aggregated categories
-
+```
 ┌─────────────────────────────┬────────────────────────────────────────┐
 │                       Crime │                               Category │
 ├─────────────────────────────┼────────────────────────────────────────┤
@@ -248,8 +250,7 @@ Sun:      Total sunshine durationin hours
 │                             │                         Other violence │
 │                             │                           Wounding/GBH │
 └─────────────────────────────┴────────────────────────────────────────┘
-
-Data has been collected and joined from london.gov.uk and metoffice.gov.uk (Heathrow Station).
+```
 
 # Returns
 Dataframe containing the descrived dataset.

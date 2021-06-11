@@ -17,7 +17,7 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 - `Φ0`:           Vector size `m` for the constant in the AR model. Default value is 0.
 - `x0`:           Array with dimensions (m,p) for the initial value in the AR model. Default value is a random value from zero to one.
 - `n`:            Number of simulations.
-- `Σ`:            Variance/Covariance matrix for the AR model with a MvNormal distribution for the noise. Default value is an identity Matrix.
+- `Σ`:            Estandard deviation matrix for the AR model with a MvNormal distribution for the noise. Default value is an identity Matrix.
 - `E`:            Distribution for the error.
 - `AR`:           AR struct coming from an `ar` model.
 
@@ -59,7 +59,7 @@ function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
         return x
     end
 
-    E =  Σ != 1.0 ? MvNormal(1,Σ) : E
+    E =  Σ != 1.0 ? MvNormal(1,Σ^2) : E
     e = rand(E,n)
 
     for i in 1:n
@@ -97,7 +97,7 @@ function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
         return x
     end
 
-    E =  Σ != 1.0 ? MvNormal(1,Σ) : E
+    E =  Σ != 1.0 ? MvNormal(1,Σ^2) : E
     e = rand(E,n)
 
     for i in 1:n
@@ -147,7 +147,7 @@ function arsim(Φ::Array, Φ0::Vector, x0::Array, n::Integer;
         return x
     end
     
-    E =  Σ != collect(I(length(Φ0))) ? MvNormal(Σ) : E
+    E =  Σ != collect(I(length(Φ0))) ? MvNormal(Σ^2) : E
     e = rand(E,n)
 
     for i in 1:n

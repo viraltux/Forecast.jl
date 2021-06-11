@@ -35,7 +35,10 @@ AR([...])
 function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
             alpha = 1.0, dΦ0 = nothing, dΦ = nothing)
 
-    xar = ar(Array(df[2:end]), order, constant; alpha, dΦ0, dΦ, varnames = names(df)[2:end])
+    ttype = [Date,DateTime,Day,Month,Week]
+    ar_df = eltype(df[:,1]) in ttype ? Array(df[:,2:end]) : Array(df)
+    names_df = eltype(df[:,1]) in ttype ? names(df[:,2:end]) : names(df)
+    xar = ar(ar_df, order, constant; alpha, dΦ0, dΦ, varnames = names_df)
     xar.x = df
 
     return xar
@@ -117,12 +120,10 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     Φ = W[2:end,:]
     Φ = reshape(Φ',m,m,or)
 
-    #fix p
-    np = fixnp(dΦ0,dΦ)
-
     # Maximum Likelihood noise covariance
-    k = np*m*m 
-    Σ2 = 1/(n-k)*e'*e
+    k = or*m*m
+    @assert n-k > 0 "Insufficient data for the model"
+    Σ2 = variance = 1/(n-k)*e'*e
 
     # ML parameters std. error.
     Φse = sqrt.(abs.(diag(kron(Σ2, (X'*X)^-1))))
@@ -134,6 +135,10 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     p0se = Φ0se
     pse = Φse
 
+    #fix p
+    np = fixnp(dΦ0,dΦ)
+
+    # TODO check weher to use 'or' or 'np' and if 'or' then a fixor function is needed
     # Information Criteria
     lΣ2   = log(norm(Σ2))
     ic = Dict([("AIC",  lΣ2 + 2*np*m^2/n),
@@ -161,7 +166,7 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     
     coefficients = Φ
     ar_constant = Φ0
-    stdev = Σ = real(sqrt(Σ2))
+    stdev = Σ = sqrt.(diag(Σ2))
     
     call = "ar(X, order="*string(or)*
         ", constant="*string(constant)*")"
@@ -169,7 +174,8 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     AR(varnames,
        Φ,coefficients,
        Φ0,ar_constant,
-       Σ,stdev, 
+       Σ2,variance,
+       Σ,stdev,
        x[end:-1:1,:],
        fitted,e,
        ic,stats,

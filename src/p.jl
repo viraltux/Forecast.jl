@@ -88,47 +88,39 @@ function p(df::DataFrame,
 end
 
 function p(fc::FORECAST,
-           x0::AbstractArray = [[0]])
+           x0 = reshape(repeat([0],size(tots(fc.model.x),2)-1),1,:,1),
+           vari = 1:size(fc.mean,2)-1)
 
-    ts_x = tots(fc.model.x)
-    names_x = names(ts_x)
-    names_x[2:end] = "p$(size(x0))_" .* names_x[2:end]
-
-    ts_mean = tots(fc.mean)
-    ts_lower = tots(fc.lower)
-    ts_upper = tots(fc.upper)
-    names_mean = names(ts_mean)
-    names_mean[2:end] = "p$(size(x0))_" .* names_mean[2:end]
-    names_lower = names(ts_lower)
-    names_lower[2:end] = "p$(size(x0))_" .* names_lower[2:end]
-    names_upper = names(ts_upper)
-    names_upper[2:end] = "p$(size(x0))_" .* names_upper[2:end]
-
-    xts = ts_x[:,1]
-    x = Array(ts_x[:,2:end])
-
-    fmean = Array(ts_mean[:,2:end])
-    flower = Array(ts_lower[:,2:end])
-    fupper = Array(ts_upper[:,2:end])
-
-    n = size(x,1)
-    m = size(x,2)
-
-    pfxmean = p(vcat(x,fmean), x0)
-    pfx = convert(Matrix{Float64}, reshape(pfxmean,:,size(x,2))[1:end-size(fmean,1),:])
-    pfmean = convert(Matrix{Float64}, reshape(pfxmean,:,size(x,2))[end-size(fmean,1)+1:end,:])
-
-    fts_x = vcat(nΔt(xts,-(size(pfxmean,1)-size(x,1)-size(fmean,1))),xts)
-
-    fts_mean = nΔt(xts,size(pfmean,1))
-
+    vari = collect(vari)
+    ivari = filter(x -> !(x in vari), collect(1:size(fc.mean,2)-1))
+    
+    # Renaming
+    fnames = fc.model.varnames
+    fnames[vari] = "p$(size(x0))_" .* fnames[vari]
     pfc = deepcopy(fc)
-    pfc.model.varnames = names_x[2:end]
 
-    pfc.model.x = hcat(DataFrame(fts_x,[names_x[1]]),
-                       DataFrame(pfx,names_x[2:end]))
-    pfc.mean    = hcat(DataFrame(fts_mean[:,1:1],[names_mean[1]]),
-                       DataFrame(pfmean,names_mean[2:end]))
+    # Inverse Differentation
+    xts = fc.model.x[:,1]
+    fx = Array(fc.model.x[:,2:end]) 
+    fmean = Array(fc.mean[:,2:end])
+    flower = Array(fc.lower[:,2:end])
+    fupper = Array(fc.upper[:,2:end])
+
+    pfxmean = zeros(size(x0,1)*size(x0,3) + size(fx,1) + size(fmean,1), size(fx,2))
+    fxfmean = vcat(fx,fmean)
+    size(ivari,1) > 0 && (pfxmean[:,ivari] = vcat(x0[:,ivari,:], fxfmean[:,ivari]))
+    pfxmean[:,vari] = p(fxfmean[:,vari], x0[:,vari,:])
+
+    #pfx = convert(Matrix{Float64}, reshape(pfxmean,:,size(fc.mean,2))[1:end-size(fmean,1),:])
+    pfx = pfxmean[1:end-size(fmean,1),:]
+    pfmean = pfxmean[end-size(fmean,1)+1:end,:]
+    
+    fts_x = vcat(nΔt(xts,-size(x0,1)*size(x0,3)),xts)
+    fts_mean = nΔt(xts,size(pfmean,1))
+    ts_name = names(fc.model.x[:,1:1])
+
+    pfc.model.x = hcat(DataFrame(fts_x,ts_name), DataFrame(pfx,:auto))
+    pfc.mean    = hcat(DataFrame(fts_mean,ts_name), DataFrame(pfmean,:auto))
 
     if size(fmean,2) > 1
         z = fupper .- repeat(fmean,1,2)
@@ -137,11 +129,10 @@ function p(fc::FORECAST,
         z = fupper .- fmean
     end
     
-    pfc.upper = hcat(DataFrame(fts_mean[:,1:1],[names_upper[1]]),
-                     DataFrame(pfmean .+ z,names_upper[2:end]))
-    pfc.lower = hcat(DataFrame(fts_mean[:,1:1],[names_lower[1]]),
-                     DataFrame(pfmean .- z,names_lower[2:end]))
+    pfc.upper = hcat(DataFrame(fts_mean,ts_name), DataFrame(pfmean .+ z, :auto))
+    pfc.lower = hcat(DataFrame(fts_mean,ts_name), DataFrame(pfmean .- z, :auto))
     
+    setnames!(pfc, fnames)
     pfc.call = fc.call * "\nIntegrated with x0 size: " * string(size(x0))
 
     return(pfc)

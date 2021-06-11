@@ -9,7 +9,9 @@ Store results from the function `ar`
 `coefficients`    Alias for Φ
 `Φ0`              Constant
 `constant`        Alias for Φ0
-`Σ`               Noise sigma variance/covariance Matrix
+`Σ2`              ML variance/covariance Matrix
+`variance`        Alias for Σ2
+`Σ`               Variables Standard deviation 
 `stdev`           Alias for Σ
 `x`               Original dataset
 `fitted`          Fitted values
@@ -32,6 +34,8 @@ mutable struct AR
     coefficients
     Φ0
     constant
+    Σ2
+    variance
     Σ
     stdev
     x
@@ -83,8 +87,8 @@ function Base.show(io::IO, xar::AR)
     #     pretty_table(xar.Φse[:,:,i], tf = tf_matrix, noheader=true)    
     # end
 
-    printstyled("\nΣ Noise Std. Deviation\n",bold=true,color=:underline)
-    pretty_table(xar.Σ, tf = tf_matrix, noheader=true)
+    printstyled("\nΣ2 Variance/Covariance Matrix\n",bold=true,color=:underline)
+    pretty_table(xar.Σ2, tf = tf_matrix, noheader=true)
     
     printstyled("\nInformation Criteria\n",bold=true,color=:underline)
     pretty_table(DataFrame(xar.ic), nosubheader = true, show_row_number=false)

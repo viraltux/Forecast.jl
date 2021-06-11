@@ -82,7 +82,7 @@ import Distributions: MvLogNormal, MvNormal
 
     Φ,Φ0,x0,Σ,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
                            [.015 -.04 .06; .03 .03 .06; .01 .04 -.1]],3,3,2),
-    [.0, .0, .0],[.11 .12; .2 .13; .14 .6],[1 0.1 0.1; 0.1 1 0.1; 0.1 0.1 1],2*n
+    [.0, .0, .0],[.11 .12; .2 .13; .14 .6],[1 0.1 0.5; 0.1 1 0.1; 0.5 0.1 1],2*n
     xar = ar(arsim(Φ,Φ0,x0,n;Σ),2,false)
     @test isapprox(xar.Φ,Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
@@ -105,8 +105,8 @@ import Distributions: MvLogNormal, MvNormal
     @test xar isa AR
 
     # ar(Φ,n) fixed
-    Φ,n = .5,n
-    x = arsim(Φ,n)
+    Φ,Φ0,x0,n = .5,0.0,1,n
+    x = arsim(Φ,Φ0,x0,n)
     xar  = ar(x,10)
     xarfixed = ar(x,10;dΦ=(xar.Φ,xar.Φ),dΦ0 = (xar.Φ0, [0.0]))
     xarfalse = ar(x,10,false)
@@ -116,8 +116,8 @@ import Distributions: MvLogNormal, MvNormal
     @test xarfixed.Σ == xarfalse.Σ
 
 
-    Φ,n = .5,n
-    x = arsim(Φ,n)
+    Φ,Φ0,x0,n = .5,0.0,1,n
+    x = arsim(Φ,Φ0,x0,n)
     xar  = ar(x,10)
     fΦ = copy(xar.Φ)
     fΦ[1,1,3] = 6.0
@@ -127,8 +127,8 @@ import Distributions: MvLogNormal, MvNormal
     @test fxar.Φ0se[1] == 0.0
     @test fxar.Φse[3] == 0.0
     
-    Φ,n = .5,n
-    x = arsim(Φ,n)
+    Φ,Φ0,x0,n = .5,.5,.5,n
+    x = arsim(Φ,Φ0,x0,n)
     xar  = ar(x,1)
     fΦ = copy(xar.Φ)
     fΦ[1,1,1] = 1.0

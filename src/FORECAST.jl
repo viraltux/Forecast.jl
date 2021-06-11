@@ -43,7 +43,7 @@ end
 """
 Rename data in FORECAST object
 """
-function rename!(fc::FORECAST,new_names)
+function setnames!(fc::FORECAST,new_names::Vector{String})
     n_mean = names(fc.mean)
     n_mean[2:end] = new_names
     rename!(fc.mean,n_mean)
@@ -77,52 +77,24 @@ end
 """
 Transform a FORECAST object value with given function
 """
-function transform(fc::FORECAST, f::Function)
+function transform(fc::FORECAST, f::Function, vari = 1:size(fc.mean,2)-1)
 
-    ts_x = tots(fc.model.x)
-    names_x = names(ts_x)
-    names_x[2:end] = "$(string(f))_" .* names_x[2:end]
+    vari = collect(vari)
 
-    ts_mean = tots(fc.mean)
-    ts_lower = tots(fc.lower)
-    ts_upper = tots(fc.upper)
-    names_mean = names(ts_mean)
-    names_mean[2:end] = "$(string(f))_" .* names_mean[2:end]
-    names_lower = names(ts_lower)
-    names_lower[2:end] = "$(string(f))_" .* names_lower[2:end]
-    names_upper = names(ts_upper)
-    names_upper[2:end] = "$(string(f))_" .* names_upper[2:end]
+    # Renaming
+    tfc = deepcopy(fc)
+    fnames = tfc.model.varnames
+    fnames[vari] .= "$(string(f))_" .* fnames[vari]
+    setnames!(tfc, fnames)
 
-    xts = ts_x[:,1]
-    x = f.(Array(ts_x[:,2:end]))
+    # Transform
+    vari2 =  vcat(vari, vari .+ size(fc.mean,2) .- 1)
+    tfc.model.x[:,vari .+ 1] .= f.(Array(tfc.model.x[:,vari .+ 1]))
+    tfc.mean[:,vari .+ 1] .= f.(Array(tfc.mean[:,vari .+ 1]))
+    tfc.lower[:,vari2 .+ 1] .= f.(Array(tfc.lower[:,vari2 .+ 1]))
+    tfc.upper[:,vari2 .+ 1] .= f.(Array(tfc.upper[:,vari2 .+ 1]))
 
-    fmean = f.(Array(ts_mean[:,2:end]))
-    flower = f.(Array(ts_lower[:,2:end]))
-    fupper = f.(Array(ts_upper[:,2:end]))
+    tfc.call = fc.call * "\nData transformed with function: $(f)"
 
-    n = size(x,1)
-    m = size(x,2)
-
-    pfc = deepcopy(fc)
-    pfc.model.varnames = names_x[2:end]
-
-    pfc.model.x = hcat(ts_x[:,1:1], DataFrame(x,names_x[2:end]))
-    pfc.mean    = hcat(ts_mean[:,1:1], DataFrame(fmean,names_mean[2:end]))
-                        
-
-    if size(fmean,2) > 1
-        z = fupper .- repeat(fmean,1,2)
-        fmean = repeat(pfmean,1,2)
-    else
-        z = fupper .- fmean
-    end
-    
-    pfc.upper = hcat(ts_mean[:,1:1],
-                     DataFrame(fmean .+ z,names_upper[2:end]))
-    pfc.lower = hcat(ts_mean[:,1:1],
-                     DataFrame(fmean .- z,names_lower[2:end]))
-    
-    pfc.call = fc.call * "\nData transformed with function: $(f)"
-
-    return(pfc)
+    return(tfc)
 end

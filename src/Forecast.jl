@@ -3,8 +3,6 @@ module Forecast
 using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
     HypothesisTests, LinearAlgebra, Plots, PrettyTables, RecipesBase, Statistics, StatsBase
 
-import DataFrames: rename!
-
 # types
 export AR, CCF, STL
 
