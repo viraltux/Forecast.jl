@@ -94,24 +94,28 @@ end
 Forecast recurrence variance for a linear combination
 """
 function fvar(Φ,Σ2,n)
-    Φ = compact(Φ)
 
     m,np = arsize(Φ)
 
-    v = zeros(n,m)
-    v[1,:] = m <= 1 ? [Σ2] : diag(Σ2)
-    # reshape and format for matrix operation
-    Φ = Φ isa Number ?  reshape([Φ],1,1) : reshape(Φ,m,m*np)
-    
-    for i in 2:n
-        for j in 1:m
-            if i <= np
-                v[i,j] = (Φ[j,:].^2)' * repeat(v[1:np,j],inner=m) +  v[1,j]
-            else
-                v[i,j] = (Φ[j,:].^2)' * repeat(v[i-np:i-1,j],inner=m) +  v[1,j]
-            end
-        end
+    #TODO create fvar for univariate Φ
+    Φ = Φ isa Number ? [Φ] : reshape(Φ,m,m,np)
+    Σ2 = Σ2 isa Number ? [Σ2] : Σ2
+
+    Φ2 = similar(Φ)
+    for i in 1:np
+        Φ2[:,:,i] =  Φ[:,:,i]^2
     end
+    Φ2 = reshape(Φ2,m,m*np)
     
-    compact(v)
+    Σ2i =zeros(m*np,m)
+    v = zeros(n,m)
+
+    for i in 1:n
+        Σ2i[1:m,:] = Φ2 * Σ2i + Σ2
+        v[i,:] = diag(Σ2i)
+        Σ2i = circshift(Σ2i,m)
+    end
+
+    #TODO create fvar for univariate Φ
+    return compact(v)
 end
