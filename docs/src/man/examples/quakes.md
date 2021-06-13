@@ -33,7 +33,7 @@ The partial autoregression function shows us that there seems to be a significan
 ar_qk = ar(qk)
 show(ar_qk) # hide
 ```
-We an AR model of order one we have highly significant coefficients and increasing its order does not provide important changes in the Information Criteria, however, the residuals show a barely significant normality behavior and we may consider to transform our data to improve on that. 
+In the AR model of order one we have highly significant coefficients and increasing its order does not provide important changes in the Information Criteria, however, the residuals show a barely significant normality behavior and we may consider to transform our data to improve on that. 
 Given tha large noise in the model, tranformations to improve results will not be dramatic and therefore we will continue with a simple AR model of order one for our forecasting.
 
 

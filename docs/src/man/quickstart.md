@@ -124,7 +124,7 @@ Random Zigzag Walk simulated, fitted and forecast plotted.
 ```@example quickstart
 using Plots
 using Forecast
-plot(forecast(ar(arsim(-1,0,0,1,100),1),10), size=(800,500))
+plot(forecast(ar(arsim(-1,0,0,100;1),1),10), size=(800,500))
 ```
 
 Bivariate dataset simulated, fitted and forecast plotted.
@@ -136,9 +136,9 @@ using Forecast
     -.2 1]
 Φ0 = [2, 3]
 x0 = [.1, .1]
-Σ = [.2 .05;
+Σ2 = [.2 .05;
      .05 .2]
-ar_model = ar(arsim(Φ,Φ0,x0,Σ,100),1)
+ar_model = ar(arsim(Φ,Φ0,x0,100;Σ2),1)
 fc = forecast(ar_model,50)
 plot(fc, size=(800,500))
 ```

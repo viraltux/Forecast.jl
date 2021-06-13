@@ -11,7 +11,7 @@ export acf, ar, arsim, boxcox, ccf, d, hma, loess, p, pacf, forecast, rename!,
        sma, stl, transform, summarize
 
 # datasets
-export air, co2, quakes, seaborne
+export air, co2, london, quakes, seaborne
 
 # types
 include("AR.jl")

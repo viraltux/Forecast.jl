@@ -15,18 +15,20 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 `xar`           AR struct coming from the `ar` function.
 `n`             Number of time periods to be forecasted.
 `alpha`         Prediction intervals levels; its default value is (0.8, 0.95)
+`fixMean`       Fixes the mean in the forecast with Matrix{Union{Missing,Float64}}. Default value sis `nothing`.
+`fixΣ2`         fixes Σ2 values in the forecast
 
 # Returns
 A FORECAST struct
 """
 function forecast(xar::AR, n::Integer;
                   alpha = (0.8,.95),
-                  fix = nothing)
+                  fixMean = nothing,
+                  fixΣ2 = xar.Σ2)
 
     @assert n > 0 "n must be greater than 0"
 
-    Φ,Φ0,Σ2 = compact(xar.Φ),compact(xar.Φ0),compact(xar.Σ2)
-    fix = isnothing(fix) ? fix : Array(fix[:,2:end])
+    Φ,Φ0,Σ2 = compact(xar.Φ),compact(xar.Φ0),compact(fixΣ2)
     
     m,np = arsize(Φ)
     
@@ -37,8 +39,8 @@ function forecast(xar::AR, n::Integer;
     name_ts = names(dfts)[1]
 
     x0 = compact(x[end:-1:end-np+1,:]')
-    Σ0 = compact(zeros(m,m))
-    mu = arsim(Φ,Φ0,x0,n; Σ=Σ0, fix)
+    Σ20 = compact(zeros(m,m))
+    mu = arsim(Φ,Φ0,x0,n; Σ2=Σ20, fix=fixMean)
     se = sqrt.(fvar(Φ,Σ2,max(n,np)))[1:n,:]
     
     # Prediction Intervals
@@ -91,7 +93,7 @@ function forecast(xar::AR, n::Integer;
 end
 
 """
-Forecast recurrence variance for a linear combination
+Forecast recursive variance/covariance
 """
 function fvar(Φ,Σ2,n)
 
@@ -101,21 +103,16 @@ function fvar(Φ,Σ2,n)
     Φ = Φ isa Number ? [Φ] : reshape(Φ,m,m,np)
     Σ2 = Σ2 isa Number ? [Σ2] : Σ2
 
-    Φ2 = similar(Φ)
-    for i in 1:np
-        Φ2[:,:,i] =  Φ[:,:,i]^2
-    end
-    Φ2 = reshape(Φ2,m,m*np)
-    
-    Σ2i =zeros(m*np,m)
+    Σ2i = zeros(m,m)
     v = zeros(n,m)
 
+    Φ = reshape(Φ,m,m*np)
     for i in 1:n
-        Σ2i[1:m,:] = Φ2 * Σ2i + Σ2
+        Σ2i = Φ * repeat(Σ2i,np,np) * Φ' + Σ2
         v[i,:] = diag(Σ2i)
-        Σ2i = circshift(Σ2i,m)
     end
 
     #TODO create fvar for univariate Φ
     return compact(v)
 end
+

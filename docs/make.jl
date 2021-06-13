@@ -12,7 +12,7 @@ makedocs(
         "Forecast Examples" =>[
             "man/examples/quakes.md",
             "man/examples/airpassengers.md",
-            "man/examples/seaborne.md",
+            "man/examples/london.md",
         ],
         "man/methods.md",
         "man/datasets.md",
