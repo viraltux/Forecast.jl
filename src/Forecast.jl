@@ -7,8 +7,8 @@ using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
 export AR, CCF, STL
 
 # methods
-export acf, ar, arsim, boxcox, ccf, d, hma, loess, p, pacf, forecast, rename!,
-       sma, stl, transform, summarize
+export acf, ar, arsim, boxcox, ccf, d, hma, loess, p, pacf, forecast, 
+       setnames!, sma, stl, transform, summarize
 
 # datasets
 export air, co2, london, quakes, seaborne

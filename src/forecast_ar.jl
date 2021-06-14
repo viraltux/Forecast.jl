@@ -108,7 +108,8 @@ function fvar(Φ,Σ2,n)
 
     Φ = reshape(Φ,m,m*np)
     for i in 1:n
-        Σ2i = Φ * repeat(Σ2i,np,np) * Φ' + Σ2
+        #Σ2i = Φ * Σ2i * Φ' + Σ2
+        Σ2i = Φ * repeat(repeat(Σ2i,1,np) * Φ',np,1) + Σ2
         v[i,:] = diag(Σ2i)
     end
 
