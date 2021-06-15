@@ -159,7 +159,7 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     #pv = vcat(reshape(Φ0pv,:,1),reshape(Φpv,:,1))
     slpv = compact(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
 
-    stats = Dict([("variable", varnames),
+    stats = Dict([(" Variable", varnames),
                   ("R2",    R2),
                   ("R2adj", 1 .- (1 .- R2) * (n-1)/(n-(np-1)/m-1)),
                   ("Fisher's p-test", 1 .- cdf(Chisq(2*np/m),-2*slpv))])    

@@ -28,8 +28,8 @@ function forecast(xar::AR, n::Integer;
 
     @assert n > 0 "n must be greater than 0"
 
-    Φ,Φ0,Σ2 = compact(xar.Φ),compact(xar.Φ0),compact(fixΣ2)
-    
+    Φ,Φ0 = compact(xar.Φ),compact(xar.Φ0)
+
     m,np = arsize(Φ)
     
     dfts = xar.x = tots(xar.x)
@@ -40,8 +40,9 @@ function forecast(xar::AR, n::Integer;
 
     x0 = compact(x[end:-1:end-np+1,:]')
     Σ20 = compact(zeros(m,m))
+    !isnothing(fixMean) && (fixMean = Array(fixMean[:,2:end]))
     mu = arsim(Φ,Φ0,x0,n; Σ2=Σ20, fix=fixMean)
-    se = sqrt.(fvar(Φ,Σ2,max(n,np)))[1:n,:]
+    se = sqrt.(fvar(Φ,compact(fixΣ2),max(n,np)))[1:n,:]
     
     # Prediction Intervals
     a1 = alpha[1]

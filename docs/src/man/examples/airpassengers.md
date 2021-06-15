@@ -1,7 +1,9 @@
 ```@setup examples
 using Forecast
+using DataFrames
 using Plots; gr()
 Plots.reset_defaults()
+default(size=(800,500))
 ```
 # Air Passengers (Seasonality)
 
@@ -86,7 +88,7 @@ x0 = reshape(log_ap[:,2][1:12]',1,1,12)
 fct2 = p(fct,x0)
 fc = Forecast.transform(fct2,exp)
 new_names = ["#Passengers"]
-rename!(fc,new_names)
+setnames!(fc,new_names)
 plot(fc, title = "Forecast Air Passengers")
 ```
 And the forecasted values in their prediction intervals for the next three years are:

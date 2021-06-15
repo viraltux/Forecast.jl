@@ -1,13 +1,13 @@
 module Forecast
 
 using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
-    HypothesisTests, LinearAlgebra, Plots, PrettyTables, RecipesBase, Statistics, StatsBase
+    HypothesisTests, LinearAlgebra, Optim, Plots, PrettyTables, RecipesBase, Statistics, StatsBase
 
 # types
 export AR, CCF, STL
 
 # methods
-export acf, ar, arsim, boxcox, ccf, d, hma, loess, p, pacf, forecast, 
+export acf, ar, arsim, boxcox, ccf, d, hma, iboxcox, loess, p, pacf, forecast, 
        setnames!, sma, stl, transform, summarize
 
 # datasets
@@ -23,7 +23,8 @@ include("SUMMARIZE.jl")
 # source files
 include("acf.jl")
 include("ar.jl")
-include("arsim.jl") 
+include("arsim.jl")
+include("boxcox.jl") 
 include("ccf.jl")
 include("d.jl")
 include("datasets.jl")
@@ -51,17 +52,19 @@ include("splot.jl")
 """
 Collection of methods for Time Series analysis
 
-Methods implemented:
+Featured Methods:
 
     acf:        Auto-correlation or auto-covariance of univariate series. 
     ar:         Multivariate Autoregressive Model.
     arsim:      Simulated Multivariate Autoregressive Model.
+    boxcox:     Box-Cox Transformations.
     ccf:        Cross-correlation or cros-covariance of two univariate series.
-    d:          Lagged differences of a given order for Vector, Array and TimeSeries.
+    d:          Lagged differences of a given order for Vector and Array.
     forecast:   Forecast values of fitted time series models.
     hma:        Henderson moving average filter.
+    iboxcox:    Inverse Box-Cox Transformations.
     loess:      Locally estimated scatterplot smoothing.
-    p:          Reverse lagged differences of a given order for types Vector, Array and TimeArray.
+    p:          Reverse lagged differences of a given order for types Vector and Array.
     pacf:       Partial Auto-correlation function.
     sma:        Simple moving average.
     splot:      Plot a seasonal plot for types Vector and TimeArray.

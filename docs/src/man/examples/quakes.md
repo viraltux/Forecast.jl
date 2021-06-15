@@ -2,6 +2,7 @@
 using Forecast
 using Plots; gr()
 Plots.reset_defaults()
+default(size=(800,500))
 ```
 # Quakes (Univariate)
 

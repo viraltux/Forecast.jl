@@ -1,14 +1,14 @@
-# Methods Available
+# Featured Methods
 
     acf:        Auto-correlation or auto-covariance of univariate series. 
     ar:         Multivariate Autoregressive Model.
     arsim:      Simulated Multivariate Autoregressive Model.
     ccf:        Cross-correlation or cros-covariance of two univariate series.
-    d:          Lagged differences of a given order for Vector, Array and TimeSeries.
+    d:          Lagged differences of a given order for Vector and Array
     forecast:   Forecast values of fitted time series models.
     hma:        Henderson moving average filter.
     loess:      Locally estimated scatterplot smoothing.
-    p:          Reverse lagged differences of a given order for types Vector, Array and TimeArray.
+    p:          Reverse lagged differences of a given order for types Vector and Array.
     pacf:       Partial Auto-correlation function.
     sma:        Simple moving average.
     splot:      Plot a seasonal plot for types Vector and TimeArray.
@@ -34,6 +34,12 @@ ar
 arsim
 ```
 
+## boxcox
+**Autoregressive simulation**
+```@docs
+boxcox
+```
+
 ## ccf
 **Cros-correlation/covariance function**
 ```@docs
@@ -50,6 +56,12 @@ d
 **Forecast for models**
 ```@docs
 forecast
+```
+
+## iboxcox
+**Autoregressive simulation**
+```@docs
+iboxcox
 ```
 
 ## loess
@@ -80,7 +92,6 @@ stl
 ```@docs
 summarize
 ```
-
 
 
 

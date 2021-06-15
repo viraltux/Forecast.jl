@@ -13,6 +13,7 @@ makedocs(
             "man/examples/quakes.md",
             "man/examples/airpassengers.md",
             "man/examples/london.md",
+            "man/examples/whatif.md",
         ],
         "man/methods.md",
         "man/datasets.md",

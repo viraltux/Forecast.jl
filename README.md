@@ -4,7 +4,7 @@ Julia package containing utilities intended for Time Series analysis.
 
 > :warning: This package is in an early development stage and its functionality has not been thoroughly tested. Please, consider to report issues if you find any.
 
-## Features
+## Featured Methods
 
 * Autocorrelated models for univariate and multivariate data (ar)
 * Autocorrelated model simulations for univariate and multivariate data (arsim)
