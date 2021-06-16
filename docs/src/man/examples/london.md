@@ -1,9 +1,9 @@
 ```@setup examples
 using Forecast
-using PrettyTables
 using Plots; gr()
 Plots.reset_defaults()
 default(size=(800,500))
+using PrettyTables
 ```
 # Weather/Crime (Multivariate)
 
