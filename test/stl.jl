@@ -1,6 +1,5 @@
 using Test
 using Forecast
-using TimeSeries
 
 @testset "stl" begin
     @test_throws AssertionError stl(rand(100),10; ns=5)

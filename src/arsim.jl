@@ -43,7 +43,7 @@ function arsim(xar::AR,n::Integer;
 end
 
 function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
-               Σ2::Real = 1.0, E::Distribution = MvNormal(1,1),
+               Σ2::Real = 1.0, E::Distribution = Normal(0,1),
                fix = nothing)
 
     x = Array{Float64}(undef,n)
@@ -63,7 +63,7 @@ function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
         return x
     end
 
-    E =  Σ2 != 1.0 ? MvNormal(1,Σ2) : E
+    E =  Σ2 != 1.0 ? Normal(0,sqrt(Σ2)) : E
     e = rand(E,n)
 
     for i in 1:n
@@ -75,7 +75,7 @@ function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
 end
 
 function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
-               Σ2::Real = 1.0, E::Distribution = MvNormal(1,1),
+               Σ2::Real = 1.0, E::Distribution = Normal(0,1),
                fix = nothing)
 
     np = length(Φ)
@@ -101,7 +101,7 @@ function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
         return x
     end
 
-    E =  Σ2 != 1.0 ? MvNormal(1,Σ2) : E
+    E =  Σ2 != 1.0 ? Normal(0,sqrt(Σ2)) : E
     e = rand(E,n)
 
     for i in 1:n

@@ -49,44 +49,44 @@ import Distributions: MvLogNormal, MvNormal
     @test isapprox(compact(xar.Φ0),Φ0; atol = 2*atol)
 
     # ar(Φ,Φ0,x0,Σ,100)
-    Φ,Φ0,x0,Σ,n = .1,.2,.3,.4,n
-    xar = ar(arsim(Φ,Φ0,x0,n;Σ),1)
+    Φ,Φ0,x0,Σ2,n = .1,.2,.3,.4,n
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),1)
     @test isapprox(compact(xar.Φ),Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
-    @test isapprox(compact(xar.Σ),Σ; atol = atol)
+    @test isapprox(compact(xar.Σ2),Σ2; atol = atol)
 
-    Φ,Φ0,x0,Σ,n = [.1,.2],.3,[.4,.5],.6,n
-    xar = ar(arsim(Φ,Φ0,x0,n;Σ),2)
+    Φ,Φ0,x0,Σ2,n = [.1,.2],.3,[.4,.5],.6,n
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),2)
     @test isapprox(compact(xar.Φ),Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
-    @test isapprox(compact(xar.Σ),Σ; atol = atol)
+    @test isapprox(compact(xar.Σ2),Σ2; atol = atol)
 
-    Φ,Φ0,x0,Σ,n = [.1 .2; .3 .4],[.5, .6],[.7,.8],[.9 .10; .10 .9],n
-    xar = ar(arsim(Φ,Φ0,x0,n;Σ),1)
+    Φ,Φ0,x0,Σ2,n = [.1 .2; .3 .4],[.5, .6],[.7,.8],[.9 .10; .10 .9],n
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),1)
     @test isapprox(compact(xar.Φ),Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
-    @test isapprox(compact(xar.Σ),Σ; atol = atol)
+    @test isapprox(compact(xar.Σ2),Σ2; atol = atol)
 
-    Φ,Φ0,x0,Σ,n = [.1 .2; .3 .4],[.0, .0],[.7,.8],[.9 .10; .10 .9],n
-    xar = ar(arsim(Φ,Φ0,x0,n;Σ),1,false)
+    Φ,Φ0,x0,Σ2,n = [.1 .2; .3 .4],[.0, .0],[.7,.8],[.9 .10; .10 .9],n
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),1,false)
     @test isapprox(compact(xar.Φ),Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
-    @test isapprox(compact(xar.Σ),Σ; atol = atol)
+    @test isapprox(compact(xar.Σ2),Σ2; atol = atol)
     
-    Φ,Φ0,x0,Σ,n = reshape([[.1 -.1; .05 -.1] [.15 -.4; .3 .6]],2,2,2),
+    Φ,Φ0,x0,Σ2,n = reshape([[.1 -.1; .05 -.1] [.15 -.4; .3 .6]],2,2,2),
     [.9, .10],[.11 .12; .13 .14],[.9 .10; .10 .9],n
-    xar = ar(arsim(Φ,Φ0,x0,n;Σ),2)
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),2)
     @test isapprox(xar.Φ,Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
-    @test isapprox(xar.Σ,Σ; atol = atol)
+    @test isapprox(xar.Σ2,Σ2; atol = atol)
 
-    Φ,Φ0,x0,Σ,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
+    Φ,Φ0,x0,Σ2,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
                            [.015 -.04 .06; .03 .03 .06; .01 .04 -.1]],3,3,2),
     [.0, .0, .0],[.11 .12; .2 .13; .14 .6],[1 0.1 0.5; 0.1 1 0.1; 0.5 0.1 1],2*n
-    xar = ar(arsim(Φ,Φ0,x0,n;Σ),2,false)
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),2,false)
     @test isapprox(xar.Φ,Φ; atol = atol)
     @test isapprox(compact(xar.Φ0),Φ0; atol = atol)
-    @test isapprox(compact(xar.Σ),Σ; atol = atol)
+    @test isapprox(compact(xar.Σ2),Σ2; atol = atol)
     
     # ar(Φ,Φ0,x0,E,100)
     E1 = MvLogNormal(MvNormal(1,1))
@@ -113,7 +113,7 @@ import Distributions: MvLogNormal, MvNormal
     @test xarfixed.Φ == xarfalse.Φ
     @test xarfixed.Φ0 == xarfalse.Φ0
     @test xarfixed.Φse == xarfalse.Φse
-    @test xarfixed.Σ == xarfalse.Σ
+    @test xarfixed.Σ2 == xarfalse.Σ2
 
 
     Φ,Φ0,x0,n = .5,0.0,1,n
@@ -134,10 +134,10 @@ import Distributions: MvLogNormal, MvNormal
     fΦ[1,1,1] = 1.0
     @test_throws AssertionError ar(x,1; dΦ=(xar.Φ,fΦ), dΦ0 = (xar.Φ0, [1.0]))
     
-    Φ,Φ0,x0,Σ,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
+    Φ,Φ0,x0,Σ2,n = reshape([[.01 -.01 .02; .05 -.01 .03; .01 -.05 .02]
                            [.015 -.04 .06; .03 .03 .06; .01 .04 -.1]],3,3,2),
     [.9, .10, .5],[.11 .12; .2 .13; .14 .6],[1 0.1 0.1; 0.1 1 0.1; 0.1 0.1 1],n
-    x = arsim(Φ,Φ0,x0,n;Σ)
+    x = arsim(Φ,Φ0,x0,n;Σ2)
     xar  = ar(x,2)
     fΦ = copy(xar.Φ)
     fΦ[1,3,1] = 6.0

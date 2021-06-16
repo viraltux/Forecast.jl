@@ -8,7 +8,6 @@ using Forecast
     @test size(x.moments) == (1,5)
     @test size(x.format) == (1,2)
 
-    @test x isa Forecast.SUMMARIZE
     @test x.quantiles isa DataFrame
     @test x.moments isa DataFrame
     @test x.format isa DataFrame

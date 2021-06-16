@@ -10,6 +10,7 @@ Julia package containing utilities intended for Time Series analysis.
 * Autocorrelated model simulations for univariate and multivariate data (arsim)
 * Autocorrelated model forecasting with custom plots (forecast)
 * Autocorrelation & Autocovariance function and custom plots (acf)
+* Boxcox Transformations and Inverse Boxcox Transformations (boxcox, iboxcox)
 * Crosscorrelation & Crosscovariance function and custom plots (ccf)
 * Henderson Moving Average Filter (hma)
 * Lagged differences and Reverse lagged differences of a given order (d | p)
@@ -19,6 +20,7 @@ Julia package containing utilities intended for Time Series analysis.
 * Simple Moving Average (sma)
 
 <img src="./docs/src/images/stl_readme.png">
+<img src="./docs/src/images/forecast_readme.png">
 
 ## Datasets
 

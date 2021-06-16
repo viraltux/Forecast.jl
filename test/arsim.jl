@@ -80,7 +80,7 @@ using Forecast
 
     # arsim(AR,100)
     Φ,Φ0,x0,n,Σ2 = .1,.2,.3,1000,.4
-    xar = ar(arsim(Φ,Φ0,n;Σ2),1)
+    xar = ar(arsim(Φ,Φ0,x0,n;Σ2),1)
     x = arsim(xar,100)
     @test x isa Vector
     @test length(x) == 100
