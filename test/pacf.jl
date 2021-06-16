@@ -1,6 +1,5 @@
 using Test
 using Forecast
-using TimeSeries
 
 @testset "pacf" begin
     x = rand(100);

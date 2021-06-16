@@ -8,8 +8,11 @@ Package: Forecast
                 ni=robust ? 1 : 2,
                 no=0,
                 spm=false,
-                qsmp=max(div(np,7),2))
-    
+                qsmp=max(div(np,7),2),
+                cth = 0.01,
+                timestamp = nothing,
+                verbose=false)
+
 Decompose a time series into trend, seasonal, and remainder components.
 
 "STL has a simple design that consists of a sequence of applications of the loess smoother; the simplicity allows analysis of the properties of the procedure and allows fast computation, even for very long time series and large amounts of trend and seasonal smoothing. Other features of STL  are specification of amounts of seasonal and trend smoothing that range, in a nearly continous way, from very small amount of smoothing to a very large amount; robust estimates of the trend and seasonal components that are not distorted by aberrant behavior in the data; specification of the period of the seasonal component to any intenger multiple of the time sampling interval greater than one; and the ability to decompose time series with missing values."*
@@ -30,11 +33,12 @@ for `qsmp` the authors do not adivise a default but they use a value close to di
 - `no`: Number of outer loop cycles.
 - `spm`: Seasonal post-smoothing.
 - `qsmp`: Loess q window for Seasonal post-smoothing.
-- `verbose`: If true shows updates for the Seasonal and Trend convergence.
 - `cth`: Corvengence threshold for Seasonal and Trend.
+- `timestamp`: Timestamp to be used other than the default.
+- `verbose`: If true shows updates for the Seasonal and Trend convergence.
 
 # Returns
-An `STL` object with the seasonal, trend and remainder components if Yv is an Array and a TimeSeries object with the same components if Yv is a TimeSeries.
+An `STL` object with the seasonal, trend and remainder components.
 
 * STL: A Seasonal, Trend Decomposition Procedure Based on Loess" Robert B. Cleveland, William S. Cleveland, Jean E. McRae, and Irma Terpenning. Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Sweden.
 
@@ -44,33 +48,31 @@ An `STL` object with the seasonal, trend and remainder components if Yv is an Ar
 julia> stl_co2 = stl(co2(),365; robust=true, spm=true)
 [ Info: Dataset used in Cleveland et al. paper
 [ Info: Corvengence achieved (< 0.01); Stopping computation...
-STL{TimeSeries.TimeArray{Union{Missing, Float64},2,
-Dates.Date,Array{Union{Missing, Float64},2}}}
-(4609×3 TimeSeries.TimeArray{Union{Missing, Float64},2,
-Dates.Date,Array{Union{Missing, Float64},2}} 1974-05-17 to 1986-12-31, 
-"stl(Yn, np=365; nl=365, ns=46091, nt=549, ni=1, no=0, spm=true, qsmp=52)")
+STL Object: stl(Yn, np=365; nl=365, ns=46091, nt=549, ni=1, no=0, spm=true, qsmp=52)
 
 julia> plot(stl_co2)
 ```
 """
-function stl(Yv::TimeArray,np::Integer;
+function stl(Yv::DataFrame,np::Integer;
              robust=false,
              nl=nextodd(np),
-             ns=10*length(Yv)+1,
+             ns=10*nrow(Yv)+1,
              nt=nextodd(1.5*np/(1-1.5/ns)),
              ni=robust ? 1 : 2,
              no=0,
              spm=false,
              qsmp=max(div(np,7),2),
-             verbose=false,
-             cth = 0.01)
-
-    stl_obj = stl(TimeSeries.values(Yv),np;
-              robust=robust, nl=nl, ns=ns, nt=nt,
-              ni=ni, no=no, spm=spm, qsmp=qsmp, verbose=verbose)
+             cth = 0.01,
+             timestamp = nothing,
+             verbose=false)
     
-    STL(TimeArray(stl_obj.ta; timestamp = timestamp(Yv)), stl_obj.call)
+    x = Vector(Yv[:,eltype.(eachcol(Yv)) .<: Union{Missing,Real}][:,1])
+    timestamp = eltype(Yv[:,1]) == Date ? Yv[:,1] : timestamp
         
+    stl(x,np;
+        robust=robust, nl=nl, ns=ns, nt=nt,
+        ni=ni, no=no, spm=spm, qsmp=qsmp, verbose=verbose, cth, timestamp)
+
 end
 
 function stl(Yv,
@@ -83,8 +85,9 @@ function stl(Yv,
              no=0,
              spm=false,
              qsmp=max(div(np,7),2),
-             verbose = false,
-             cth = 0.01) #where T<:Union{Missing, Number}
+             cth = 0.01,
+             timestamp = nothing,
+             verbose=false) #where T<:Union{Missing, Number}
 
     @assert mod(ns,2)==1 & (ns>=7) "`ns` is chosen of the basis of knowledge of the time series and on the basis of diagnostic methods; must always be odd and at least 7"
 
@@ -209,10 +212,10 @@ function stl(Yv,
         ", qsmp="*string(qsmp)*")"
 
     # Dates.datetime2unix(DateTime(1970,1,1,0,0,1)) = 1.0
-    stl_ts = (Timestamp = DateTime(1970,1,1,0,0,1):Second(1):DateTime(1970,1,1,0,0,1)+Second(N-1),
-              Seasonal = Sv,
-              Trend = Tv,
-              Remainder = Rv)
+    if isnothing(timestamp)
+        timestamp = DateTime(1970,1,1,0,0,1):Second(1):DateTime(1970,1,1,0,0,1)+Second(N-1)
+    end
     
-    STL(TimeArray(stl_ts; timestamp = :Timestamp), call)
+    STL(DataFrame([timestamp, Sv, Tv, Rv], [:Timestamp, :Seasonal, :Trend, :Remainder]), call)
+    
 end

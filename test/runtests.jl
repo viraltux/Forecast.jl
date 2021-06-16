@@ -5,15 +5,19 @@ using Logging
 
 const tests = [
     "acf",
+    "ar",
+    "arsim",
     "ccf",
     "d",
     "datasets",
+    "forecast_ar",
     "hma",
     "loess",
     "p",
     "pacf",
     "sma",
     "stl",
+    "summarize",
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)
