@@ -22,7 +22,7 @@ Let's show how to using the Great London Crime/Weather example. In this example 
 
 These metoffice predictions would not be much different than those from the AR(1) model therefore, in order to better visualize impacts in the forecast, we will play with an hypothetical scenario in which temperatures increase one degree per month for two years straight.
 
-Also, let's imagine that the accuracy of the one degree per year scenario is is much better than the one coming for the AR(1) model making its variance 50 times smaller.
+Also, let's imagine that the accuracy of the one degree per year scenario is is much better than the one coming for the AR(1) model making its variance 25 times smaller.
 
 ## Fitting and Forecast
 
@@ -77,12 +77,12 @@ fixMean[!,3:4] .= missing
 fixMean[!,2] = witemp
 # hide
 ```
-We also fix the Variance matrix with a 50 times smaller variance for `MaxTemp` and update accordingly its covariance interactions.
+We also fix the Variance matrix with a 25 times smaller variance for `MaxTemp` and update accordingly its covariance interactions.
 
 ```@example examples
 fixΣ2  = copy(dtfc.model.Σ2)
-fixΣ2[1,:] = fixΣ2[1,:]./50
-fixΣ2[2:end,1] = fixΣ2[2:end,1]./50
+fixΣ2[1,:] = fixΣ2[1,:]./5
+fixΣ2[:,1] = fixΣ2[:,1]./5
 # hide
 ```
 
