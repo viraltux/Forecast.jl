@@ -5,7 +5,7 @@ Plots.reset_defaults()
 default(size=(800,500))
 using PrettyTables
 ```
-# Weather/Crime (Multivariate)
+# London Weather/Crime (Multivariate)
 
 ## Introduction
 In this example we will study the relationship between weather and crime in in Greater London. In particular we will be considering ten years of monthly data about weather and crime in Greater London from 2008 to 2018.
@@ -109,8 +109,7 @@ fc = transform(fc,(v->round(v*maximum(x.Violence))),2)
 fc = transform(fc,(v->round(v*maximum(x.Sexual))),3)
 setnames!(fc,["MaxTemp","Violence","Sexual"])
 
-using PrettyTables
-pretty_table(fc.mean, nosubheader = true, show_row_number=false)
+fc.mean
 ```
 
 
