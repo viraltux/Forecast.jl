@@ -28,16 +28,21 @@ Julia package containing utilities intended for Time Series analysis.
 
 K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dry Air Mole Fractions from continuous measurements at Mauna Loa, Hawaii, Barrow, Alaska, American Samoa and South Pole. 1973-2019, Version 2020-08 National Oceanic and Atmospheric Administration (NOAA), Global Monitoring Laboratory (GML), Boulder, Colorado, USA https://doi.org/10.15138/yaf1-bk21 FTP path: ftp://aftp.cmdl.noaa.gov/data/greenhouse_gases/co2/in-situ/surface/
 
+* Airline Passengers
+
+The classic Box & Jenkins airline data. Monthly totals of international airline passengers from 1949 to 1960. Box, G. E. P., Jenkins, G. M. and Reinsel, G. C. (1976) _Time Series Analysis, Forecasting and Control._ Third Edition. Holden-Day. Series G.
+
+* London Crime and Weather
+
+Ten years of monthly data about weather and crime in Greater London from 2008 to 2018. Data has been collected and joined from london.gov.uk and metoffice.gov.uk (Heathrow Station).
 
 * Estimates of world seaborne trade from AIS data collected by MarineTraffic; available at UN COMTRADE Monitor.
 
 Cerdeiro, Komaromi, Liu and Saeed (2020). Subset with imports and exports data for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02.  https://comtrade.un.org/data/ais
 
-* Number of earthquakes per year on earth with a magnitude higher or equal to six from 1950 to 2020. The data has been collected from https://earthquake.usgs.gov/ and aggregated.
+* Large Earthquakes
 
-* The classic Box & Jenkins airline data. Monthly totals of international airline passengers from 1949 to 1960.
-
-Box, G. E. P., Jenkins, G. M. and Reinsel, G. C. (1976) _Time Series Analysis, Forecasting and Control._ Third Edition. Holden-Day. Series G.
+Number of earthquakes per year on earth with a magnitude higher or equal to six from 1950 to 2020.The data has been collected from https://earthquake.usgs.gov/ and aggregated.
 
 ## References
 
