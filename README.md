@@ -40,7 +40,7 @@ Ten years of monthly data about weather and crime in Greater London from 2008 to
 
 * Estimates of world seaborne trade from AIS data collected by MarineTraffic; available at UN COMTRADE Monitor.
 
-Cerdeiro, Komaromi, Liu and Saeed (2020). Subset with imports and exports data for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02.[UN Comtrade Database](https://comtrade.un.org/data/ais)
+Cerdeiro, Komaromi, Liu and Saeed (2020). Subset with imports and exports data for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02. [UN Comtrade Database](https://comtrade.un.org/data/ais)
 
 * Large Earthquakes
 
