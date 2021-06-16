@@ -33,14 +33,15 @@ K.W. Thoning, A.M. Crotwell, and J.W. Mund (2020), Atmospheric Carbon Dioxide Dr
 
 Cerdeiro, Komaromi, Liu and Saeed (2020). Subset with imports and exports data for France, Germany and the United Kingdom from 2015-04-01 to 2021-05-02.  https://comtrade.un.org/data/ais
 
+* Number of earthquakes per year on earth with a magnitude higher or equal to six from 1950 to 2020. The data has been collected from https://earthquake.usgs.gov/ and aggregated.
+
+* The classic Box & Jenkins airline data. Monthly totals of international airline passengers from 1949 to 1960.
+
+Box, G. E. P., Jenkins, G. M. and Reinsel, G. C. (1976) _Time Series Analysis, Forecasting and Control._ Third Edition. Holden-Day. Series G.
+
 ## References
 
 * [Cleveland et al. 1990]  Cleveland,  R.  B.;  Cleveland,  W.  S.;McRae, J. E.; and Terpenning, I.  1990.  STL: A seasonal-trend decomposition procedure based on loess. Journal of Official Statistics 6(1):3–73.
 
-
 [![Coverage](https://codecov.io/gh/viraltux/Forecast.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/viraltux/Forecast.jl)
-
-
-* 
-
 
