@@ -1,4 +1,5 @@
 using Test
+using Dates
 using Forecast
 
 @testset "stl" begin
