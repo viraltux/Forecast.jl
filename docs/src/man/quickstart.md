@@ -38,7 +38,7 @@ x = LinRange(0,pi,n)
 y = sin.(x) .+ rand(n)
 scatter(x, y, xlims=(-1/2,pi+1/2), ma=.5, label = "Data", color = :grey)
 plot!(axb,loess(x,y,predict=axb), linewidth = 4, label = "LOESS", color = :blue)
-plot!(x,sma(y,100), linewidth = 2, label= "Moving Avg 100", color = :orange)
+plot!(x,sma(y,100,true), linewidth = 2, label= "Moving Avg 100", color = :orange)
 ```
 
 ## STL on CO2 dataset
