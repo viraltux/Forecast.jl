@@ -7,6 +7,7 @@ const tests = [
     "acf",
     "ar",
     "arsim",
+    "boxcox",
     "ccf",
     "d",
     "datasets",
