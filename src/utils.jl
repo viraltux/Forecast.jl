@@ -17,14 +17,12 @@ Package: Forecast
 
 Drop rows and columns from a matrix.
 """
-function drop(M::AbstractMatrix;
-              r=nothing,
-              c=nothing)
+function drop(M::AbstractMatrix; r=[], c=[])
     s = size(M)
     dr = collect(1:s[1])
     dc = collect(1:s[2])
-    isnothing(r) ? nothing : splice!(dr,r)
-    isnothing(c) ? nothing : splice!(dc,c)
+    splice!(dr,r)
+    splice!(dc,c)
     M[dr,dc]
 end
 
@@ -53,7 +51,7 @@ Package: Forecast
 
 Insert a column with specific value at a given position, values are pushed to the right
 """
-function insert_column(M::Matrix, at, value = 0.0)::Matrix
+function insert_column(M::Matrix, at::Integer, value = 0.0)::Matrix
     nr,nc = size(M)
     !(1 <= at <= nc+1) && return(M)
 
@@ -70,7 +68,7 @@ Package: Forecast
 
 Insert a row with specific value at a given position, values are pushed down
 """
-function insert_row(M::Matrix, at, value = 0.0)::Matrix
+function insert_row(M::Matrix, at::Integer, value = 0.0)::Matrix
     nr,nc = size(M)
     !(1 <= at <= nr+1) && return(M)
 
@@ -88,7 +86,7 @@ Package: Forecast
 Insert a row and a column with specific value at a given cross position, 
 values are pushed right and down.
 """
-function insert_cross(M::Matrix, at, value = 0.0)::Matrix
+function insert_cross(M::Matrix, at::Integer, value = 0.0)::Matrix
     insert_row(insert_column(M,at,value),at,value)
 end
 
