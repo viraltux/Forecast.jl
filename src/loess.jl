@@ -1,11 +1,11 @@
 # TODO Check faster implementations in computational methods for local regression
 # William S. Cleveland & E. Grosse https://link.springer.com/article/10.1007/BF01890836
-function ghat(x::Float64;
-           A::Matrix{Float64},
-           b::Vector{Float64},
-           d::Int64=2,
-           q::Int64,
-           rho::Vector{Float64})
+function ghat(x::T;
+           A::AbstractMatrix{T},
+           b::AbstractVector{T},
+           d::Integer=2,
+           q::Integer,
+           rho::AbstractVector{T}) where T<:Real
 
     xv = A[:,d]
     yv = b
@@ -70,50 +70,38 @@ julia> loess(rand(5), rand(5); predict=rand(10))
 [...]
 ```
 """
-function loess(xv::Vector{Float64},
-               yv::Vector{Float64};
-               d::Int64=2,
-               q::Int64=Int64(round(3/4*length(xv))),
-               rho::Vector{Float64}=repeat([1.0],inner=length(xv)),  
-               predict::Vector{Float64} = xv)::Vector{Float64}
-    
+function loess(xv::AbstractVector{R},
+               yv::AbstractVector{<:Union{Missing,S}}; 
+               d::Integer=2,
+               q::Integer=Int64(round(3/4*length(xv))),
+               rho::AbstractVector{<:Union{Missing,T}}=fill(1.0,length(xv)),  
+               predict::AbstractVector{V} = xv) where {R<:Real, S<:Real, T<:Real, V<:Real}
+
     @assert (d==1) | (d==2) "Linear Regression must be of degree 1 or 2"
+    @assert length(xv) == length(yv)
+
+    myi = findall(x -> !ismissing(x),yv)
+    xv = xv[myi]
+    yv = yv[myi]
+    rho = rho[myi]
+
+    # Promote to same type
+    P = promote_type(R,S,T,V)
+    xv = R == P ? xv :  P.(xv)
+    yv =  P.(yv)
+    rho = P.(rho)
+    predict = V == P ? predict : P.(predict)
     
-    res = zeros(length(predict))
+    res = Vector{P}(undef, length(predict))
 
     ## Ax = b
-    A = hcat(xv,repeat([1.0],inner=length(xv)))
+    A = hcat(xv,fill(P(1),length(xv)))
     b = yv
-    d == 2 && (A = hcat(xv .^ 2.0, A))
+    d == 2 && (A = hcat(xv .^ 2, A))
 
     for (i,xi) in enumerate(predict)
         res[i] = ghat(xi;A,b,d,q,rho)
     end
 
     res
-    
 end
-
-function loess(xv, yv; d = 2,
-               q = Int64(round(3/4*length(xv))),
-               rho = repeat([1.0],inner=length(xv)),  
-               predict = xv)
-
-    @assert length(findall(x -> ismissing(x), xv)) == 0  "xv should not contain missing values"
-
-    myi = findall(x -> !ismissing(x),yv)
-    xv = xv[myi]
-    yv = yv[myi]
-    rho = rho[myi]
-    
-    xv = convert(Vector{Float64},xv)
-    yv = convert(Vector{Float64},yv)
-    d  = convert(Int64,d)
-    q  = convert(Int64,q)
-    rho  = convert(Vector{Float64},rho)
-    predict = convert(Vector{Float64}, predict)
-
-    loess(xv,yv; d,q,rho,predict)
-
-end
-

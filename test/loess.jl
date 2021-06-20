@@ -16,9 +16,13 @@ using Forecast
     x = loess(sin.(collect(1:10.)), sin.(collect(1:10.)); d=1)
     @test x == [0.8414709848078965, 0.9092974268256815, 0.14112000805986719, -0.7568024953079282, -0.9589242746631382, -0.2794154981989259, 0.6569865987187891, 0.9893582466233817, 0.41211848524175654, -0.5440211108893699]
 
-
     x = loess(Int64.(round.(100*rand(100))),
-              Int64.(round.(100*rand(100))); predict = Int64.(round.(rand(20))))
+              Int64.(round.(100*rand(100))); predict = Int64.(round.(100*rand(20))))
     @test length(x) == 20
 
+    x = loess(1:2:200,
+              vcat(rand(80),repeat([missing],20));
+              predict = 1.:2:40)
+    @test length(x) == 20
+    
 end

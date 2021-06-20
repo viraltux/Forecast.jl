@@ -44,7 +44,7 @@ function sma(x::AbstractVector{T}, n::Integer) where T<:Number
 
 end
 
-function sma(x::AbstractVector{<:Union{Missing, T}},
+function sma(x::AbstractVector{<:Union{Missing,T}},
              n::Integer,
              center::Bool) where T<:Number
 
@@ -55,8 +55,8 @@ function sma(x::AbstractVector{<:Union{Missing, T}},
     res = sma(collect(skipmissing(x)),n)
 
     # Missing padding
-    ivp = repeat([missing],findfirst(!ismissing, x))
-    fvp = repeat([missing],N-findlast(!ismissing, x)+1)
+    ivp = repeat([missing],  findfirst(!ismissing, x)-1 + n÷2)
+    fvp = repeat([missing], N-findlast(!ismissing, x)-1 + n-n÷2)
 
     center ? vcat(ivp,res,fvp) : vcat(res,ivp,fvp)
         
