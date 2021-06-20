@@ -45,15 +45,15 @@ function summarize(x::DataFrame)
     summarize(Array(tots(x)[:,2:end]), varnames = names(x)[2:end])
 end
 
-function summarize(x::Vector; varnames = nothing)
+function summarize(x::AbstractVector{<:Real}; varnames = nothing)
     summarize(reshape(x,length(x),1), varnames = varnames)
 end
 
-function summarize(x::Number; varnames = nothing)
+function summarize(x::Real; varnames = nothing)
     summarize([x,x], varnames = varnames)
 end
 
-function summarize(x::AbstractArray; varnames = nothing)
+function summarize(x::AbstractArray{T}; varnames = nothing) where T<:Real
 
     @assert ndims(x) <= 2 "Data should have two dimensions at most."
     x = compact(x)
