@@ -25,70 +25,40 @@ julia> sma(1:5,3,true)
   missing
 ```
 """
-function sma(x, n)
-    n == 1 && return x
-    x = convert(Vector{Float64},x)
-    n = convert(Int64,n)
-    sma(x,n)
-end
-
-function sma(x::Vector{Float64}, n::Int64)::Vector{Float64}
+function sma(x::AbstractVector{T}, n::Integer) where T<:Number
 
     n == 1 && return x
-    
     N = length(x)
-    @assert 1 <= n & n <= N
-
-    res = Vector{Float64}(undef, N-n+1)
+    @assert 1 <= n <= N
+    
+    V = Base.promote_op(/, T, typeof(n))
+    res = Vector{V}(undef, N-n+1)
     
     # initial moving average value
     res[1] = ma = sum(x[1:n])/n
     for i in 1:N-n
-        res[1+i] = ma = ma + (x[n+i] - x[i])/n
+        res[1+i] = ma = ma + (x[n+i] - x[i]) / n
     end
 
     res
 
 end
 
-
-function sma(x, n, center::Bool)
-    n == 1 && return x
-    x = convert(Vector{Float64},x)
-    n = convert(Int64,n)
-    sma(x,n,center)
-end
-
-
-function sma(x::Vector{<:Union{Missing,Real}},
+function sma(x::AbstractVector{<:Union{Missing, T}},
              n::Integer,
-             center::Bool)::Vector{Union{Missing,Float64}}
+             center::Bool) where T<:Number
 
     n == 1 && return x
-
     N = length(x)
-    @assert 1 <= n & n <= N
+    @assert 1 <= n <= N
 
-    res = Vector{Union{Missing,Real}}(missing,N)
+    res = sma(collect(skipmissing(x)),n)
 
-    # initial and final value positions
-    ivp = findfirst(!ismissing, x)
-    fvp = findlast(!ismissing, x)
-    
-    # using missing values to center ma 
-    a = center ? div(n,2) : 0
+    # Missing padding
+    ivp = repeat([missing],findfirst(!ismissing, x))
+    fvp = repeat([missing],N-findlast(!ismissing, x)+1)
 
-    # initial moving average value
-    ma = sum(x[ivp:n+ivp-1])/n
-    res[a+ivp] = ma
-    for i in 1:(N-n-ivp-(N-fvp)+1)
-        resai = ma + (x[n+ivp+i-1] - x[ivp+i-1])/n
-        # missing values are imputed
-        res[a+ivp+i] = ismissing(resai) ? ma : resai
-        ma = res[a+ivp+i]
-    end
-
-    res
-
+    center ? vcat(ivp,res,fvp) : vcat(res,ivp,fvp)
+        
 end
 
