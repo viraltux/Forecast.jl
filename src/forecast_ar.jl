@@ -22,7 +22,7 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 A FORECAST struct
 """
 function forecast(xar::AR, n::Integer;
-                  alpha = (0.8,.95),
+                  alpha::Tuple{Real,Real} = (0.8,.95),
                   fixMean = nothing,
                   fixΣ2 = xar.Σ2)
 
@@ -96,17 +96,18 @@ end
 """
 Forecast recursive variance/covariance
 """
-function fvar(Φ,Σ2,n)
+function fvar(Φ::AbstractArray{T},
+              Σ2::AbstractMatrix{T},
+              n::Integer) where T<:Real
 
-    m,np = arsize(Φ)
+    m = size(Φ,1)
+    np = size(Φ,3)
+    
+    Φ = reshape(Φ,m,m,np)
 
-    #TODO create fvar for univariate Φ
-    Φ = Φ isa Number ? [Φ] : reshape(Φ,m,m,np)
-    Σ2 = Σ2 isa Number ? [Σ2] : Σ2
-
-    Σ2i = zeros(m,m)
-    v = zeros(n,m)
-
+    Σ2i = zeros(T,m,m)
+    v = Array{T}(undef,n,m)
+    
     Φ = reshape(Φ,m,m*np)
     for i in 1:n
         #Σ2i = Φ * Σ2i * Φ' + Σ2
@@ -114,7 +115,37 @@ function fvar(Φ,Σ2,n)
         v[i,:] = diag(Σ2i)
     end
 
-    #TODO create fvar for univariate Φ
-    return compact(v)
+    v
+end
+
+function fvar(Φ::AbstractVector{T},
+              Σ2::T,
+              n::Integer) where T<:Real
+
+    np = length(Φ)
+    Σ2i = T(0)
+    v = Vector{T}(undef,n)
+    Φ2 = Φ.^2
+    
+    for i in 1:n
+        v[i] = Σ2i = sum(Φ2 .* Σ2i) + Σ2
+    end
+
+    v
+end
+
+function fvar(Φ::T,
+              Σ2::T,
+              n::Integer) where T<:Real
+
+    Σ2i = T(0)
+    v = Vector{T}(undef,n)
+    Φ2 = Φ^2
+    
+    for i in 1:n
+        v[i] = Σ2i = Φ2 * Σ2i + Σ2
+    end
+
+    v
 end
 
