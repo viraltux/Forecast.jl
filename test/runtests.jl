@@ -19,6 +19,8 @@ const tests = [
     "sma",
     "stl",
     "summarize",
+    "utils",
+    "utils_datetime",
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)

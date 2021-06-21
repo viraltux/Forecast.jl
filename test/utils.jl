@@ -1,4 +1,5 @@
 using Test
+import Forecast: nextodd, drop, compact, insert_row, insert_column
 
 @testset "utils" begin
 
@@ -53,3 +54,4 @@ using Test
     @test insert_column(insert_row(M,2,1),2,1) == [0 1 0
                                                    1 1 1
                                                    0 1 0]
+end
