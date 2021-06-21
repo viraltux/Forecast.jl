@@ -27,7 +27,7 @@ julia> co2()
    [...]
 ```
 """
-function co2(full = false)
+function co2(full::Bool = false)
 
     data = "data/co2.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
@@ -97,7 +97,7 @@ julia> seaborne()
    [...]
 ```
 """
-function seaborne(full = false)
+function seaborne(full::Bool = false)
 
     data = "data/seaborne.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)

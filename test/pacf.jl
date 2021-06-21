@@ -5,7 +5,7 @@ using Forecast
     x = rand(100);
     @test_throws AssertionError Forecast.pacf(x; lag = 100)
 
-    res = Forecast.pacf(x; lag = 20);
+    res = pacf(x; lag = 20);
     @test res isa CCF
     @test res.call == "pacf(x; type=\"stepwise-real\", lag=20, alpha=(0.95, 0.99))"
     @test res.type == "pacf_stepwise-real"
