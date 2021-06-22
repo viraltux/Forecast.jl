@@ -28,29 +28,29 @@ Store results from the function `ar`
 `p0pv`            Alias for Φ0pv
 `call::String`    Method called to generate AR
 """
-mutable struct AR
-    varnames::AbstractVector{String}
-    Φ
-    coefficients
-    Φ0
-    constant
-    Σ2
-    variance
-    Σ
-    stdev
-    x
-    fitted
-    residuals
+mutable struct AR{T<:Real}
+    varnames::Vector{String}
+    Φ::Array{T,3}
+    coefficients::Array{T,3}
+    Φ0::Vector{T}
+    constant::Vector{T}
+    Σ2::Matrix{T}
+    variance::Matrix{T}
+    Σ::Vector{T}
+    stdev::Vector{T}
+    x::Union{Array{T},DataFrame}
+    fitted::Array{T}
+    residuals::Array{T}
     ic::Dict
     stats::Dict
-    Φse
-    pse
-    Φ0se
-    p0se
-    Φpv
-    ppv
-    Φ0pv
-    p0pv
+    Φse::Array{T,3}
+    pse::Array{T,3}
+    Φ0se::Vector{T}
+    p0se::Vector{T}
+    Φpv::Array{T,3}
+    ppv::Array{T,3}
+    Φ0pv::Vector{T}
+    p0pv::Vector{T}
     call::String
 end
 

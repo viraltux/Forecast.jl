@@ -129,7 +129,7 @@ function ar_ols(x::AbstractArray{T},
 
     Φ0 = W[1,:]
     Φ = W[2:end,:]
-    Φ = reshape(Φ',m,m,or)
+    Φ = Array(reshape(Φ',m,m,or))
 
     # Maximum Likelihood noise covariance
     k = or*m*m
