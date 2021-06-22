@@ -57,7 +57,7 @@ d_ar_dΦ(m::Integer,order::Integer,T::Type) =
 
 function ar(x::AbstractArray{T},
             order::Integer = 1,
-            constant::Boxol = true;
+            constant::Bool = true;
             alpha::Real = 1.0, 
             dΦ0::Tuple{AbstractArray{T},AbstractArray{T}} = d_ar_dΦ0(size(x,2),constant,T),
             dΦ::Tuple{AbstractArray{T},AbstractArray{T}} = d_ar_dΦ(size(x,2),order,T),

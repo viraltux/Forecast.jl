@@ -29,7 +29,7 @@ Store results from the function `ar`
 `call::String`    Method called to generate AR
 """
 mutable struct AR
-    varnames
+    varnames::AbstractVector{String}
     Φ
     coefficients
     Φ0
@@ -116,7 +116,7 @@ function arsize(Φ)
     (m,np)
 end
 
-function sigf(pv)
+function sigf(pv::Real)::String
 
     if pv < 0.001 return  " ***"   end 
     if pv < 0.01  return  " ** "   end 
