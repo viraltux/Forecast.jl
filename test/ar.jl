@@ -3,7 +3,6 @@ using Forecast
 import Forecast: compact
 import Distributions: MvLogNormal, MvNormal
 
-
 @testset "ar" begin
     xar = ar(rand(100),10)
     @test xar isa AR
@@ -17,7 +16,7 @@ import Distributions: MvLogNormal, MvNormal
     @test length(xar.fitted) == 100 - 10
     @test length(xar.residuals) == 100 - 10
 
-    xar = ar(rand(100),10, alpha = 0.05)
+    xar = ar(rand(100), 10; alpha = 0.05)
     @test xar isa AR
     @test xar.ic isa Dict
     @test xar.call == "ar(X, order=10, constant=true)"
