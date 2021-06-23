@@ -35,12 +35,13 @@ AR([...])
 function ar(df::DataFrame,
             order::Integer = 1,
             constant::Bool = true;
-            alpha::Real,
-            dΦ0::Tuple{AbstractArray{T},AbstractArray{T}},
-            dΦ::Tuple{AbstractArray{T},AbstractArray{T}}) where T<:Real
+            alpha::Real = 1.0,
+            dΦ0::Tuple = d_ar_dΦ0(size(df,2)-1,constant,Float64),
+            dΦ::Tuple = d_ar_dΦ(size(df,2)-1,order,Float64))
 
+    #TODO promote dΦ0 and dΦ types based on df and control for Integer values on x
     ttype = [Date,DateTime,Day,Month,Week]
-    ar_df = eltype(df[:,1]) in ttype ? Array(df[:,2:end]) : Array(df)
+    ar_df = eltype(df[:,1]) in ttype ? Array{Float64}(df[:,2:end]) : Array{Float64}(df)
     names_df = eltype(df[:,1]) in ttype ? names(df[:,2:end]) : names(df)
     xar = ar(ar_df, order, constant; alpha, dΦ0, dΦ, varnames = names_df)
     xar.x = df
@@ -49,11 +50,12 @@ function ar(df::DataFrame,
     
 end
 
+
 # Default ar values functions
-d_ar_varnames(m::Integer)::Vector{String} = ["x"*string(i) for i in 1:m]
 d_ar_dΦ0(m::Integer,constant::Bool,T::Type) = (repeat([T(1)],m),  repeat([T(constant ? 1 : 0)],m))
 d_ar_dΦ(m::Integer,order::Integer,T::Type) =
     (r11=reshape(repeat([T(1)],m*m*order),m,m,order); (r11,r11))
+d_ar_varnames(m::Integer)::Vector{String} = ["x"*string(i) for i in 1:m]
 
 function ar(x::AbstractArray{T},
             order::Integer = 1,
@@ -61,8 +63,7 @@ function ar(x::AbstractArray{T},
             alpha::Real = 1.0, 
             dΦ0::Tuple{AbstractArray{T},AbstractArray{T}} = d_ar_dΦ0(size(x,2),constant,T),
             dΦ::Tuple{AbstractArray{T},AbstractArray{T}} = d_ar_dΦ(size(x,2),order,T),
-            varnames::AbstractVector{String} = d_ar_varnames(size(x,2))
-            ) where T<:Real
+            varnames::AbstractVector{String} = d_ar_varnames(size(x,2))) where T<:Real
 
     @assert 0.0 < alpha <= 1.0
     

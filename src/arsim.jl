@@ -116,7 +116,7 @@ end
 function arsim(Φ::AbstractArray{T}, Φ0::AbstractVector{T}, x0::AbstractArray{T}, n::Integer;
                Σ2::Matrix{T} = collect(T(1)*I(length(Φ0))),
                E::Union{Nothing,Distribution} = MvNormal(length(Φ0),1),
-               fix::Union{Nothing,AbstractVector{Union{Missing,T}}} = nothing) where T<:Real
+               fix::Union{Nothing,AbstractMatrix{Union{Missing,T}}} = nothing) where T<:Real
 
     m = size(Φ,1)
     np = size(Φ,3)

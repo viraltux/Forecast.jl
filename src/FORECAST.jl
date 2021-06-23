@@ -77,7 +77,7 @@ end
 """
 Transform a FORECAST object value with given function
 """
-function transform(fc::FORECAST, f::Function, vari::UnitRange = 1:size(fc.mean,2)-1)
+function transform(fc::FORECAST, f::Function, vari::Union{Integer,UnitRange} = 1:size(fc.mean,2)-1)
 
     vari = collect(vari)
 

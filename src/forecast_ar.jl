@@ -41,6 +41,9 @@ function forecast(xar::AR, n::Integer;
     name_ts = names(dfts)[1]
 
     x0 = compact(x[end:-1:end-np+1,:]')
+    PT = promote_type(eltype(Φ),eltype(Φ0))
+    x0 = PT.(x0)
+    
     Σ20 = compact(zeros(m,m))
     !isnothing(fixMean) && (fixMean = Array(fixMean[:,2:end]))
     mu = arsim(Φ,Φ0,x0,n; Σ2=Σ20, fix=fixMean)
