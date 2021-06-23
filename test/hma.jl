@@ -3,18 +3,17 @@ using Forecast
 import Forecast: hmaSymmetricWeights
 
 @testset "hma" begin
-    r_data = rand(24)
 
-    # asserting return of correct weights 
-    # as listed here: https://www.mathworks.com/help/econ/seasonal-adjustment-using-snxd7m-seasonal-filters.html
+    # weights (https://www.mathworks.com/help/econ/seasonal-adjustment-using-snxd7m-seasonal-filters.html)
     x = hmaSymmetricWeights(13)
     @test length(x) == 13
-    @test x         == Float16.([-0.019, -0.028, 0.0, .066, .147, .214, .24, .214, .147, .066, 0.0, -0.028, -0.019])
+    @test x         == [-0.019, -0.028, 0.0, 0.065, 0.147, 0.214, 0.24, 0.214, 0.147, 0.065, 0.0, -0.028, -0.019]  
 
-    # asserting correct application of the 13-term moving average
-    x = hma(r_data, 13)
-    @test length(x)             == 24
-    @test first(x)              ≈ 0.5508635070863032
-    @test last(x)               ≈ 0.5843536698022159
-    @test x[length(x)//2|>Int]  ≈ 0.32899917067680573
+    # 13-term moving average
+    x = hma(sin.(1:100), 13)
+    @test length(x) == 100
+    @test first(x)  ≈ 0.5634778709798388
+    @test last(x)   ≈ -0.664567410322129
+    @test x[50]     ≈ -0.044034801763622136
+
 end
