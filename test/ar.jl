@@ -104,7 +104,7 @@ import Distributions: MvLogNormal, MvNormal
     @test xar isa AR
 
     # ar(Φ,n) fixed
-    Φ,Φ0,x0,n = .5,0.0,1,n
+    Φ,Φ0,x0,n = .5,0.0,1.,n
     x = arsim(Φ,Φ0,x0,n)
     xar  = ar(x,10)
     xarfixed = ar(x,10;dΦ=(xar.Φ,xar.Φ),dΦ0 = (xar.Φ0, [0.0]))
@@ -114,8 +114,7 @@ import Distributions: MvLogNormal, MvNormal
     @test xarfixed.Φse == xarfalse.Φse
     @test xarfixed.Σ2 == xarfalse.Σ2
 
-
-    Φ,Φ0,x0,n = .5,0.0,1,n
+    Φ,Φ0,x0,n = .5,0.0,1.,n
     x = arsim(Φ,Φ0,x0,n)
     xar  = ar(x,10)
     fΦ = copy(xar.Φ)

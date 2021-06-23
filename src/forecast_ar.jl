@@ -15,7 +15,9 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 `xar`           AR struct coming from the `ar` function.
 `n`             Number of time periods to be forecasted.
 `alpha`         Prediction intervals levels; its default value is (0.8, 0.95)
-`fixMean`       Fixes the mean in the forecast with Matrix{Union{Missing,Float64}}. Default value sis `nothing`.
+`fixMean`       Fixes the mean in the forecast with a DataFrame which first 
+                column is a timestamp type and missing values indicate values
+                to be estimated. Default value is `nothing`.
 `fixΣ2`         fixes Σ2 values in the forecast
 
 # Returns
@@ -23,15 +25,15 @@ A FORECAST struct
 """
 function forecast(xar::AR, n::Integer;
                   alpha::Tuple{Real,Real} = (0.8,.95),
-                  fixMean = nothing,
-                  fixΣ2 = xar.Σ2)
+                  fixMean::Union{Nothing,DataFrame} = nothing,
+                  fixΣ2::AbstractMatrix{T} = xar.Σ2) where T<:Real
 
     @assert n > 0 "n must be greater than 0"
 
     Φ,Φ0 = compact(xar.Φ),compact(xar.Φ0)
 
     m,np = arsize(Φ)
-    
+     
     dfts = xar.x = tots(xar.x)
     names_x = names(dfts)[2:end]
     x = Array(dfts[:,2:end])
