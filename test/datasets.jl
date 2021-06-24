@@ -35,7 +35,7 @@ end
 @testset "datasets: quakes" begin
 
     q = quakes()
-    @test a isa DataFrame
+    @test q isa DataFrame
     @test size(q) == (71,2)
 
 end
