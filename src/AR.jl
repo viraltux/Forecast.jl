@@ -56,7 +56,7 @@ end
 
 function Base.show(io::IO, xar::AR)
 
-    m,p = arsize(xar.Φ)
+    _,m,p = size(xar.Φ)
     printstyled("Multivariate Autoregressive Model\n",bold=true,color=:underline)
     print("\n    ",xar.call,"\n")
     
@@ -96,24 +96,6 @@ function Base.show(io::IO, xar::AR)
     printstyled("\nStatistics\n",bold=true,color=:underline)
     pretty_table(DataFrame(xar.stats), nosubheader = true, show_row_number=false)
 
-end
-
-# Return ( num_variables, num_parameters)
-function arsize(Φ)
-    d = ndims(Φ)
-    sΦ = size(Φ)
-    if d == 0
-        m,np = 1,1
-    elseif d == 1
-        m,np = 1,sΦ[1]
-    elseif d == 2
-        m,np = sΦ[1],1
-    elseif d == 3
-        m,np = sΦ[1],sΦ[3]
-    else
-        @error "Φ should have less the 4 dimensions"
-    end
-    (m,np)
 end
 
 function sigf(pv::Real)::String

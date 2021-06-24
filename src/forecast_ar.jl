@@ -30,9 +30,9 @@ function forecast(xar::AR, n::Integer;
 
     @assert n > 0 "n must be greater than 0"
 
-    Φ,Φ0 = compact(xar.Φ),compact(xar.Φ0)
-
-    m,np = arsize(Φ)
+    _,m,np = size(xar.Φ)
+    
+    Φ,Φ0 = compact(xar.Φ), compact(xar.Φ0)
      
     dfts = xar.x = tots(xar.x)
     names_x = names(dfts)[2:end]

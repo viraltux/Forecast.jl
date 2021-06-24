@@ -71,7 +71,7 @@ function ar(x::AbstractArray{T},
 
     alpha == 1.0 && return xar
     
-    m,np = arsize(xar.Φ)
+    _,m,np = size(xar.Φ)
     dΦs = (reshape(xar.Φpv,m,m,np) .<= alpha)
     dΦ0s = (reshape(xar.Φ0pv,m) .<= alpha)
 
@@ -318,7 +318,7 @@ function fixΦse(Φse::AbstractVector{T},
     Φ, fΦ = dΦ
     (Φ0 == fΦ0) & (Φ == fΦ) && return(Φse)
 
-    m,np = arsize(Φ)
+    _,m,np = size(Φ)
     
     rΦ  = reshape(hcat(Φ0 ,reshape(Φ ,m,m*np))',m*(m*np+1),1)
     rfΦ = reshape(hcat(fΦ0,reshape(fΦ,m,m*np))',m*(m*np+1),1)
