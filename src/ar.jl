@@ -71,7 +71,9 @@ function ar(x::AbstractArray{T},
 
     alpha == 1.0 && return xar
     
-    _,m,np = size(xar.Φ)
+    m = xar.ndims
+    np = xar.order
+    
     dΦs = (reshape(xar.Φpv,m,m,np) .<= alpha)
     dΦ0s = (reshape(xar.Φ0pv,m) .<= alpha)
 
@@ -88,6 +90,7 @@ function ar(x::AbstractArray{T},
     return ar_ols(x, order, constant; dΦ0, dΦ, varnames)
 
 end
+
 
 function ar_ols(x::AbstractArray{T},
                 or::Integer,
@@ -183,6 +186,7 @@ function ar_ols(x::AbstractArray{T},
         ", constant="*string(constant)*")"
 
     AR(varnames,
+       or, m,
        Φ,coefficients,
        Φ0,ar_constant,
        Σ2,variance,

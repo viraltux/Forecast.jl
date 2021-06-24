@@ -30,7 +30,8 @@ function forecast(xar::AR, n::Integer;
 
     @assert n > 0 "n must be greater than 0"
 
-    _,m,np = size(xar.Φ)
+    m = xar.ndims
+    np = xar.order
     
     Φ,Φ0 = compact(xar.Φ), compact(xar.Φ0)
      

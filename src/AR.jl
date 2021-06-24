@@ -5,6 +5,8 @@ Store results from the function `ar`
 
 # Arguments
 `varnames`        List of variable names
+`order`           Order of Autoregressive Model
+`ndims`           Number of dimensions
 `Φ`               Collection of d by d matrices of coefficients
 `coefficients`    Alias for Φ
 `Φ0`              Constant
@@ -30,6 +32,8 @@ Store results from the function `ar`
 """
 mutable struct AR{T<:Real}
     varnames::Vector{String}
+    order::Integer
+    ndims::Integer
     Φ::Array{T,3}
     coefficients::Array{T,3}
     Φ0::Vector{T}
