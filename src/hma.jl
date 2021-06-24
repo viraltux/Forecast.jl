@@ -36,9 +36,9 @@ function hmaSymmetricWeights(n::Integer)
     m3 = (m+3)^2
     d = 8*(m+2)*(m2-1)*(4*m2-1)*(4*m2-9)*(4*m2-25)
 
-    w = map(x -> round(315*(m1-x^2)*(m2-x^2)*(m3-x^2)*(3*m2-11*x^2-16)/d, digits=3), 0:m+1)
+    w = map(x -> 315*(m1-x^2)*(m2-x^2)*(m3-x^2)*(3*m2-11*x^2-16)/d, 0:m+1)
     u = vcat(w[end-1:-1:1],w[2:end-1])
-    
+
     return mod(n, 2) != 0 ? u : vcat(u, missing)
 
 end
@@ -50,6 +50,7 @@ end
 # formula from Mike Doherty (2001), 'The Surrogate Henderson Filters in X-11',
 # Aust, NZ J of Stat. 43(4), 2001, pp901-999; see formula (1) on page 903
 function hmaAsymmetricWeights(m::Integer, w::AbstractArray{<:Real})
+
     n = length(w)
 
     @assert m <= n "The m argument must be less than w"
@@ -62,7 +63,8 @@ function hmaAsymmetricWeights(m::Integer, w::AbstractArray{<:Real})
     
     b2s2 = 4/pi/ic^2
     denominator = 1.0 + ((m*(m-1.0)*(m+1.0) / 12.0 ) * b2s2)
-    map(r -> round(w[r] + sumResidual + (((r-1+1.0) - (m+1.0)/2.0) * b2s2) / denominator * sumEnd, digits = 3), 1:m)
+    map(r -> w[r] + sumResidual + (((r-1+1.0) - (m+1.0)/2.0) * b2s2) / denominator * sumEnd, 1:m)
+
 end
 
 
