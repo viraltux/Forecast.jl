@@ -114,7 +114,7 @@ function seaborne(full::Bool = false)
     end
 
     # Group by Country and Flow to select Imports
-    gbt = groupby(sb_df, [:country_name, :flow])
+    gbt = groupby(sb_df, [:country_name, :flow], sort=true)
     DataFrame(Dict(:Date => gbt[1].date ,
                    :UK => gbt[1].dwt, :Germany => gbt[3].dwt, :France => gbt[5].dwt))
 end
