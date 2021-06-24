@@ -1,8 +1,33 @@
-# Ported https://github.com/bpalmer4 Python implementation 
-# Reference:
-# - https://www.abs.gov.au/websitedbs/d3310114.nsf/4a256353001af3ed4b2562bb00121564/5fc845406def2c3dca256ce100188f8e!OpenDocument
+# MIT License
+
+# Copyright (c) 2021 Fran Urbano
+# Copyright (c) 2021 Val Lyashov
+# Copyright (c) 2020 Bryan Palmer
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 
 # Henderson symmetric weights
+
+# Derive an n-term array of symmetric 'Henderson Moving Average' weights
+# formula from ABS (2003), 'A Guide to Interpreting Time Series', page 41.
+# returns a numpy array of symmetric Henderson weights indexed from 0 to n-1
 function hmaSymmetricWeights(n::Integer)
 
     m = (n-1)÷2
@@ -18,6 +43,12 @@ function hmaSymmetricWeights(n::Integer)
 
 end
 
+# Calculate the asymmetric end-weights
+# w --> an array of symmetrical henderson weights (from above function)
+# m --> the number of asymmetric weights sought; where m < len(w);
+# returns a numpy array of asymmetrical weights, indexed from 0 to m-1;
+# formula from Mike Doherty (2001), 'The Surrogate Henderson Filters in X-11',
+# Aust, NZ J of Stat. 43(4), 2001, pp901-999; see formula (1) on page 903
 function hmaAsymmetricWeights(m::Integer, w::AbstractArray{<:Real})
     n = length(w)
 
@@ -42,12 +73,21 @@ Package: Forecast
 
 Applies the Henderson moving average filter to dataset `s` with `n`-term.
 
+"Henderson moving averages are filters which were derived by Robert Henderson in 1916 
+for use in actuarial applications. They are trend filters, commonly used in time series 
+analysis to smooth seasonally adjusted estimates in order to generate a trend estimate.
 
-"Henderson moving averages are filters which were derived by Robert Henderson in 1916 for use in actuarial applications. They are trend filters, commonly used in time series analysis to smooth seasonally adjusted estimates in order to generate a trend estimate. They are used in preference to simpler moving averages because they can reproduce polynomials of up to degree 3, thereby capturing trend turning points.
+They are used in preference to simpler moving averages because they can reproduce 
+polynomials of up to degree 3, thereby capturing trend turning points.
 
-The ABS uses Henderson moving averages to produce trend estimates from a seasonally adjusted series. The trend estimates published by the ABS are typically derived using a 13 term Henderson filter for monthly series, and a 7 term Henderson filter for quarterly series.
+The ABS uses Henderson moving averages to produce trend estimates from a seasonally 
+adjusted series. The trend estimates published by the ABS are typically derived using 
+a 13 term Henderson filter for monthly series, and a 7 term Henderson filter for quarterly series.
 
-Henderson filters can be either symmetric or asymmetric. Symmetric moving averages can be applied at points which are sufficiently far away from the ends of a time series. In this case, the smoothed value for a given point in the time series is calculated from an equal number of values on either side of the data point." - Australian Bureau of Statistics (www.abs.gov.au)
+Henderson filters can be either symmetric or asymmetric. Symmetric moving averages can be applied 
+at points which are sufficiently far away from the ends of a time series. In this case, the 
+smoothed value for a given point in the time series is calculated from an equal number of values 
+on either side of the data point." - Australian Bureau of Statistics (www.abs.gov.au)
 
 # Arguments
 - `s`: Observations' support.
