@@ -55,9 +55,8 @@ end
 
 function summarize(x::AbstractArray{T}; varnames = nothing) where T<:Real
 
-    @assert ndims(x) <= 2 "Data should have two dimensions at most."
     x = compact(x)
-    nd = ndims(x)
+    @assert (nd = ndims(x)) <= 2 "Data should have two dimensions at most."
     n,m = nd == 1 ? (length(x),1) : size(x)
 
     varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames

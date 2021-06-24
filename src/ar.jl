@@ -161,15 +161,14 @@ function ar_ols(x::AbstractArray{T},
     # Statistics
     SStot = sum((Y .- mean(Y,dims=1)).^2,dims=1)
     SSres = sum(e .^ 2,dims=1)
-    R2 = compact(1 .- (SSres ./ SStot))
+    R2 = vec(1 .- (SSres ./ SStot))
     
     pvf(mu,se) = se == 0 ? 1.0 : cdf(Normal(abs(mu),se),0) #1 to make log(1) = 0
     Φpv = pvf.(Φ,Φse) 
     Φ0pv = pvf.(Φ0,Φ0se)
     p0pv = Φ0pv
     ppv = Φpv
-    #pv = vcat(reshape(Φ0pv,:,1),reshape(Φpv,:,1))
-    slpv = compact(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
+    slpv = vec(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
 
     stats = Dict([(" Variable", varnames),
                   ("R2",    R2),
