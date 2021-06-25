@@ -71,8 +71,8 @@ function ar(x::AbstractArray{T},
 
     alpha == 1.0 && return xar
     
-    m = xar.ndims
-    np = xar.order
+    m = size(x,2)
+    np = order
     
     dΦs = (reshape(xar.Φpv,m,m,np) .<= alpha)
     dΦ0s = (reshape(xar.Φ0pv,m) .<= alpha)
