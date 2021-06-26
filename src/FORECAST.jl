@@ -13,7 +13,7 @@ Store results from the function `forecast`
    se:     Standard Error.
 """
 mutable struct FORECAST
-    model::Any
+    model
     alpha::Tuple
     mean::DataFrame
     upper::DataFrame

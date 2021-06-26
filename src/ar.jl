@@ -61,27 +61,37 @@ function ar(x::AbstractArray{T},
             order::Integer = 1,
             constant::Bool = true;
             alpha::Real = 1.0, 
-            dΦ0::Tuple{AbstractArray{T},AbstractArray{T}} = d_ar_dΦ0(size(x,2),constant,T),
-            dΦ::Tuple{AbstractArray{T},AbstractArray{T}} = d_ar_dΦ(size(x,2),order,T),
+            dΦ::Tuple = d_ar_dΦ(size(x,2),order,T),
+            dΦ0::Tuple = d_ar_dΦ0(size(x,2),constant,T),
             varnames::AbstractVector{String} = d_ar_varnames(size(x,2))) where T<:Real
 
     @assert 0.0 < alpha <= 1.0
+
+    m = size(x,2)
+    np = order
+
+    dΦ  = ( expand(dΦ[1],(m,m,np)), expand(dΦ[2],(m,m,np)) )
+    dΦ0 = ( expand(dΦ0[1],(m,)),    expand(dΦ0[2],(m,)) )
     
     xar = ar_ols(x, order, constant; dΦ0, dΦ, varnames)
 
     alpha == 1.0 && return xar
     
-    m = xar.ndims
-    np = xar.order
-    
-    dΦs = (reshape(xar.Φpv,m,m,np) .<= alpha)
-    dΦ0s = (reshape(xar.Φ0pv,m) .<= alpha)
+    m,p = xar.ndims, xar.order
+
+    Φ = expand(xar.Φ,(m,m,np))
+    Φ0 = expand(xar.Φ0,(m,))
+    Φpv = expand(xar.Φpv,(m,m,np))
+    Φ0pv = expand(xar.Φ0pv,(m,))
+
+    dΦs = (Φpv .<= alpha)
+    dΦ0s = (Φ0pv .<= alpha)
 
     all(dΦs) && all(dΦ0s) && return xar
 
     if isnothing(dΦ)
-        dΦ = (xar.Φ, xar.Φ .* dΦs)
-        dΦ0 = (xar.Φ0, xar.Φ0 .* dΦ0s)
+        dΦ = (Φ, Φ .* dΦs)
+        dΦ0 = (Φ0, Φ0 .* dΦ0s)
     else
         dΦ = (dΦ[1], dΦ[2] .* dΦs)
         dΦ0 = (dΦ0[1], dΦ0[2] .* dΦ0s)
@@ -95,8 +105,8 @@ end
 function ar_ols(x::AbstractArray{T},
                 or::Integer,
                 constant::Bool;
-                dΦ0::Tuple{AbstractArray{T},AbstractArray{T}},
-                dΦ::Tuple{AbstractArray{T},AbstractArray{T}},
+                dΦ::Tuple,
+                dΦ0::Tuple,
                 varnames::AbstractVector{String}) where T<:Real
 
     @assert 1 <= ndims(x) <= 2
@@ -138,7 +148,7 @@ function ar_ols(x::AbstractArray{T},
     # Maximum Likelihood noise covariance
     k = or*m*m
     @assert n-k > 0 "Insufficient data for the model"
-    Σ2 = variance = 1/(n-k)*e'*e
+    Σ2 = 1/(n-k)*e'*e
 
     # ML parameters std. error.
     Φse = sqrt.(abs.(diag(kron(Σ2, (X'*X)^-1))))
@@ -147,8 +157,6 @@ function ar_ols(x::AbstractArray{T},
     rΦse = reshape(Φse,:,m)'
     Φ0se = rΦse[:,1]
     Φse  = reshape(rΦse[:,2:end],m,m,:)
-    p0se = Φ0se
-    pse  = Φse
 
     #fix p
     np = fixnp(dΦ0,dΦ)
@@ -169,8 +177,6 @@ function ar_ols(x::AbstractArray{T},
     pvf(mu,se) = se == 0 ? 1.0 : cdf(Normal(abs(mu),se),0) #1 to make log(1) = 0
     Φpv = pvf.(Φ,Φse) 
     Φ0pv = pvf.(Φ0,Φ0se)
-    p0pv = Φ0pv
-    ppv = Φpv
     slpv = vec(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
 
     stats = Dict([(" Variable", varnames),
@@ -178,26 +184,17 @@ function ar_ols(x::AbstractArray{T},
                   ("R2adj", 1 .- (1 .- R2) * (n-1)/(n-(np-1)/m-1)),
                   ("Fisher's p-test", 1 .- cdf(Chisq(2*np/m),-2*slpv))])    
     
-    coefficients = Φ
-    ar_constant = Φ0
-    stdev = Σ = sqrt.(diag(Σ2))
+    Σ = sqrt.(diag(Σ2))
     
     call = "ar(X, order="*string(or)*
         ", constant="*string(constant)*")"
 
     AR(varnames,
        or, m,
-       Φ,coefficients,
-       Φ0,ar_constant,
-       Σ2,variance,
-       Σ,stdev,
-       x[end:-1:1,:],
-       fitted,e,
+       compact.([Φ,Φ0,Σ2,Σ,x[end:-1:1,:],fitted,e])...,
        ic,stats,
-       Φse,pse,Φ0se,p0se,
-       Φpv,ppv,Φ0pv,p0pv,
+       compact.([Φse,Φ0se,Φpv,Φ0pv])...,
        call)
-
 end
 
 """

@@ -30,37 +30,36 @@ Store results from the function `ar`
 `p0pv`            Alias for Φ0pv
 `call::String`    Method called to generate AR
 """
-mutable struct AR{T<:Real}
+mutable struct AR{T}
     varnames::Vector{String}
     order::Integer
     ndims::Integer
-    Φ::Array{T,3}
-    coefficients::Array{T,3}
-    Φ0::Vector{T}
-    constant::Vector{T}
-    Σ2::Matrix{T}
-    variance::Matrix{T}
-    Σ::Vector{T}
-    stdev::Vector{T}
+    Φ::Union{T,Array{T}}
+    Φ0::Union{T,Vector{T}}
+    Σ2::Union{T,Matrix{T}}
+    Σ::Union{T,Vector{T}}
     x::Union{Array{T},DataFrame}
-    fitted::Array{T}
-    residuals::Array{T}
+    fitted::Union{T,Array{T}}
+    residuals::Union{T,Array{T}}
     ic::Dict
     stats::Dict
-    Φse::Array{T,3}
-    pse::Array{T,3}
-    Φ0se::Vector{T}
-    p0se::Vector{T}
-    Φpv::Array{T,3}
-    ppv::Array{T,3}
-    Φ0pv::Vector{T}
-    p0pv::Vector{T}
+    Φse::Union{T,Array{T}}
+    Φ0se::Union{T,Vector{T}}
+    Φpv::Union{T,Array{T}}
+    Φ0pv::Union{T,Vector{T}}
     call::String
 end
 
 function Base.show(io::IO, xar::AR)
 
-    _,m,p = size(xar.Φ)
+    m,p = xar.ndims, xar.order
+
+    Φ = expand(xar.Φ,(m,m,p))
+    Φ0 = expand(xar.Φ0,(m,))
+    Φpv = expand(xar.Φpv,(m,m,p))
+    Φ0pv = expand(xar.Φ0pv,(m,))
+    Σ2 = expand(xar.Σ2,(m,m))
+    
     printstyled("Multivariate Autoregressive Model\n",bold=true,color=:underline)
     print("\n    ",xar.call,"\n")
     
@@ -70,15 +69,14 @@ function Base.show(io::IO, xar::AR)
     pretty_table(xar_sum.moments, nosubheader = true, show_row_number=false)
 
     printstyled("\nCoefficients\n\n",bold=true,color=:underline)
-    Φ0 = xar.Φ0
-    Φ0pv = xar.Φ0pv
     printstyled("Φ0\n",bold=true,color=:underline)
-    pretty_table(string.(round.(Φ0,digits=3)) .* sigf.(Φ0pv), tf = tf_matrix, noheader=true)
+    pretty_table(string.(round.(Φ0,digits=3)) .* sigf.(Φ0pv),
+                 tf = tf_matrix, noheader=true)
 
     for i in 1:p
         printstyled("Φ",i,"\n",bold=true,color=:underline)
-        Φi = xar.Φ[:,:,i]
-        Φpvi = xar.Φpv[:,:,i]
+        Φi = Φ[:,:,i]
+        Φpvi = Φpv[:,:,i]
         pretty_table(string.(round.(Φi,digits = 3)) .* sigf.(Φpvi), tf = tf_matrix, noheader=true)
     end
     print("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘^’ 0.1 ‘ ’ 1  and ‘+’ if fixed\n")
@@ -92,7 +90,7 @@ function Base.show(io::IO, xar::AR)
     # end
 
     printstyled("\nΣ2 Variance/Covariance Matrix\n",bold=true,color=:underline)
-    pretty_table(xar.Σ2, tf = tf_matrix, noheader=true)
+    pretty_table(Σ2, tf = tf_matrix, noheader=true)
     
     printstyled("\nInformation Criteria\n",bold=true,color=:underline)
     pretty_table(DataFrame(xar.ic), nosubheader = true, show_row_number=false)

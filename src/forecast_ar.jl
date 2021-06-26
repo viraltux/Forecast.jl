@@ -23,17 +23,17 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 # Returns
 A FORECAST struct
 """
-function forecast(xar::AR, n::Integer;
+function forecast(xar, n::Integer;
                   alpha::Tuple{Real,Real} = (0.8,.95),
                   fixMean::Union{Nothing,DataFrame} = nothing,
-                  fixΣ2::AbstractMatrix{T} = xar.Σ2) where T<:Real
+                  fixΣ2::Union{T,AbstractMatrix{T}} = xar.Σ2) where T<:Real
 
     @assert n > 0 "n must be greater than 0"
 
     m = xar.ndims
     np = xar.order
     
-    Φ,Φ0 = compact(xar.Φ), compact(xar.Φ0)
+    Φ,Φ0 = xar.Φ, xar.Φ0
      
     dfts = xar.x = tots(xar.x)
     names_x = names(dfts)[2:end]

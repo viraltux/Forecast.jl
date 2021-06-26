@@ -16,6 +16,7 @@ const tests = [
     "loess",
     "p",
     "pacf",
+    "plots",
     "sma",
     "stl",
     "summarize",
