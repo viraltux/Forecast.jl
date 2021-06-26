@@ -77,7 +77,7 @@ function ar(x::AbstractArray{T},
 
     alpha == 1.0 && return xar
     
-    m,p = xar.ndims, xar.order
+    m, np = xar.ndims, xar.order
 
     Φ = expand(xar.Φ,(m,m,np))
     Φ0 = expand(xar.Φ0,(m,))
@@ -86,6 +86,7 @@ function ar(x::AbstractArray{T},
 
     dΦs = (Φpv .<= alpha)
     dΦ0s = (Φ0pv .<= alpha)
+
 
     all(dΦs) && all(dΦ0s) && return xar
 
