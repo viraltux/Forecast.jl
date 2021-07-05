@@ -1,5 +1,4 @@
 using Test
-using TimeSeries
 import Forecast: acf
 
 @testset "ccf" begin
