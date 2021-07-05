@@ -33,8 +33,8 @@ julia> arsim(1,1,1,10)
 10-element Vector{Float64,1}:
 [...]
 """
-function arsim(xar::AR,n::Integer;
-               fix = nothing)
+function arsim(xar::AR, n::Integer,
+               fix::Union{Nothing,AbstractVector{Union{Missing,T}}} = nothing) where T<:Real
     Φ = compact(xar.Φ)
     Φ0 = compact(xar.Φ0)
     x0 = compact(zeros(size(Φ,2),size(Φ,3)))
@@ -42,20 +42,20 @@ function arsim(xar::AR,n::Integer;
     arsim(Φ,Φ0,x0,n;Σ2,fix)
 end
 
-function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
-               Σ2::Real = 1.0, E::Distribution = Normal(0,1),
-               fix = nothing)
+function arsim(Φ::T, Φ0::T, x0::T, n::Integer;
+               Σ2::T = T(1), E::Union{Nothing,Distribution} = Normal(T(0),T(1)),
+               fix::Union{Nothing,AbstractVector{Union{Missing,T}}} = nothing) where T<:Real
 
-    x = Array{Float64}(undef,n)
+    x = Array{T}(undef,n)
 
-    if Σ2 == 0.0 && isnothing(fix)
+    if Σ2 == T(0) && isnothing(fix)
         for i in 1:n
             x[i] = x0 = Φ * x0 + Φ0
         end
         return x
     end
 
-    if Σ2 == 0.0 && !isnothing(fix)
+    if Σ2 == T(0) && !isnothing(fix)
         @assert size(x) == size(fix)
         for i in 1:n
             x[i] = x0 = ismissing(fix[i]) ? Φ * x0 + Φ0 : fix[i]
@@ -63,7 +63,7 @@ function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
         return x
     end
 
-    E =  Σ2 != 1.0 ? Normal(0,sqrt(Σ2)) : E
+    E =  Σ2 != T(1) ? Normal(0,sqrt(Σ2)) : E
     e = rand(E,n)
 
     for i in 1:n
@@ -74,17 +74,17 @@ function arsim(Φ::Real, Φ0::Real, x0::Real, n::Integer;
 
 end
 
-function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
-               Σ2::Real = 1.0, E::Distribution = Normal(0,1),
-               fix = nothing)
+function arsim(Φ::AbstractVector{T}, Φ0::T, x0::AbstractVector{T}, n::Integer;
+               Σ2::T = T(1), E::Union{Nothing,Distribution} = Normal(T(0),T(1)),
+               fix::Union{Nothing,AbstractVector{Union{Missing,T}}} = nothing) where T<:Real
 
     np = length(Φ)
 
     @assert length(Φ) == length(x0)
 
-    x = Array{Float64}(undef,n)
+    x = Array{T}(undef,n)
     
-    if Σ2 == 0.0 && isnothing(fix)
+    if Σ2 == T(0) && isnothing(fix)
         for i in 1:n
             x[i] = sum(Φ .* x0) + Φ0
             x0 = vcat(x[i],x0)[1:np]
@@ -92,7 +92,7 @@ function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
         return x
     end
 
-    if Σ2 == 0.0 && !isnothing(fix)
+    if Σ2 == T(0) && !isnothing(fix)
         @assert size(x) == size(fix)
         for i in 1:n
             x[i] = ismissing(fix[i]) ? sum(Φ .* x0) + Φ0 : fix[i]
@@ -101,7 +101,7 @@ function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
         return x
     end
 
-    E =  Σ2 != 1.0 ? Normal(0,sqrt(Σ2)) : E
+    E =  Σ2 != T(1) ? Normal(0,sqrt(Σ2)) : E
     e = rand(E,n)
 
     for i in 1:n
@@ -113,10 +113,10 @@ function arsim(Φ::Vector, Φ0::Real, x0::Vector, n::Integer;
     
 end
 
-function arsim(Φ::Array, Φ0::Vector, x0::Array, n::Integer;
-               Σ2::Matrix = collect(I(length(Φ0))),
-               E::Distribution = MvNormal(length(Φ0),1),
-               fix = nothing)
+function arsim(Φ::AbstractArray{T}, Φ0::AbstractVector{T}, x0::AbstractArray{T}, n::Integer;
+               Σ2::Matrix{T} = collect(T(1)*I(length(Φ0))),
+               E::Union{Nothing,Distribution} = MvNormal(length(Φ0),1),
+               fix::Union{Nothing,AbstractMatrix{Union{Missing,T}}} = nothing) where T<:Real
 
     m = size(Φ,1)
     np = size(Φ,3)
@@ -129,7 +129,7 @@ function arsim(Φ::Array, Φ0::Vector, x0::Array, n::Integer;
     x0 = reshape(x0,mnp)
     Φ = reshape(Φ,m,mnp)
 
-    x = Array{Float64}(undef,n,m)
+    x = Array{T}(undef,n,m)
 
     if Σ2 == zeros(m,m) && isnothing(fix)
         for i in 1:n

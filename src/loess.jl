@@ -1,21 +1,27 @@
 # TODO Check faster implementations in computational methods for local regression
 # William S. Cleveland & E. Grosse https://link.springer.com/article/10.1007/BF01890836
-function ghat(x::Float64;A,b,d=2,q,rho)
-              
+function ghat(x::T;
+           A::AbstractMatrix{T},
+           b::AbstractVector{T},
+           d::Integer=2,
+           q::Integer,
+           rho::AbstractVector{T}) where T<:Real
+
     xv = A[:,d]
     yv = b
-    ## lambda q
+
+    ## λ_q
     n = length(xv)
     q = min(q,n)
     xvx = @. abs(xv-x)
     qidx = sortperm(xvx)[1:q]
-    qdist = abs(xv[last(qidx)]-x)*max(1,q/n)
+    qdist = abs(xv[last(qidx)]-x)*max(1.0,q/n)
 
     ## upsilon
     w = zeros(n)
     for wi in qidx
         aq = abs(xv[wi]-x)/qdist
-        w[wi] = max((1-aq^3)^3,0)
+        w[wi] = max((1-aq^3)^3,0.0)
     end
     
     A = @. A*(w*rho)
@@ -27,14 +33,13 @@ function ghat(x::Float64;A,b,d=2,q,rho)
 
 end
 
-
 """
 Package: Forecast
 
-    loess(xv,yv;
-          d=2,
-          q=Int64(round(3/4*length(xv))),
-          rho=repeat([1.0],inner=length(xv)),  
+    loess(xv, yv;
+          d = 2,
+          q = Int64(round(3/4*length(xv))),
+          rho = repeat([1.0],inner=length(xv)),  
           predict = xv)
 
 Smooth a vector of observations using locally weighted regressions.
@@ -52,7 +57,7 @@ Journal of Official Statistics Vol. 6. No. 1, 1990, pp. 3-73 (c) Statistics Swed
 - `yv`: Observation values.
 - `d`: Degree of the linear fit, it accepts values 1 or 2.
 - `q`: As q increases loess becomes smoother, when q tends to infinity loess tends to an ordinary least square poynomial fit of degree `d`. It defaults to the rounding of 3/4 of xv's length.
-- `rho`: Weights expressing the reliability of the observations (e.g. if yi had variances sigma^2*ki where ki where known, the rhoi could be 1/ki). It defaults to 1.0.
+    - `rho`: Weights expressing the reliability of the observations (e.g. if yi had variances σ^2*ki where ki where known, the rhoi could be 1/ki). It defaults to 1.0.
 - `predict`: Vector containing the real values to be predicted, by default predicts xv.
 
 # Returns
@@ -65,29 +70,38 @@ julia> loess(rand(5), rand(5); predict=rand(10))
 [...]
 ```
 """
-function loess(xv,yv;
-               d=2,
-               q=Int64(round(3/4*length(xv))),
-               rho=repeat([1.0],inner=length(xv)),  
-               predict = xv)
-    
+function loess(xv::AbstractVector{R},
+               yv::AbstractVector{<:Union{Missing,S}}; 
+               d::Integer=2,
+               q::Integer=Int64(round(3/4*length(xv))),
+               rho::AbstractVector{<:Union{Missing,T}}=fill(1.0,length(xv)),  
+               predict::AbstractVector{V} = xv) where {R<:Real, S<:Real, T<:Real, V<:Real}
+
     @assert (d==1) | (d==2) "Linear Regression must be of degree 1 or 2"
-    @assert length(findall(x -> ismissing(x), xv)) == 0  "xv should not contain missing values"
+    @assert length(xv) == length(yv)
 
     myi = findall(x -> !ismissing(x),yv)
     xv = xv[myi]
     yv = yv[myi]
     rho = rho[myi]
+
+    # Promote to same type
+    P = promote_type(R,S,T,V)
+    xv = R == P ? xv :  P.(xv)
+    yv =  P.(yv)
+    rho = P.(rho)
+    predict = V == P ? predict : P.(predict)
     
-    res = zeros(length(predict))
+    res = Vector{P}(undef, length(predict))
 
     ## Ax = b
-    A = hcat(xv,repeat([1.0],inner=length(xv)))
+    A = hcat(xv,fill(P(1),length(xv)))
     b = yv
-    d == 2 ? A = hcat(xv .^ 2.0, A) : nothing
+    d == 2 && (A = hcat(xv .^ 2, A))
 
     for (i,xi) in enumerate(predict)
-        res[i] = ghat(xi;A=A,b=b,d=d,q=q,rho=rho)
+        res[i] = ghat(xi;A,b,d,q,rho)
     end
+
     res
 end
