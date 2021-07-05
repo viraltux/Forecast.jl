@@ -135,7 +135,7 @@ function stl(Yv,
             ## 3. Low-Pass Filtering of Smoothed Cycle-Subseries
             ### centered support instead 1:N to balance out machine error
             Lv = loess(1-ceil(N/2):N-ceil(N/2),
-                       collect(skipmissing(sma(sma(sma(Cv,np),np),3))),
+                       sma(sma(sma(Cv,np),np),3),
                        d=1,q=nl,rho=rhov)
             ## 4. Detreending of Smoothed Cycle-Subseries
             ### Lv is substracted to prevent low-frenquency power
