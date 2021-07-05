@@ -17,14 +17,12 @@ Package: Forecast
 
 Drop rows and columns from a matrix.
 """
-function drop(M::AbstractMatrix;
-              r=nothing,
-              c=nothing)
+function drop(M::AbstractMatrix; r=[], c=[])
     s = size(M)
     dr = collect(1:s[1])
     dc = collect(1:s[2])
-    isnothing(r) ? nothing : splice!(dr,r)
-    isnothing(c) ? nothing : splice!(dc,c)
+    splice!(dr,r)
+    splice!(dc,c)
     M[dr,dc]
 end
 
@@ -33,18 +31,28 @@ Package: Forecast
 
     compact(x)
 
-Standarize input by dropping empty dimensions and returning either a Number or an Array.
-In the case of a DataFrame it removes all non Real columns except if there are columns 
-with Date type in which case keeps the first one found and places it as the first column.
+Standarize input by dropping empty dimensions and returning an Array. If a Number is passed
+then a 0-dimensional array is returned. In the case of a DataFrame it removes all non Real columns except if there are columns  with Date type in which case keeps the first one found and places 
+it as the first column.
 """
-function compact(x::Number)
-    x
-end
-
+compact(x::Any) = x
 function compact(x::AbstractArray)
     x = Array(dropdims(x, dims = tuple(findall(size(x) .== 1)...)))
+    #ndims(x) == 0 ? [x[1]] : x
     ndims(x) == 0 ? x[1] : x 
 end
+
+
+"""
+Package: Forecast
+
+    expand(x)
+
+Inverse of compact(x)
+"""
+expand(x::Any, dims::Tuple) = dims == () ? x : reshape([x], dims)
+expand(x::AbstractArray, dims::Tuple) = size(x) == (1,) ? expand(x[1], dims) : reshape(x,dims)
+
 
 """
 Package: Forecast
@@ -53,7 +61,7 @@ Package: Forecast
 
 Insert a column with specific value at a given position, values are pushed to the right
 """
-function insert_column(M::Matrix, at, value = 0.0)::Matrix
+function insert_column(M::Matrix, at::Integer, value = 0.0)::Matrix
     nr,nc = size(M)
     !(1 <= at <= nc+1) && return(M)
 
@@ -70,7 +78,7 @@ Package: Forecast
 
 Insert a row with specific value at a given position, values are pushed down
 """
-function insert_row(M::Matrix, at, value = 0.0)::Matrix
+function insert_row(M::Matrix, at::Integer, value = 0.0)::Matrix
     nr,nc = size(M)
     !(1 <= at <= nr+1) && return(M)
 
@@ -88,7 +96,7 @@ Package: Forecast
 Insert a row and a column with specific value at a given cross position, 
 values are pushed right and down.
 """
-function insert_cross(M::Matrix, at, value = 0.0)::Matrix
+function insert_cross(M::Matrix, at::Integer, value = 0.0)::Matrix
     insert_row(insert_column(M,at,value),at,value)
 end
 

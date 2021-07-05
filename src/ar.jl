@@ -32,11 +32,16 @@ An AR object containing the model coefficients, the error sigma matrix, residual
 julia> ar(rand(100,2),2)
 AR([...])
 """
-function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
-            alpha = 1.0, dΦ0 = nothing, dΦ = nothing)
+function ar(df::DataFrame,
+            order::Integer = 1,
+            constant::Bool = true;
+            alpha::Real = 1.0,
+            dΦ0::Tuple = d_ar_dΦ0(size(df,2)-1,constant,Float64),
+            dΦ::Tuple = d_ar_dΦ(size(df,2)-1,order,Float64))
 
+    #TODO promote dΦ0 and dΦ types based on df and control for Integer values on x
     ttype = [Date,DateTime,Day,Month,Week]
-    ar_df = eltype(df[:,1]) in ttype ? Array(df[:,2:end]) : Array(df)
+    ar_df = eltype(df[:,1]) in ttype ? Array{Float64}(df[:,2:end]) : Array{Float64}(df)
     names_df = eltype(df[:,1]) in ttype ? names(df[:,2:end]) : names(df)
     xar = ar(ar_df, order, constant; alpha, dΦ0, dΦ, varnames = names_df)
     xar.x = df
@@ -45,35 +50,65 @@ function ar(df::DataFrame, order::Integer = 1, constant::Bool = true;
     
 end
 
-function ar(x::AbstractArray, order::Integer = 1, constant::Bool = true;
-            alpha = 1.0, dΦ0 = nothing, dΦ = nothing, varnames = nothing)
+
+# Default ar values functions
+d_ar_dΦ0(m::Integer,constant::Bool,T::Type) = (repeat([T(1)],m),  repeat([T(constant ? 1 : 0)],m))
+d_ar_dΦ(m::Integer,order::Integer,T::Type) =
+    (r11=reshape(repeat([T(1)],m*m*order),m,m,order); (r11,r11))
+d_ar_varnames(m::Integer)::Vector{String} = ["x"*string(i) for i in 1:m]
+
+function ar(x::AbstractArray{T},
+            order::Integer = 1,
+            constant::Bool = true;
+            alpha::Real = 1.0, 
+            dΦ::Tuple = d_ar_dΦ(size(x,2),order,T),
+            dΦ0::Tuple = d_ar_dΦ0(size(x,2),constant,T),
+            varnames::AbstractVector{String} = d_ar_varnames(size(x,2))) where T<:Real
 
     @assert 0.0 < alpha <= 1.0
+
+    m = size(x,2)
+    np = order
+
+    dΦ  = ( expand(dΦ[1],(m,m,np)), expand(dΦ[2],(m,m,np)) )
+    dΦ0 = ( expand(dΦ0[1],(m,)),    expand(dΦ0[2],(m,)) )
     
-    xar = ar_ols(x, order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = varnames)
+    xar = ar_ols(x, order, constant; dΦ0, dΦ, varnames)
 
     alpha == 1.0 && return xar
     
-    m,np = arsize(xar.Φ)
-    dΦs = (reshape(xar.Φpv,m,m,np) .<= alpha)
-    dΦ0s = (reshape(xar.Φ0pv,m) .<= alpha)
+    m, np = xar.ndims, xar.order
+
+    Φ = expand(xar.Φ,(m,m,np))
+    Φ0 = expand(xar.Φ0,(m,))
+    Φpv = expand(xar.Φpv,(m,m,np))
+    Φ0pv = expand(xar.Φ0pv,(m,))
+
+    dΦs = (Φpv .<= alpha)
+    dΦ0s = (Φ0pv .<= alpha)
+
 
     all(dΦs) && all(dΦ0s) && return xar
 
     if isnothing(dΦ)
-        dΦ = (xar.Φ, xar.Φ .* dΦs)
-        dΦ0 = (xar.Φ0, xar.Φ0 .* dΦ0s)
+        dΦ = (Φ, Φ .* dΦs)
+        dΦ0 = (Φ0, Φ0 .* dΦ0s)
     else
         dΦ = (dΦ[1], dΦ[2] .* dΦs)
         dΦ0 = (dΦ0[1], dΦ0[2] .* dΦ0s)
     end
 
-    return ar_ols(x, order, constant; dΦ0 = dΦ0, dΦ = dΦ, varnames = varnames)
-    
+    return ar_ols(x, order, constant; dΦ0, dΦ, varnames)
+
 end
 
-function ar_ols(x::AbstractArray, or::Integer, constant::Bool; 
-                dΦ0 = nothing, dΦ = nothing, varnames = nothing)
+
+function ar_ols(x::AbstractArray{T},
+                or::Integer,
+                constant::Bool;
+                dΦ::Tuple,
+                dΦ0::Tuple,
+                varnames::AbstractVector{String}) where T<:Real
 
     @assert 1 <= ndims(x) <= 2
     @assert 1 <= or < size(x,1)-1
@@ -81,15 +116,6 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     n = size(x,1)
     m = size(x,2)
     np = m*m*or + m
-
-    r0 = repeat([0.0],m)
-    r1 = repeat([1.0],m)
-    dΦ0 = isnothing(dΦ0) ? (r1,r1) : dΦ0
-    dΦ0 = constant ? dΦ0 : (r1,r0)
-    r11 = reshape(repeat([1.0],or*m*m),m,m,or)
-    dΦ  = isnothing(dΦ)  ? (r11,r11) : dΦ
-
-    varnames = isnothing(varnames) ? ["x"*string(i) for i in 1:m] : varnames
 
     x = x[end:-1:1,:]
     nx = x
@@ -103,7 +129,7 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     X = hcat(repeat([1.0],size(X,1)),X)
 
     # Fixing parameters
-    W = Array{Float64,2}(undef,(or*m+1,m))
+    W = Array{T,2}(undef,(or*m+1,m))
     for i in 1:m
         Xi,Yi = fixΦ(X,Y,i,dΦ0,dΦ)
         dW = (Xi'*Xi)\(Xi'*Yi)
@@ -118,22 +144,20 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
 
     Φ0 = W[1,:]
     Φ = W[2:end,:]
-    Φ = reshape(Φ',m,m,or)
+    Φ = Array(reshape(Φ',m,m,or))
 
     # Maximum Likelihood noise covariance
     k = or*m*m
     @assert n-k > 0 "Insufficient data for the model"
-    Σ2 = variance = 1/(n-k)*e'*e
+    Σ2 = 1/(n-k)*e'*e
 
     # ML parameters std. error.
     Φse = sqrt.(abs.(diag(kron(Σ2, (X'*X)^-1))))
     Φse = fixΦse(Φse,dΦ0,dΦ)
 
-    rΦse =  reshape(Φse,:,m)'
+    rΦse = reshape(Φse,:,m)'
     Φ0se = rΦse[:,1]
-    Φse = reshape(rΦse[:,2:end],m,m,:)
-    p0se = Φ0se
-    pse = Φse
+    Φse  = reshape(rΦse[:,2:end],m,m,:)
 
     #fix p
     np = fixnp(dΦ0,dΦ)
@@ -149,40 +173,29 @@ function ar_ols(x::AbstractArray, or::Integer, constant::Bool;
     # Statistics
     SStot = sum((Y .- mean(Y,dims=1)).^2,dims=1)
     SSres = sum(e .^ 2,dims=1)
-    R2 = compact(1 .- (SSres ./ SStot))
+    R2 = vec(1 .- (SSres ./ SStot))
     
     pvf(mu,se) = se == 0 ? 1.0 : cdf(Normal(abs(mu),se),0) #1 to make log(1) = 0
     Φpv = pvf.(Φ,Φse) 
     Φ0pv = pvf.(Φ0,Φ0se)
-    p0pv = Φ0pv
-    ppv = Φpv
-    #pv = vcat(reshape(Φ0pv,:,1),reshape(Φpv,:,1))
-    slpv = compact(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
+    slpv = vec(reshape(sum(log.(vcat(reshape(Φ0pv,:,m),reshape(Φpv,:,m))),dims=1),:,1))
 
     stats = Dict([(" Variable", varnames),
                   ("R2",    R2),
                   ("R2adj", 1 .- (1 .- R2) * (n-1)/(n-(np-1)/m-1)),
                   ("Fisher's p-test", 1 .- cdf(Chisq(2*np/m),-2*slpv))])    
     
-    coefficients = Φ
-    ar_constant = Φ0
-    stdev = Σ = sqrt.(diag(Σ2))
+    Σ = sqrt.(diag(Σ2))
     
     call = "ar(X, order="*string(or)*
         ", constant="*string(constant)*")"
 
     AR(varnames,
-       Φ,coefficients,
-       Φ0,ar_constant,
-       Σ2,variance,
-       Σ,stdev,
-       x[end:-1:1,:],
-       fitted,e,
+       or, m,
+       compact.([Φ,Φ0,Σ2,Σ,x[end:-1:1,:],fitted,e])...,
        ic,stats,
-       Φse,pse,Φ0se,p0se,
-       Φpv,ppv,Φ0pv,p0pv,
+       compact.([Φse,Φ0se,Φpv,Φ0pv])...,
        call)
-
 end
 
 """
@@ -192,7 +205,11 @@ Package: Forecast
 
 For a given X and Y OLS matrices returns the X and Y resulting from fixing parameters given dΦ0 and dΦ
 """
-function fixΦ(X,Y,i,dΦ0,dΦ)
+function fixΦ(X::AbstractMatrix{T},
+              Y::AbstractMatrix{T},
+              i::Integer,
+              dΦ0::Tuple{AbstractArray{T},AbstractArray{T}},
+              dΦ::Tuple{AbstractArray{T},AbstractArray{T}}) where T<:Real
 
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
@@ -224,15 +241,17 @@ function fixΦ(X,Y,i,dΦ0,dΦ)
     
 end
 
-
 """
 Package: Forecast
 
     fixW(W,dΦ0,dΦ)
 
-For a given Weight matrix returns a version with fixed values xbased on dΦ0 and dΦ
+For a given Weight matrix returns a version with fixed values based on dΦ0 and dΦ
 """
-function fixW(dWi,i,dΦ0,dΦ)
+function fixW(dWi::AbstractVector{T},
+              i::Integer,
+              dΦ0::Tuple{AbstractArray{T},AbstractArray{T}},
+              dΦ::Tuple{AbstractArray{T},AbstractArray{T}}) where T<:Real
     
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
@@ -264,7 +283,8 @@ Package: Forecast
 
 return the number of free parameters
 """
-function fixnp(dΦ0,dΦ)
+function fixnp(dΦ0::Tuple{AbstractArray{T},AbstractArray{T}},
+               dΦ::Tuple{AbstractArray{T},AbstractArray{T}}) where T<:Real
     
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
@@ -289,22 +309,24 @@ Package: Forecast
 
     fixΦse(M,dΦ0,dΦ)
 
-For a given SE matrix returns an version with zeroes based on dΦ0 and dΦ
+For a given `se` matrix returns an version with zeroes based on dΦ0 and dΦ
 """
-function fixΦse(Φse,dΦ0,dΦ)
+function fixΦse(Φse::AbstractVector{T},
+                dΦ0::Tuple{AbstractArray{T},AbstractArray{T}},
+                dΦ::Tuple{AbstractArray{T},AbstractArray{T}}) where T<:Real
     
     Φ0, fΦ0 = dΦ0
     Φ, fΦ = dΦ
     (Φ0 == fΦ0) & (Φ == fΦ) && return(Φse)
 
-    m,np = arsize(Φ)
+    _,m,np = size(Φ)
     
     rΦ  = reshape(hcat(Φ0 ,reshape(Φ ,m,m*np))',m*(m*np+1),1)
     rfΦ = reshape(hcat(fΦ0,reshape(fΦ,m,m*np))',m*(m*np+1),1)
 
     dc = findall(rΦ .!== rfΦ)
     
-    fΦse = Vector{Float64}(undef, length(Φse))
+    fΦse = Vector{T}(undef, length(Φse))
     fΦse[:] = Φse
     for ci in dc
         c = Tuple(ci)

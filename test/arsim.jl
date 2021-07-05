@@ -28,7 +28,7 @@ using Forecast
     x = arsim(Φ,Φ0,x0,n;Σ2,fix=[missing,2,missing])
     @test x ≈ [1, 2, 2]
     
-    Φ,Φ0,x0,Σ2,n = .1,.2,.3,0,3
+    Φ,Φ0,x0,Σ2,n = .1,.2,.3,0.,3
     x = arsim(Φ,Φ0,x0,n;Σ2)
     @test x ≈ [0.23, 0.223, 0.2223]
     
