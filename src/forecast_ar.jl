@@ -15,23 +15,26 @@ Xt = \\Phi_0 + \\sum_{i=1}^p \\Phi_i \\cdot X_{t-i} + E
 `xar`           AR struct coming from the `ar` function.
 `n`             Number of time periods to be forecasted.
 `alpha`         Prediction intervals levels; its default value is (0.8, 0.95)
-`fixMean`       Fixes the mean in the forecast with Matrix{Union{Missing,Float64}}. Default value sis `nothing`.
+`fixMean`       Fixes the mean in the forecast with a DataFrame which first 
+                column is a timestamp type and missing values indicate values
+                to be estimated. Default value is `nothing`.
 `fixΣ2`         fixes Σ2 values in the forecast
 
 # Returns
 A FORECAST struct
 """
-function forecast(xar::AR, n::Integer;
-                  alpha = (0.8,.95),
-                  fixMean = nothing,
-                  fixΣ2 = xar.Σ2)
+function forecast(xar, n::Integer;
+                  alpha::Tuple{Real,Real} = (0.8,.95),
+                  fixMean::Union{Nothing,DataFrame} = nothing,
+                  fixΣ2::Union{T,AbstractMatrix{T}} = xar.Σ2) where T<:Real
 
     @assert n > 0 "n must be greater than 0"
 
-    Φ,Φ0 = compact(xar.Φ),compact(xar.Φ0)
-
-    m,np = arsize(Φ)
+    m = xar.ndims
+    np = xar.order
     
+    Φ,Φ0 = xar.Φ, xar.Φ0
+     
     dfts = xar.x = tots(xar.x)
     names_x = names(dfts)[2:end]
     x = Array(dfts[:,2:end])
@@ -39,6 +42,9 @@ function forecast(xar::AR, n::Integer;
     name_ts = names(dfts)[1]
 
     x0 = compact(x[end:-1:end-np+1,:]')
+    PT = promote_type(eltype(Φ),eltype(Φ0))
+    x0 = PT.(x0)
+    
     Σ20 = compact(zeros(m,m))
     !isnothing(fixMean) && (fixMean = Array(fixMean[:,2:end]))
     mu = arsim(Φ,Φ0,x0,n; Σ2=Σ20, fix=fixMean)
@@ -96,17 +102,18 @@ end
 """
 Forecast recursive variance/covariance
 """
-function fvar(Φ,Σ2,n)
+function fvar(Φ::AbstractArray{T},
+              Σ2::AbstractMatrix{T},
+              n::Integer) where T<:Real
 
-    m,np = arsize(Φ)
+    m = size(Φ,1)
+    np = size(Φ,3)
+    
+    Φ = reshape(Φ,m,m,np)
 
-    #TODO create fvar for univariate Φ
-    Φ = Φ isa Number ? [Φ] : reshape(Φ,m,m,np)
-    Σ2 = Σ2 isa Number ? [Σ2] : Σ2
-
-    Σ2i = zeros(m,m)
-    v = zeros(n,m)
-
+    Σ2i = zeros(T,m,m)
+    v = Array{T}(undef,n,m)
+    
     Φ = reshape(Φ,m,m*np)
     for i in 1:n
         #Σ2i = Φ * Σ2i * Φ' + Σ2
@@ -114,7 +121,37 @@ function fvar(Φ,Σ2,n)
         v[i,:] = diag(Σ2i)
     end
 
-    #TODO create fvar for univariate Φ
-    return compact(v)
+    v
+end
+
+function fvar(Φ::AbstractVector{T},
+              Σ2::T,
+              n::Integer) where T<:Real
+
+    np = length(Φ)
+    Σ2i = T(0)
+    v = Vector{T}(undef,n)
+    Φ2 = Φ.^2
+    
+    for i in 1:n
+        v[i] = Σ2i = sum(Φ2 .* Σ2i) + Σ2
+    end
+
+    v
+end
+
+function fvar(Φ::T,
+              Σ2::T,
+              n::Integer) where T<:Real
+
+    Σ2i = T(0)
+    v = Vector{T}(undef,n)
+    Φ2 = Φ^2
+    
+    for i in 1:n
+        v[i] = Σ2i = Φ2 * Σ2i + Σ2
+    end
+
+    v
 end
 

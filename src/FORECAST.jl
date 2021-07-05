@@ -15,11 +15,11 @@ Store results from the function `forecast`
 mutable struct FORECAST
     model
     alpha::Tuple
-    mean
-    upper
-    lower
-    se
-    call
+    mean::DataFrame
+    upper::DataFrame
+    lower::DataFrame
+    se::DataFrame
+    call::String
 end
 
 function Base.show(io::IO, fc::FORECAST)
@@ -43,7 +43,7 @@ end
 """
 Rename data in FORECAST object
 """
-function setnames!(fc::FORECAST,new_names::Vector{String})
+function setnames!(fc::FORECAST,new_names::AbstractVector{String})
     n_mean = names(fc.mean)
     n_mean[2:end] = new_names
     rename!(fc.mean,n_mean)
@@ -77,7 +77,7 @@ end
 """
 Transform a FORECAST object value with given function
 """
-function transform(fc::FORECAST, f::Function, vari = 1:size(fc.mean,2)-1)
+function transform(fc::FORECAST, f::Function, vari::Union{Integer,UnitRange} = 1:size(fc.mean,2)-1)
 
     vari = collect(vari)
 

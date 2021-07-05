@@ -27,7 +27,7 @@ julia> co2()
    [...]
 ```
 """
-function co2(full = false)
+function co2(full::Bool = false)
 
     data = "data/co2.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
@@ -97,7 +97,7 @@ julia> seaborne()
    [...]
 ```
 """
-function seaborne(full = false)
+function seaborne(full::Bool = false)
 
     data = "data/seaborne.csv.gz"
     path = joinpath(splitdir(@__DIR__)[1], data)
@@ -114,7 +114,7 @@ function seaborne(full = false)
     end
 
     # Group by Country and Flow to select Imports
-    gbt = groupby(sb_df, [:country_name, :flow])
+    gbt = groupby(sb_df, [:country_name, :flow], sort=true)
     DataFrame(Dict(:Date => gbt[1].date ,
                    :UK => gbt[1].dwt, :Germany => gbt[3].dwt, :France => gbt[5].dwt))
 end

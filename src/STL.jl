@@ -9,7 +9,7 @@ Store results from the function stl
 """ 
 mutable struct STL{T<:DataFrame}
     decomposition::T  # A DataFrame with three time series from a fitted STL model
-    call::String      # method called t
+    call::String      # method called
 end
 
 function Base.show(io::IO, stlx::STL)

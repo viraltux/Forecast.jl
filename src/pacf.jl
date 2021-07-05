@@ -28,21 +28,21 @@ res = pacf(x);
 plot(res)
 ```
 """
-function pacf(df::DataFrame,
-              type = "stepwise-real",
-              lag = Integer(ceil(10*log10(length(ta)))),
-              alpha = (0.95,0.99))
+function pacf(df::DataFrame;
+              type::String = "stepwise-real",
+              lag::Integer = Integer(ceil(10*log10(length(ta)))),
+              alpha::Tuple{Real,Real} = (0.95,0.99))
 
     x = Array(df[:,eltype.(eachcol(df)) .<: Real])
     
-    pacf(x; type = type, lag = lag, alpha = alpha)
+    pacf(x; type, lag, alpha)
     
 end
 
-function pacf(x::AbstractVector;
-              type = "stepwise-real",
-              lag = Integer(ceil(10*log10(length(x)))),
-              alpha = (0.95,0.99))
+function pacf(x::AbstractVector{<:Real};
+              type::String = "stepwise-real",
+              lag::Integer = Integer(ceil(10*log10(length(x)))),
+              alpha::Tuple{Real,Real} = (0.95,0.99))
 
     N = length(x)
     @assert type in  ["stepwise","real","stepwise-real"] "The options for `type` are `stepwise`, `real` and `both`"
@@ -51,7 +51,7 @@ function pacf(x::AbstractVector;
     @assert 0.0 < alpha[1] < alpha[2] < 1.0
 
     # Confidence Intervals
-    function fse(v)::AbstractFloat
+    function fse(v::Real)::AbstractFloat
         1/sqrt(v-3)
     end
 
@@ -68,30 +68,30 @@ function pacf(x::AbstractVector;
         "\", lag="*string(lag)*
         ", alpha="*string(alpha)*")"
 
-    if (type == "stepwise") 
-        pac = pacf_stepwise(x; lag=lag, alpha=alpha)
+    if (type::String == "stepwise") 
+        pac = pacf_stepwise(x; lag, alpha)
         return CCF(pac, N, "pacf_stepwise", lag, alpha, ci, true, call)
     end
 
-    if (type == "real") 
-        pac = pacf_real(x; lag=lag, alpha=alpha)
+    if (type::String == "real") 
+        pac = pacf_real(x; ag, alpha)
         return CCF(pac, N, "pacf_real", lag, alpha, ci, true, call)
     end
 
-    if type == "stepwise-real"
-        pacs = pacf_stepwise(x; lag=lag, alpha=alpha)
-        pacr = pacf_real(x; lag=lag, alpha=alpha)
+    if type::String == "stepwise-real"
+        pacs = pacf_stepwise(x; lag, alpha)
+        pacr = pacf_real(x; lag, alpha)
         return CCF(hcat(pacs, pacr),
                    N, "pacf_stepwise-real", lag, alpha, ci, true, call)
     end
 
 end
 
-function pacf_lag(x::AbstractVector;
-                   lag = Integer(ceil(10*log10(length(x)))),
-                   alpha = (0.95,0.99))
+function pacf_lag(x::AbstractVector{<:Real};
+                   lag::Integer = Integer(ceil(10*log10(length(x)))),
+                   alpha::Tuple{Real,Real} = (0.95,0.99))
 
-    R = vcat(cov(x,x),acf(x; lag=lag, type = "cov").ccf)
+    R = vcat(cov(x,x),acf(x; lag, type="cov").ccf)
     p = length(R)-1
 
     A = zeros(p,p)
@@ -106,9 +106,9 @@ function pacf_lag(x::AbstractVector;
 
 end
 
-function pacf_stepwise(x::AbstractVector;
-                   lag = Integer(ceil(10*log10(length(x)))),
-                   alpha = (0.95,0.99))
+function pacf_stepwise(x::AbstractVector{<:Real};
+                   lag::Integer = Integer(ceil(10*log10(length(x)))),
+                   alpha::Tuple{Real,Real} = (0.95,0.99))
 
     #TODO optimize with Levinson-Durbin algorithm
     pac = []
@@ -119,11 +119,9 @@ function pacf_stepwise(x::AbstractVector;
     
 end
 
-
-
-function pacf_real(x::AbstractVector;
-             lag = Integer(ceil(10*log10(length(x)))),
-             alpha = (0.95,0.99))
+function pacf_real(x::AbstractVector{<:Real};
+             lag::Integer = Integer(ceil(10*log10(length(x)))),
+             alpha::Tuple{Real,Real} = (0.95,0.99))
 
     # prevent singularities
     lambda = 10^-36

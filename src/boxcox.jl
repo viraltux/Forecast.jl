@@ -46,28 +46,26 @@ julia> bc = boxcox(x)
 julia> iboxcox(bc[:x],bc[:λ]) ≈ x
 ```
 """
-function boxcox(x::Vector{Float64})
+function boxcox(x::AbstractVector{T}) where T<:Real
 
-    f(λ) = -pvalue(JarqueBeraTest(boxcox(x,λ)))
-    
-    if isnothing(findfirst(x -> x < 0, x))
-        
-        λ = Optim.minimizer(optimize(f,-3.0,3.0,Brent()))
-    else
-        mx = minimum(x)
-        lower = [-3.0, abs(mx) + 1.]
-        upper = [3.0, Inf]
-        initial_x = [0.0, abs(mx) + 1.]
-        λ = Optim.optimize(f, lower, upper, initial_x, SAMIN(),
-                           Optim.Options(iterations=10^6)).minimizer
+    negative = any(x -> x < 0, x) 
+
+    if negative
+        λ2 = -(minimum(x) - T(1))
+        x = x .+ λ2
     end
+        
+    f(λ) = -pvalue(JarqueBeraTest(boxcox(x,λ)))
+    λ = Optim.minimizer(optimize(f,-3.0,3.0,Brent()))
     
-    return Dict(:x => boxcox(x,λ), :λ => λ)
+    return Dict(:x => boxcox(x,λ), :λ => negative ? (λ,λ2) : λ)
 
 end
 
-boxcox(x::Vector, λ::Float64)  = λ == 0.0 ? log.(x) : (x .^ λ .- 1.0) ./ λ
-boxcox(x::Vector, λ::Vector) = λ[1] == 0.0 ? log.(x .+ λ[2]) : ( (x .+ λ[2]) .^ λ[1] .- 1.0) ./ λ[1]
+boxcox(x::AbstractVector{<:Real}, λ::Real)  = λ == 0.0 ? log.(x) : (x .^ λ .- 1.0) ./ λ
+boxcox(x::AbstractVector{<:Real},
+       λ::Tuple{Real,Real}) =
+           λ[1] == 0.0 ? log.(x .+ λ[2]) : ( (x .+ λ[2]) .^ λ[1] .- 1.0) ./ λ[1]
 
 """
 Package: Forecast
@@ -98,5 +96,7 @@ julia> bc = boxcox(x)
 julia> iboxcox(bc[:x],bc[:λ]) ≈ x
 ```
 """
-iboxcox(x::Vector, λ::Float64) = λ == 0.0 ? exp.(x) : (1.0 .+ λ .* x ) .^ (1/λ)
-iboxcox(x::Vector, λ::Vector) = λ[1] == 0.0 ? exp.(x) .- λ[2] : (1.0 .+ λ[1] .* x ) .^ (1/λ[1]) .- λ[2]
+iboxcox(x::AbstractVector{<:Real}, λ::Real) = λ == 0.0 ? exp.(x) : (1.0 .+ λ .* x ) .^ (1/λ)
+iboxcox(x::AbstractVector{<:Real},
+        λ::Tuple{Real,Real}) =
+    λ[1] == 0.0 ? exp.(x) .- λ[2] : (1.0 .+ λ[1] .* x ) .^ (1/λ[1]) .- λ[2]

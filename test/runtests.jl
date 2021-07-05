@@ -7,6 +7,7 @@ const tests = [
     "acf",
     "ar",
     "arsim",
+    "boxcox",
     "ccf",
     "d",
     "datasets",
@@ -15,9 +16,12 @@ const tests = [
     "loess",
     "p",
     "pacf",
+    "plots",
     "sma",
     "stl",
     "summarize",
+    "utils",
+    "utils_datetime",
 ]
 
 printstyled("\nTest Summary List:\n", color=:underline)

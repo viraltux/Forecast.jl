@@ -33,9 +33,9 @@ plot(res)
 """
 function ccf(df1::DataFrame,
              df2::DataFrame;
-             type = "cor",
-             lag = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+             type::String = "cor",
+             lag::Integer = Integer(ceil(10*log10(length(x1)))),
+             alpha::Tuple{Real,Real} = (0.95,0.99))
 
     x1 = Array(df1[:,eltype.(eachcol(df1)) .<: Real])
     x2 = Array(df1[:,eltype.(eachcol(df1)) .<: Real])
@@ -44,11 +44,11 @@ function ccf(df1::DataFrame,
 
 end
 
-function ccf(x1::AbstractVector,
-             x2::AbstractVector;
-             type = "cor",
+function ccf(x1::AbstractVector{<:Real},
+             x2::AbstractVector{<:Real};
+             type::String = "cor",
              lag::Integer = Integer(ceil(10*log10(length(x1)))),
-             alpha = (0.95,0.99))
+             alpha::Tuple{Real,Real} = (0.95,0.99))
 
     N = length(x1)
     @assert N == length(x2) "Vectors should be of equal size"
@@ -87,7 +87,7 @@ function ccf(x1::AbstractVector,
     # ccf normalized with the standard error for the
     # Normal distsribution of an approximation for
     # the Fisher transformation
-    function fse(v)::AbstractFloat
+    function fse(v::Real)::AbstractFloat
         1/sqrt(v-3)
     end
     k = fse.(kx)/fse(N)
