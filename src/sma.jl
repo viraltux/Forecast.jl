@@ -1,21 +1,22 @@
 """
 Package: Forecast
 
-    sma(x, n; center = true)
+    sma(x, n)
+    sma(x, n, center)
 
 Smooth a vector of data using a simple moving average.
 
 # Arguments
 - `x`: Vector of data.
 - `n`: Size of the moving average.
-- `center`: centers the moving averaged values in the response.
+- `center`: if true centers the moving averaged values in the response padding with `missing` values, otherwise the padding takes place at the end.
 
 # Returns
 Vector of moving average smoothed values containing `missing` values to preserve the size of the original vector.
 
 # Examples
 ```julia-repl
-julia> sma(1:5,3;center=true)
+julia> sma(1:5,3,true)
 5-element Array{Any,1}:
   missing
  2.0
@@ -24,34 +25,40 @@ julia> sma(1:5,3;center=true)
   missing
 ```
 """
-function sma(x, n; center = true)
+function sma(x::AbstractVector{T}, n::Integer) where T<:Number
 
+    n == 1 && return x
     N = length(x)
-    @assert 1 <= n & n <= N
-
-    if n == 1
-        return x
-    end
-
-    res = Vector{Any}(missing,N)
-
-    # initial and final value positions
-    ivp = findfirst(!ismissing, x)
-    fvp = findlast(!ismissing, x)
+    @assert 1 <= n <= N
     
-    # using missing values to center ma 
-    a = center ? div(n,2) : 0
-
+    V = Base.promote_op(/, T, typeof(n))
+    res = Vector{V}(undef, N-n+1)
+    
     # initial moving average value
-    ma = sum(x[ivp:n+ivp-1])/n
-    res[a+ivp] = ma
-    for i in 1:(N-n-ivp-(N-fvp)+1)
-        resai = ma + (x[n+ivp+i-1] - x[ivp+i-1])/n
-        # missing values are imputed
-        res[a+ivp+i] = ismissing(resai) ? ma : resai
-        ma = res[a+ivp+i]
+    res[1] = ma = sum(x[1:n])/n
+    for i in 1:N-n
+        res[1+i] = ma = ma + (x[n+i] - x[i]) / n
     end
 
     res
 
 end
+
+function sma(x::AbstractVector{<:Union{Missing,T}},
+             n::Integer,
+             center::Bool) where T<:Number
+
+    n == 1 && return x
+    N = length(x)
+    @assert 1 <= n <= N
+
+    res = sma(collect(skipmissing(x)),n)
+
+    # Missing padding
+    ivp = repeat([missing],  findfirst(!ismissing, x)-1 + n÷2)
+    fvp = repeat([missing], N-findlast(!ismissing, x)-1 + n-n÷2)
+
+    center ? vcat(ivp,res,fvp) : vcat(res,ivp,fvp)
+        
+end
+

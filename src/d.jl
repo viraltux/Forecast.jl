@@ -1,64 +1,50 @@
 """
 Package: Forecast
 
-    function d(x::{AbstractVector,AbstractArray,TimeArray},
-               order::Int=1;
-               lag::Int=1,
-               center::Bool=true,
-               pad::Bool=true)
+    function d(x::{AbstractVector,AbstractArray,DataFrame},
+               or::Int=1,
+               la::Int=1;
+               center::Bool=false)
 
-Return Lagged differences of a given order for Vector, Array and TimeSeries.
+Return Laged differences of a given or for Vector, Array and TimeSeries.
 
 # Arguments
 - `x`: Vector or Array of data.
-- `order`: Order of the differences; number of recursive iterations on the same vector/array.
-- `lag`: Lag for the difference.
+- `or`: Order of the differences; number of recursive iterations on the same vector/array.
+- `la`: Lag for the difference.
 - `center`: Center the result in the response using Missing values.
-- `pad`: Includes or removes `missing` pad.
 
 # Returns
-Lagged differences Vector or Array of a given order.
+Laged differences Vector or Array of a given order.
 
 # Examples
 ```julia-repl
 julia> x = [1,2,3,4,5];
 julia> d(x)
-5-element Array{Any,1}:
+ d(x)
+4-element Vector{Int64}:
  1
  1
  1
  1
-  missing
 
 julia> d(x,2)
-5-element Array{Any,1}:
-  missing
+3-element Vector{Int64}:
  0
  0
  0
-  missing
 
-julia> d(x;lag=2,pad=false)
-3-element Array{Any,1}:
+
+julia> d(x,1,2)
+3-element Vector{Int64}:
  2
  2
  2
 
-julia> x = reshape(collect(1:20),10,2)
-10×2 Array{Int64,2}:
-  1  11
-  2  12
-  3  13
-  4  14
-  5  15
-  6  16
-  7  17
-  8  18
-  9  19
- 10  20 
+julia> x = reshape(collect(1:20),10,2);
 
-julia> d(x,2;lag=2,pad=false)
-6×2 Array{Any,2}:
+julia> d(x,2,2)
+6×2 Matrix{Int64}:
  0  0
  0  0
  0  0
@@ -66,122 +52,52 @@ julia> d(x,2;lag=2,pad=false)
  0  0
  0  0
 
-julia> d(co2())
-[ Info: Dataset used in Cleveland et al. paper
-4609×1 TimeArray{Any,1,Date,Array{Any,1}} 1974-05-17 to 1986-12-31
-│            │ A       │
-├────────────┼─────────┤
-│ 1974-05-17 │ -0.27   │
-│ 1974-05-18 │ 0.35    │
-│ 1974-05-19 │ 0.18    │
-   ⋮
-│ 1986-12-30 │ missing │
-│ 1986-12-31 │ missing │
-
+julia> d(d(x,1,2),1,2) == d(x,2,2)
 ```
 """
-function d(x::AbstractVector,
-           order::Int=1;
-           lag::Int=1,
-           center::Bool=true,
-           pad::Bool=true)
-
-    N = length(x)
-    @assert 0 <= lag & lag <= (N-1)
-
-    if (lag == 0) | (order == 0)
-        return x
-    end
-
-    dx = Vector{Any}(missing,N)
-
-    # update dx function
-    function udx(v)
-        if (lag == 1)
-            dx[1:(N-lag)] = diff(v)
-        else
-            dx[1:(N-lag)] = diff(hcat(circshift(v,lag),v),dims=2)[(1+lag):end]
-        end
-    end
-
-    # update dx with x
-    udx(x)
-
-    # update dx with previous dx
-    for i in 2:order
-        udx(dx)
-    end
-
-    
-    # center values
-    if pad
-        return circshift(dx,div(lag,2)+div(order,2))
-    else
-        ivp = findfirst(!ismissing, dx)
-        fvp = findlast(!ismissing, dx)
-        return(dx[ivp:fvp])
-    end
-
-end
-
-
 function d(x::AbstractArray,
-           order::Int=1;
-           lag::Int=1,
-           center::Bool=true,
-           pad::Bool=true)
+           or::Int=1,
+           la::Int=1;
+           center::Bool=false)
 
-    N,M = size(x)
+    (la == 0) | (or == 0) && (return x)
+
+    n = size(x,1)
+    nv = size(x,2)
+
+    @assert 0 <= la & la <= (n-1) "Lag must be larger or equal to size(x,1)"
     
-    @assert 0 <= lag & lag <= (N-1)
-
-    if (lag == 0) | (order == 0)
-        return x
+    dx = x
+    for i in or:-1:1
+        dx = (dx .- circshift(dx,la))[1+la:end,:]
     end
 
-    dx = Array{Any}(missing,N,M)
-
-    # update dx function
-    function udx(v)
-        if (lag == 1)
-            dx[1:(N-lag),:] = diff(v,dims=1)
-        else
-            xh = hcat(circshift(v,lag),v)
-            dx[1:(N-lag),:] = xh[(1+lag):end,M+1:2*M] - xh[(1+lag):end,1:M]
-        end
+    if center
+        nl = n-size(dx,1)
+        dx = vcat(dx, Array{Any}(missing,nl,size(x,2)))
+        dx = circshift(dx,(div(nl,2),0))
     end
 
-    # update dx with x
-    udx(x)
-
-    # update dx with previous dx
-    for i in 2:order
-        udx(dx)
-    end
-
-    # center values
-    if pad
-        return circshift(dx,div(lag,2)+div(order,2))
-    else
-        ivp = findfirst(!ismissing, dx)
-        fvp = findlast(!ismissing, dx)
-        return(dx[ivp:fvp])
-    end
+    return size(dx,2) == 1 ? dx[:,1] : dx
 
 end
 
-function d(x::TimeArray,
-           order::Int=1;
-           lag::Int=1,
-           center::Bool=true,
-           pad::Bool=true)
+function d(df::DataFrame,
+           or::Int=1,
+           la::Int=1;
+           center::Bool=false)
 
-    vx = values(x)
-    tsx = timestamp(x)
-    replace!(vx, NaN => missing)
-
-    dvx = d(vx, order; lag=lag, center=center, pad=pad)
+    df = tots(df)
+    dfts = df[:,1:1]
+    dfx = df[:,2:end]
+    dnames = "d[" * string(or) * "," * string(la) * "]_" .* names(dfx)
     
-    TimeArray(tsx,dvx)
+    dx = d(Array(dfx), or, la; center=center)
+
+    dfdx = DataFrame(reshape(dx,size(dx,1),size(dx,2)),dnames)
+    ddfts = df[end-size(dx,1)+1:end,1:1]
+    
+    return hcat(ddfts,dfdx)
 
 end
+
