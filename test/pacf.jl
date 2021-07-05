@@ -3,7 +3,7 @@ using Forecast
 
 @testset "pacf" begin
     x = rand(100);
-    @test_throws AssertionError pacf(x; lag = 100)
+    @test_throws AssertionError Forecast.pacf(x; lag = 100)
 
     res = pacf(x; lag = 20);
     @test res isa CCF

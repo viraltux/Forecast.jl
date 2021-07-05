@@ -27,19 +27,19 @@ plot(res)
 ```
 """
 function acf(df::DataFrame;
-             type = "cor",
-             lag = Integer(ceil(10*log10(length(x)))),
-             alpha = (0.95,0.99))
+             type::String = "cor",
+             lag::Integer = Integer(ceil(10*log10(length(x)))),
+             alpha::Tuple{Real,Real} = (0.95,0.99))
 
     x = Array(df[:,eltype.(eachcol(df)) .<: Real])
-    ccf(x, x; type = type, lag = lag, alpha = alpha)
+    ccf(x, x; type, lag, alpha)
 end
 
-function acf(x::AbstractVector;
-             type = "cor",
-             lag = Integer(ceil(10*log10(length(x)))),
-             alpha = (0.95,0.99))
+function acf(x::AbstractVector{<:Real};
+             type::String = "cor",
+             lag::Integer = Integer(ceil(10*log10(length(x)))),
+             alpha::Tuple{Real,Real} = (0.95,0.99))
 
-    ccf(x,x; type = type, lag = lag, alpha = alpha)
+    ccf(x,x; type, lag, alpha)
 end
 

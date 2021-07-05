@@ -32,7 +32,7 @@ true
 ```
 """
 function p(dx::AbstractArray,
-           x0 = reshape(repeat([0],size(dx,2)),1,:,1))
+           x0::AbstractArray{<:Real} = reshape(repeat([0],size(dx,2)),1,:,1))
 
     format_ol = "x0 format is Array{Real,3}(order, variable, lag)"
     @assert ndims(x0) <= 3 format_ol
@@ -71,7 +71,7 @@ function p(dx::AbstractArray,
 end
 
 function p(df::DataFrame,
-           x0 = reshape(repeat([0],size(tots(df),2)-1),1,:,1))
+           x0::AbstractArray{<:Real} = reshape(repeat([0],size(tots(df),2)-1),1,:,1))
 
     df = tots(df)
     ts = df[:,1]
@@ -88,8 +88,8 @@ function p(df::DataFrame,
 end
 
 function p(fc::FORECAST,
-           x0 = reshape(repeat([0],size(tots(fc.model.x),2)-1),1,:,1),
-           vari = 1:size(fc.mean,2)-1)
+           x0::AbstractArray{<:Real} = reshape(repeat([0],size(tots(fc.model.x),2)-1),1,:,1),
+           vari::UnitRange{<:Integer} = 1:size(fc.mean,2)-1)
 
     vari = collect(vari)
     ivari = filter(x -> !(x in vari), collect(1:size(fc.mean,2)-1))
