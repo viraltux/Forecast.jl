@@ -1,56 +1,54 @@
 """
 Package: Forecast
 
-    function p(dx::{AbstractVector,AbstractArray,TimeArray},
-               orderlag::{AbstractVector,AbstractArray} = [[0]])
+    function p(dx, x0)
+               
 
-Return reverse lagged differences of a given order for Vector, Array and TimeSeries.
+Return reverse lagged differences of a given order for Vector, Array and DataFrame.
 
 # Arguments
-- `dx`:       Vector or Array of data.
-- `orderlag`: Initial values of the inverted series. The format per column for the order and lag values is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]. the default values is an initial constant of zero for an inversion of order one and lag one.
+- `dx`: Array or DataFrame of data.
+- `x0`: Initial constants the reverse difference. The default value represents an integration of order one and lag one with initial values at zero. The format for the initial values is Array{Real,3}(order, variable, lag)"
 
 # Returns
 Lagged differences Vector or Array of a given order.
 
 # Examples
 ```julia-repl
-julia> x = repeat(1:12,3);
-julia> dx = d(x,12,12);
-julia> orderlag = vcat([collect(1:12)],repeat([0],11));
-julia> p(dx,orderlag) ≈ x
-true
-julia> p(d(x),[[1]]) ≈ x
+
+# Order two with Lag two
+julia> x = repeat(1:2,30);
+julia> dx = d(x,2,2);
+julia> x0 = zeros(2,1,2); # lag 2, 1 variable, order 1
+julia> x0[1,:,:] = collect(1:2);
+julia> p(dx,x0) ≈ x
 true
 
-julia> tx = hcat(co2(), co2(), co2());
-julia> vtx = values(tx);
-julia> tx = TimeArray(timestamp(tx),replace(vtx, missing => 0.0));
-julia> values(p(d(tx), [ [[333.38]] [[333.38]] [[333.38]] ] )) ≈ values(tx)
-true
-julia> values(p(d(tx,2), [ [[333.38]] [[333.38]] [[333.38]] ; -0.27 -0.27 -0.27] )) ≈ values(tx)
+# Calculation of π
+julia> x = 0:0.001:1;
+julia> y = sqrt.(1 .- x.^2);
+julia> isapprox(4*p(y)[end]/1000 , π, atol = 0.01)
 true
 ```
 """
-function p(dx::AbstractVector,
-           orderlag::AbstractVector = [[0]])
+function p(dx::AbstractArray,
+           x0::AbstractArray{<:Real} = reshape(repeat([0],size(dx,2)),1,:,1))
 
-    format_ol = "orderlag format is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n]"
-    @assert orderlag[1] isa Array format_ol
-    @assert orderlag isa Array format_ol
+    format_ol = "x0 format is Array{Real,3}(order, variable, lag)"
+    @assert ndims(x0) <= 3 format_ol
+
+    ndims(x0) == 0 && (x0 = reshape([x0],1,1,1))
+    ndims(x0) == 1 && (x0 = reshape(x0,:,1,1))
+    ndims(x0) == 2 && (x0 = reshape(x0,:,size(x0,2),1))
+
+    or = size(x0,1)
+    la = size(x0,3)
+    n = size(dx,1)
+    nv = size(dx,2)
+
+    @assert nv == size(x0,2) format_ol
+    @assert 0 <= la & la <= (n-1)
     
-    order = length(orderlag)
-    lag = length(orderlag[1])
-    N = length(dx)
-
-    if (lag == 0)
-        return x
-    end
-    
-    a = findfirst(!ismissing,dx)
-    b = findlast(!ismissing,dx)
-    dx = dx[a:b]
-
     if !isnothing(findfirst(ismissing, dx))
         @error "Missing values allowed at the start and end of `dx` but not within."
         if !isnothing(findfirst(isnan, dx))
@@ -58,76 +56,85 @@ function p(dx::AbstractVector,
         end
     end
 
-    N = length(dx)
-    @assert 0 <= lag & lag <= (N-1)
-
-    function pxO1(v)
-        for i in 2:order
-            v = cumsum(vcat(orderlag[i],v))                    
+    px = similar(dx, nv == 1 ? (n+or*la,) : (n+or*la,nv))
+    px[1:size(dx,1),:] = dx
+    for i in or:-1:1
+        for j in 1:la
+            pxj  = px[j:la:end,:]
+            npxj = size(pxj,1)
+            px[j:la:end,:] = cumsum(vcat(x0[i:i,:,j], pxj), dims=1)[1:npxj,:]
         end
-        v
     end
 
-    function px1L(v)
-        dxm = Array{Any,2}(missing, lag, Integer(ceil((N+lag)/lag))+1 )
-        for i in 1:lag
-            cs = cumsum(vcat(orderlag[1][i],circshift(v,-i+1)[1:lag:end]))
-            dxm[i,1:length(cs)] = cs
-        end
-        return vcat(vec(dxm))[1:N+lag+order-1]
-    end
+    return px
     
-    pxOL = (px1L ∘ pxO1)(dx)
+end
 
-    if (a-1 > 0) | (b-N > 0)
-        return(vcat(Array{Any}(missing,a-1),
-                    pxOL,
-                    Array{Any}(missing,b-N)))
+function p(df::DataFrame,
+           x0::AbstractArray{<:Real} = reshape(repeat([0],size(tots(df),2)-1),1,:,1))
+
+    df = tots(df)
+    ts = df[:,1]
+    dfx = df[:,2:end]
+    pnames = "p[" * string(size(x0)) * "]_" .* names(dfx)
+    
+    px = p(Array(dfx), x0)
+
+    dfpx = DataFrame(reshape(px,size(px,1),size(px,2)),pnames)
+    pdfts = DataFrame(vcat(nΔt(ts,-(size(px,1)-size(df,1))), ts), [names(df)[1]])
+    
+    return hcat(pdfts,dfpx)
+
+end
+
+function p(fc::FORECAST,
+           x0::AbstractArray{<:Real} = reshape(repeat([0],size(tots(fc.model.x),2)-1),1,:,1),
+           vari::UnitRange{<:Integer} = 1:size(fc.mean,2)-1)
+
+    vari = collect(vari)
+    ivari = filter(x -> !(x in vari), collect(1:size(fc.mean,2)-1))
+    
+    # Renaming
+    fnames = fc.model.varnames
+    fnames[vari] = "p$(size(x0))_" .* fnames[vari]
+    pfc = deepcopy(fc)
+
+    # Inverse Differentation
+    xts = fc.model.x[:,1]
+    fx = Array(fc.model.x[:,2:end]) 
+    fmean = Array(fc.mean[:,2:end])
+    flower = Array(fc.lower[:,2:end])
+    fupper = Array(fc.upper[:,2:end])
+
+    pfxmean = zeros(size(x0,1)*size(x0,3) + size(fx,1) + size(fmean,1), size(fx,2))
+    fxfmean = vcat(fx,fmean)
+    size(ivari,1) > 0 && (pfxmean[:,ivari] = vcat(x0[:,ivari,:], fxfmean[:,ivari]))
+    pfxmean[:,vari] = p(fxfmean[:,vari], x0[:,vari,:])
+
+    #pfx = convert(Matrix{Float64}, reshape(pfxmean,:,size(fc.mean,2))[1:end-size(fmean,1),:])
+    pfx = pfxmean[1:end-size(fmean,1),:]
+    pfmean = pfxmean[end-size(fmean,1)+1:end,:]
+    
+    fts_x = vcat(nΔt(xts,-size(x0,1)*size(x0,3)),xts)
+    fts_mean = nΔt(xts,size(pfmean,1))
+    ts_name = names(fc.model.x[:,1:1])
+
+    pfc.model.x = hcat(DataFrame(fts_x,ts_name), DataFrame(pfx,:auto))
+    pfc.mean    = hcat(DataFrame(fts_mean,ts_name), DataFrame(pfmean,:auto))
+
+    if size(fmean,2) > 1
+        z = fupper .- repeat(fmean,1,2)
+        pfmean = repeat(pfmean,1,2)
     else
-        return(pxOL)
+        z = fupper .- fmean
     end
     
-end
-
-function p(dx::AbstractArray,
-           orderlag::AbstractArray = [[0]])
-
-    nc = size(dx)[2]
-    if orderlag == [[0]]
-        orderlag = hcat(Array{Any,2}(missing, 1, nc))
-        orderlag[1,:] .= [[0]]
-    end
+    pfc.upper = hcat(DataFrame(fts_mean,ts_name), DataFrame(pfmean .+ z, :auto))
+    pfc.lower = hcat(DataFrame(fts_mean,ts_name), DataFrame(pfmean .- z, :auto))
     
-    format_ol = "orderlag format per column is [[lag_1, lag_2, ..., lag_m], order_2, order_3, ..., order_n] in a type order x column Array{Any,2}"
-    @assert orderlag[1] isa Array format_ol
-    @assert orderlag isa Array format_ol
+    setnames!(pfc, fnames)
+    pfc.call = fc.call * "\nIntegrated with x0 size: " * string(size(x0))
 
-    lag = length(orderlag[1,:][1])
-
-    if (lag == 0)
-        return dx
-    end
-
-    pdx(idx) = p(dx[:,idx], orderlag[:,idx])
-
-    px = pdx(1)
-    for i in 2:nc
-        px = hcat(px, pdx(i))
-    end
-    px
+    return(pfc)
     
-end
-
-function p(dx::TimeArray,
-           orderlag::AbstractArray = [[0]])
-
-    vx = values(dx)
-    pvx = p(vx, orderlag)
-
-    tsx = timestamp(dx)
-    dt = tsx[2]-tsx[1]
-
-    tsx = tsx[1]:dt:tsx[1]+(size(pvx)[1]-1)*dt
-
-    TimeArray(tsx,pvx)
 end
