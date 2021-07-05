@@ -1,6 +1,5 @@
 using Test
 using Forecast
-using TimeSeries
 
 @testset "ccf" begin
     x1 = rand(100);
