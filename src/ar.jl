@@ -132,7 +132,7 @@ function ar_ols(x::AbstractArray{T},
     W = Array{T,2}(undef,(or*m+1,m))
     for i in 1:m
         Xi,Yi = fixΦ(X,Y,i,dΦ0,dΦ)
-        dW = (Xi'*Xi)\(Xi'*Yi)
+        dW = Xi\Yi
         W[:,i] = fixW(dW,i,dΦ0,dΦ)
     end
 
