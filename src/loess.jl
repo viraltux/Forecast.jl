@@ -27,7 +27,7 @@ function ghat(x::T;
     A = @. A*(w*rho)
     b = @. b*(w*rho)
     
-    lsq_x = (A'*A)\(A'*b)
+    lsq_x = A\b
 
     d == 1 ? [x,1.0]'*lsq_x : [x^2.0,x,1.0]'*lsq_x
 
