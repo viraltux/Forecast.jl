@@ -7,26 +7,26 @@ default(size=(800,500))
 # WHAT-IF Scenarios
 
 ## Introduction
-There are situations in multivaraite analysis in which we want to know things like:
+There are situations in multivariate analysis in which we want to know things like:
 
 * How robust is our model to impacts
 * How does our model evolves given known events
-* How does overall accuracy improves in we improve forecast accuracy for specific variables
+* How does overall accuracy improves if we improve forecast accuracy for specific variables
 * How does our model reacts to different scenarios
 
-To answer this quetions an similar ones we need a way to instruct our forecast to test this scenarios.
+To answer this questions and similar ones we need a way to instruct our forecast to test this scenarios.
 
 ## London Crime/Weather Scenarios
 
-Let's show how to using the Great London Crime/Weather example. In this example we see how weather temperature affects/explains criminality in Greater London. However, the prediction of temperature is not as accurate as it would be if we use forecast coming from (metoffice)[metoffice.gov.uk] instead those predicted by an AR(1) model. Therefore in order to have more accurate predictions about crime we want to overrule the temperature forecast of the AR(1) model with the forecast comming from `metoffice`.
+Let's show how to use the Great London Crime/Weather example. In this example we see how weather temperature affects/explains criminality in Greater London. However, the prediction of temperature is not as accurate as it would be if we use forecast coming from (metoffice)[metoffice.gov.uk] instead those predicted by an AR(1) model. Therefore in order to have more accurate predictions about crime we want to overrule the temperature forecast of the AR(1) model with the forecast comming from `metoffice`.
 
 These metoffice predictions would not be much different than those from the AR(1) model therefore, in order to better visualize impacts in the forecast, we will play with an hypothetical scenario in which temperatures increase one degree per month for two years straight.
 
-Also, let's imagine that the accuracy of the one degree per year scenario is is much better than the one coming for the AR(1) model making its variance 25 times smaller.
+Also, let's imagine that the accuracy of the one degree per year scenario is much better than the one coming for the AR(1) model making its variance 25 times smaller.
 
 ## Fitting and Forecast
 
-Let's first fit our model and retrieve its forecast. We will be using the scaled forecast to better see how our changes affects the model.
+Let's first fit our model and retrieve its forecast. We will be using the scaled forecast to better see how our changes affect the model.
 
 ```@example examples
 x = london()
@@ -108,4 +108,4 @@ plot(tfc,title="Greater London Crime/Weather Scaled Forecast & Fixed MaxTemp")
 ```
 We can see how our scenario displays a much narrower forecast interval, however the new scenario in the already small covariance does not affect much the intervals for crime.
 	
-Another noticeable effect would be the inverse relationship between crime and temperature, this is something we can see directly int the AR(1) coefficients but now we can clearly visualize it.
+Another noticeable effect would be the inverse relationship between crime and temperature, this is something we can see directly into the AR(1) coefficients but now we can clearly visualize it.
