@@ -10,9 +10,7 @@ default(size=(800,500))
 In this example we will predict the of number of earthquakes per year with a magnitude higher or equal to six. The data for the analysis has been collected from [USGS](https://earthquake.usgs.gov/) and aggregated from 1950 to 2020.
 
 ```@example examples
-```julia
 plot(quakes()) #hide
-```
 ```
 ## Descriptive Analysis
 First let's use a few utilities contained in the Forecast package to have a first impression on the data:
