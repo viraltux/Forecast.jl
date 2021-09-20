@@ -1,6 +1,6 @@
 module Forecast
 
-using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, GZip,
+using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, CodecZlib,
     HypothesisTests, LinearAlgebra, Optim, Plots, PrettyTables, RecipesBase, Statistics, StatsBase
 
 # types

@@ -29,11 +29,11 @@ julia> co2()
 """
 function co2(full::Bool = false)
 
-    data = "data/co2.csv.gz"
+    data = "data"
     path = joinpath(splitdir(@__DIR__)[1], data)
     
-    co2_df = GZip.open(path, "r") do io
-        CSV.read(io,DataFrame)
+    co2_df = open(joinpath(path, "co2.csv.gz")) do file
+        CSV.read(GzipDecompressorStream(file),DataFrame)
     end
 
     if full
@@ -99,11 +99,13 @@ julia> seaborne()
 """
 function seaborne(full::Bool = false)
 
-    data = "data/seaborne.csv.gz"
+    data = "data"
     path = joinpath(splitdir(@__DIR__)[1], data)
     
-    sb_df = GZip.open(path, "r") do io
-        CSV.read(io, DataFrame, dateformat = "mm/dd/yyyy HH:MM:SS pp", types = Dict(:date => Date))
+    sb_df = open(joinpath(path, "seaborne.csv.gz")) do file
+        CSV.read(GzipDecompressorStream(file),DataFrame,
+                 dateformat = "mm/dd/yyyy HH:MM:SS pp",
+                 types = Dict(:year => Date))
     end
 
     if full
@@ -142,14 +144,14 @@ julia> quakes()
 """
 function quakes()
 
-    data = "data/quakes.csv.gz"
+    data = "data"
     path = joinpath(splitdir(@__DIR__)[1], data)
     
-    qk_df = GZip.open(path, "r") do io
-        CSV.read(io,DataFrame, dateformat = "yyyy", types = Dict(:year => Date))
+    open(joinpath(path, "quakes.csv.gz")) do file
+        CSV.read(GzipDecompressorStream(file),DataFrame,
+                 dateformat = "yyyy",
+                 types = Dict(:year => Date))
     end
-
-    qk_df
     
 end
 
@@ -180,13 +182,13 @@ julia> air()
 """
 function air()
 
-    data = "data/air.csv.gz"
+    data = "data"
     path = joinpath(splitdir(@__DIR__)[1], data)
     
-    df = GZip.open(path, "r") do io
-        CSV.read(io,DataFrame)
+    df = open(joinpath(path, "air.csv.gz")) do file
+        CSV.read(GzipDecompressorStream(file),DataFrame)
     end
-
+    
     t =  DataFrame([Date.(df.year,df.month)],[:Date])
     x = DataFrame([df.passengers],[:Passengers])
 
@@ -270,17 +272,13 @@ julia> london()
 """
 function london()
 
-    data = "data/london.csv.gz"
+    data = "data"
     path = joinpath(splitdir(@__DIR__)[1], data)
     
-    df = GZip.open(path, "r") do io
-        CSV.read(io,DataFrame)
+    df = open(joinpath(path, "london.csv.gz")) do file
+        CSV.read(GzipDecompressorStream(file),DataFrame,
+                 dateformat = "yyyy-mm-dd",
+                 types = Dict(:Date => Date))
     end
-
-    df = GZip.open(path, "r") do io
-        CSV.read(io, DataFrame, dateformat = "yyyy-mm-dd", types = Dict(:Date => Date))
-    end
-
-    df
     
 end
