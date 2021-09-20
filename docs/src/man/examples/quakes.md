@@ -7,10 +7,12 @@ default(size=(800,500))
 # Quakes (Univariate)
 
 ## Introduction
-In this example we will predict the number of earthquakes per year with a magnitude higher or equal to six. The data for the analysis has been collected from [USGS](https://earthquake.usgs.gov/) and aggregated from 1950 to 2020.
+In this example we will predict the of number of earthquakes per year with a magnitude higher or equal to six. The data for the analysis has been collected from [USGS](https://earthquake.usgs.gov/) and aggregated from 1950 to 2020.
 
 ```@example examples
+```julia
 plot(quakes()) #hide
+```
 ```
 ## Descriptive Analysis
 First let's use a few utilities contained in the Forecast package to have a first impression on the data:
@@ -27,7 +29,7 @@ Data's behavior seems to follow a Normal distribution with no strong indications
 ```@example examples
 plot(pacf(qk.quakes))
 ```
-The partial autoregression function shows us that there seems to be a significant correlation to the number of earthquakes taking place last year. If we were looking for seasonality we could check on periods of 11 or 15 years since they show a nearly significant correlations but since they're most likely spurious (...or are they?) we will ignore them in this analysis.
+The partial autoregression function shows us that there seems to be a significant correlation to the number of earthquakes taking place last year. If we were looking for seasonality we could check on periods of 11 or 15 years since they show a nearly significant correlations but since they're most likely spureous (...or are they?) we will ignore them in this analysis.
 
 ## Fitting an AR Model
 ```@example examples
