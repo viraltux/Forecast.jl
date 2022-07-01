@@ -85,7 +85,7 @@ function ccf(x1::AbstractVector{<:Real},
     end
 
     # ccf normalized with the standard error for the
-    # Normal distsribution of an approximation for
+    # Normal distribution of an approximation for
     # the Fisher transformation
     function fse(v::Real)::AbstractFloat
         1/sqrt(v-3)

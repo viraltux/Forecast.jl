@@ -1,100 +1,77 @@
-"""
-Package: Forecast
+module Forecast
 
-Store results from the function `forecast`
+using CSV, Distributions, ColorSchemes, DataFrames, DataFramesMeta, Dates, CodecZlib,
+    HypothesisTests, LinearAlgebra, Optim, Plots, PrettyTables, RecipesBase, Statistics, StatsBase
 
-# Arguments
-   model:  Model object containing information about the fitted model.
-   x:      Original time series.
-   alpha:  The confidence levels associated with the prediction intervals.
-   mean:   Point forecasts.
-   lower:  Lower limits for prediction intervals.
-   upper:  Upper limits for prediction intervals.
-   se:     Standard Error.
-"""
-mutable struct FORECAST
-    model
-    alpha::Tuple
-    mean::DataFrame
-    upper::DataFrame
-    lower::DataFrame
-    se::DataFrame
-    call::String
-end
+# types
+export AR, CCF, STL
 
-function Base.show(io::IO, fc::FORECAST)
-    ts = eltype(fc.mean[:,1]) in [Date, DateTime, Time,
-                                  Year, Month, Quarter, Week, Day,
-                                  Hour, Second, Millisecond,
-                                  Microsecond, Nanosecond]
-    printstyled("Forecast Information\n",bold=true,color=:underline)
-    print("\n",fc.call, "\n")
-    printstyled("\nMean Forecasting\n",bold=true,color=:underline)
-    pretty_table(fc.mean, noheader = false, nosubheader = true, show_row_number=false)
-    printstyled("\nPrediction Intervals alpha at: "*string(fc.alpha)*"\n",bold=true,color=:underline)
-    printstyled("\nUpper:\n",color=:underline)
-    pretty_table(fc.upper, noheader = false, nosubheader = true, show_row_number=false,
-                 vlines = [0,1,div(size(fc.upper,2),2)+1,size(fc.upper,2)])
-    printstyled("\nLower:\n",color=:underline)
-    pretty_table(fc.lower, noheader = false, nosubheader = true, show_row_number=false,
-                 vlines = [0,1,div(size(fc.lower,2),2)+1,size(fc.lower,2)])
-end
+# methods
+export acf, ar, arsim, boxcox, ccf, d, hma, iboxcox, loess, p, pacf, forecast, 
+       setnames!, sma, stl, transform, summarize
 
-"""
-Rename data in FORECAST object
-"""
-function setnames!(fc::FORECAST,new_names::AbstractVector{String})
-    n_mean = names(fc.mean)
-    n_mean[2:end] = new_names
-    rename!(fc.mean,n_mean)
+# datasets
+export air, co2, london, quakes, seaborne
 
-    nn_upper = []
-    for n in new_names
-        push!(nn_upper,"upper1_"*n)
-        push!(nn_upper,"upper2_"*n)
-    end
-    n_upper = names(fc.upper)
-    n_upper[2:end] = nn_upper
-    rename!(fc.upper,n_upper)
-    
-    nn_lower = []
-    for n in new_names
-        push!(nn_lower,"lower1_"*n)
-        push!(nn_lower,"lower2_"*n)
-    end
-    n_lower = names(fc.lower)
-    n_lower[2:end] = nn_lower
-    rename!(fc.lower,n_lower)
+# types
+include("AR.jl")
+include("CCF.jl")
+include("FORECAST.jl")
+include("STL.jl")
+include("SUMMARIZE.jl")
 
-    if fc.model.x isa DataFrame
-        n_model = names(fc.model.x)
-        n_model[2:end] = new_names
-        rename!(fc.model.x,n_model)
-        fc.model.varnames=new_names
-    end
-end
+# source files
+include("acf.jl")
+include("ar.jl")
+include("arsim.jl")
+include("boxcox.jl") 
+include("ccf.jl")
+include("d.jl")
+include("datasets.jl")
+include("hma.jl") 
+include("loess.jl")
+include("p.jl")
+include("pacf.jl")
+include("forecast_ar.jl")
+include("sma.jl")
+include("stl.jl")
+include("summarize.jl") 
+include("utils.jl")
+include("utils_datetime.jl")
+
+# plot recipes
+##  type
+include("plot_CCF.jl")
+include("plot_DataFrame.jl")
+include("plot_FORECAST.jl")
+include("plot_STL.jl")
+
+
+## user
+include("splot.jl")
 
 """
-Transform a FORECAST object value with given function
+Collection of methods for Time Series analysis
+
+Featured Methods:
+
+    acf:        Auto-correlation or auto-covariance of univariate series. 
+    ar:         Multivariate Autoregressive Model.
+    arsim:      Simulated Multivariate Autoregressive Model.
+    boxcox:     Box-Cox Transformations.
+    ccf:        Cross-correlation or cros-covariance of two univariate series.
+    d:          Lagged differences of a given order for Vector and Array.
+    forecast:   Forecast values of fitted time series models.
+    hma:        Henderson moving average filter.
+    iboxcox:    Inverse Box-Cox Transformations.
+    loess:      Locally estimated scatterplot smoothing.
+    p:          Reverse lagged differences of a given order for types Vector and Array.
+    pacf:       Partial Auto-correlation function.
+    sma:        Simple moving average.
+    splot:      Plot a seasonal plot for types Vector and TimeArray.
+    stl:        Seasonal and Trend decomposition using loess.
+    summarize:  Statistical summary.
 """
-function transform(fc::FORECAST, f::Function, vari::Union{Integer,UnitRange} = 1:size(fc.mean,2)-1)
+Forecast
 
-    vari = collect(vari)
-
-    # Renaming
-    tfc = deepcopy(fc)
-    fnames = tfc.model.varnames
-    fnames[vari] .= "$(string(f))_" .* fnames[vari]
-    setnames!(tfc, fnames)
-
-    # Transform
-    vari2 =  vcat(vari, vari .+ size(fc.mean,2) .- 1)
-    tfc.model.x[:,vari .+ 1] .= f.(Array(tfc.model.x[:,vari .+ 1]))
-    tfc.mean[:,vari .+ 1] .= f.(Array(tfc.mean[:,vari .+ 1]))
-    tfc.lower[:,vari2 .+ 1] .= f.(Array(tfc.lower[:,vari2 .+ 1]))
-    tfc.upper[:,vari2 .+ 1] .= f.(Array(tfc.upper[:,vari2 .+ 1]))
-
-    tfc.call = fc.call * "\nData transformed with function: $(f)"
-
-    return(tfc)
 end

@@ -98,7 +98,7 @@ function stl(Yv,
     N = length(Yv)
     # initial robustness weights
     rhov = ones(N)
-    # intial trend
+    # initial trend
     Tv = Tv0 = zeros(N)
     Sv = Sv0 = zeros(N)
     Rv = Array{Float64,1}(undef,N)
@@ -109,7 +109,7 @@ function stl(Yv,
     o = 0
     while robust | (o <= no)
         for k in 1:ni
-            # Updating sesonal and trend components
+            # Updating seasonal and trend components
             ## 1. Detrending (Yv = Tv + Sv)
             Sv = Yv - Tv
 
@@ -148,7 +148,7 @@ function stl(Yv,
             # Trend Smoothing
             ## 6. Trend Smoothing
             ### centered support instead 1:N to balance out machine error
-            ### (floor isntead ceil like in Lv to balance out even lengths)
+            ### (floor instead ceil like in Lv to balance out even lengths)
             Tv = loess(1-floor(N/2):N-floor(N/2),Dv,q=nt,d=1,rho=rhov)
 
             ### Trend convergence criterion
@@ -173,7 +173,7 @@ function stl(Yv,
         Rv = Yv - Tv - Sv
 
         if scnv & tcnv
-            @info "Corvengence achieved (< " * string(cth) * "); Stopping computation..."    
+            @info "Convergence achieved (< " * string(cth) * "); Stopping computation..."    
             break 
         end
         

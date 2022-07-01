@@ -18,7 +18,7 @@ To answer this questions and similar ones we need a way to instruct our forecast
 
 ## London Crime/Weather Scenarios
 
-Let's show how to use the Great London Crime/Weather example. In this example we see how weather temperature affects/explains criminality in Greater London. However, the prediction of temperature is not as accurate as it would be if we use forecast coming from (metoffice)[metoffice.gov.uk] instead those predicted by an AR(1) model. Therefore in order to have more accurate predictions about crime we want to overrule the temperature forecast of the AR(1) model with the forecast comming from `metoffice`.
+Let's show how to use the Great London Crime/Weather example. In this example we see how weather temperature affects/explains criminality in Greater London. However, the prediction of temperature is not as accurate as it would be if we use forecast coming from (metoffice)[metoffice.gov.uk] instead those predicted by an AR(1) model. Therefore in order to have more accurate predictions about crime we want to overrule the temperature forecast of the AR(1) model with the forecast coming from `metoffice`.
 
 These metoffice predictions would not be much different than those from the AR(1) model therefore, in order to better visualize impacts in the forecast, we will play with an hypothetical scenario in which temperatures increase one degree per month for two years straight.
 

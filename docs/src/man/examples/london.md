@@ -33,7 +33,7 @@ splot(x[:,["Date","Violence"]], title="Seasonal Violent Crimes")
 ```@example examples
 splot(x[:,["Date","Sexual"]], title="Seasonal Sexual Crimes")
 ```
-Sesonality patterns for `MaxTemp` are obvious and noticeable for `Violence`, however there's barely any to be seen in `Sexual`.
+Seasonality patterns for `MaxTemp` are obvious and noticeable for `Violence`, however there's barely any to be seen in `Sexual`.
 
 ### Normalization
 To compare time series with different positive magnitudes and to facilitate an stationary forecasting we will normalize data by dividing each variable by its maximum value.
@@ -50,7 +50,7 @@ dtx = d(tx,1,12)
 plot(dtx)
 ```
 
-An extra differentation might be required for `Violence` and `Sexual` but this seems to be one to many for `MaxTemp` indicated by an increase in its variance when doing so. Also, the apparent need for a differentation in `Violence` and `Sexual` seems to be a temporary effect rather than a permanent trend or seasonality therefore we will continue with just one differentation of order 12.
+An extra differentiation might be required for `Violence` and `Sexual` but this seems to be one to many for `MaxTemp` indicated by an increase in its variance when doing so. Also, the apparent need for a differentiation in `Violence` and `Sexual` seems to be a temporary effect rather than a permanent trend or seasonality therefore we will continue with just one differentiation of order 12.
 
 ## Fitting an AR(1) model
 Given the scarcity of data for a multivariate model we cannot fit too many parameters while keeping its significance. We will therefore fit an AR of order one.
@@ -61,11 +61,11 @@ show(xar) # hide
 ```
 The first thing we can do is to use Φ1 to infer directional causality, in this case we see how `MaxTemp` is not influenced at all (with statistical significance) by `Violence` and `Sexual`, which could not possibly be otherwise in this case. On the other hand we have `Violence` and `Sexual` being affected significantly by `MaxTemp`.
 
-The relathionship between `Violence` and `Sexual` is both ways, however, the effect `Sexual` has on `Violence` is small and barely significant which might prompt us to consider to remove it altogether, the opposite though is not true, `Violence` has a strong and significant influence in `Sexual`.
+The relationship between `Violence` and `Sexual` is both ways, however, the effect `Sexual` has on `Violence` is small and barely significant which might prompt us to consider to remove it altogether, the opposite though is not true, `Violence` has a strong and significant influence in `Sexual`.
 
 
 ## Fixing Coefficients
-Let's now fix to 0 the influcence of `Violence` and `Sexual` on `MaxTemp`, remove the influence from `MaxTemp` on `Sexual` since it is accounted for via `Violence` and the non-significant influence of `Sexual` on `Violence`. If now we fit again the model we have
+Let's now fix to 0 the influence of `Violence` and `Sexual` on `MaxTemp`, remove the influence from `MaxTemp` on `Sexual` since it is accounted for via `Violence` and the non-significant influence of `Sexual` on `Violence`. If now we fit again the model we have
 
 ```@example examples
 dϕ1 = xar.Φ

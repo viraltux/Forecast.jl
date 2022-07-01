@@ -162,7 +162,7 @@ function ar_ols(x::AbstractArray{T},
     #fix p
     np = fixnp(dΦ0,dΦ)
 
-    # TODO check weher to use 'or' or 'np' and if 'or' then a fixor function is needed
+    # TODO check wether to use 'or' or 'np' and if 'or' then a fixor function is needed
     # Information Criteria
     lΣ2   = log(norm(Σ2))
     ic = Dict([("AIC",  lΣ2 + 2*np*m^2/n),

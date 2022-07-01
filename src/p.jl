@@ -99,7 +99,7 @@ function p(fc::FORECAST,
     fnames[vari] = "p$(size(x0))_" .* fnames[vari]
     pfc = deepcopy(fc)
 
-    # Inverse Differentation
+    # Inverse Differentiation
     xts = fc.model.x[:,1]
     fx = Array(fc.model.x[:,2:end]) 
     fmean = Array(fc.mean[:,2:end])
