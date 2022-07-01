@@ -54,7 +54,7 @@ function co2(full::Bool = false)
     # since there seems to be no data for april in 1974
     dates_co2_stl = Dates.Date(1974,5,17):Dates.Day(1):Dates.Date(1986,12,31)
 
-    # revome leap year day
+    # remove leap year day
     dates_co2_stl = filter(dates_co2_stl) do x
         (Dates.isleapyear(x) & (Dates.month(x) == 2)) ? Dates.day(x) != 29 : true
     end

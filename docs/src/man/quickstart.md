@@ -44,7 +44,7 @@ plot!(x,sma(y,100,true), linewidth = 2, label= "Moving Avg 100", color = :orange
 ## STL on CO2 dataset
 
 For this example we will be using the co2 data used by the creators of STL to
-demostrate its funcitonality, below we can see such time series.
+demonstrate its functionality, below we can see such time series.
 
 ```@example quickstart
 using Plots
@@ -53,7 +53,7 @@ using Forecast
 plot(co2(), legend=:bottomright)
 ```
 
-The parameters used for STL they're also from the orginal paper, a period of
+The parameters used for STL they're also from the original paper, a period of
 365 days is used (removing leap years extra day), a robust fit is required and
 seasonality post-smoothing is applied.
 
@@ -70,7 +70,7 @@ The image below comes from the original paper for comparison purposes.
 <img src="../../images/stl.png" width="800px"/>
 ```
 
-## Cross-Correlation on shifted dasaset
+## Cross-Correlation on shifted dataset
 
 Here we cross-correlate two identical series shifted by six positions, the plot
 shows how the peak correlation is at position six.
