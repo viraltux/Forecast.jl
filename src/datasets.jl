@@ -59,7 +59,7 @@ function co2(full::Bool = false)
         (Dates.isleapyear(x) & (Dates.month(x) == 2)) ? Dates.day(x) != 29 : true
     end
 
-    @where(co2_sdf, in.(:date,  Ref(dates_co2_stl)))
+    @subset(co2_sdf, in.(:date,  Ref(dates_co2_stl)))
     
 end
 
@@ -105,7 +105,7 @@ function seaborne(full::Bool = false)
     sb_df = open(joinpath(path, "seaborne.csv.gz")) do file
         CSV.read(GzipDecompressorStream(file),DataFrame,
                  dateformat = "mm/dd/yyyy HH:MM:SS pp",
-                 types = Dict(:year => Date))
+                 types = Dict(:date => Date))
     end
 
     if full

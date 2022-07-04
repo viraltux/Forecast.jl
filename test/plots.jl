@@ -1,6 +1,6 @@
 using Test
 using Forecast
-using Plots, RecipesBase
+using Plots
 
 @testset "plots" begin
 
