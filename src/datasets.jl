@@ -59,7 +59,7 @@ function co2(full::Bool = false)
         (Dates.isleapyear(x) & (Dates.month(x) == 2)) ? Dates.day(x) != 29 : true
     end
 
-    @where(co2_sdf, in.(:date,  Ref(dates_co2_stl)))
+    @subset(co2_sdf, in.(:date,  Ref(dates_co2_stl)))
     
 end
 
