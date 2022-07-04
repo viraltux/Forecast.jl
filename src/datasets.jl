@@ -105,7 +105,7 @@ function seaborne(full::Bool = false)
     sb_df = open(joinpath(path, "seaborne.csv.gz")) do file
         CSV.read(GzipDecompressorStream(file),DataFrame,
                  dateformat = "mm/dd/yyyy HH:MM:SS pp",
-                 types = Dict(:year => Date))
+                 types = Dict(:date => Date))
     end
 
     if full
